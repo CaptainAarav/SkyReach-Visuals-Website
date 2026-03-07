@@ -1,0 +1,83 @@
+import { useState } from 'react';
+
+const GALLERY_VIDEO = '/videos/paul-srv.mp4';
+
+const categories = ['All', 'Property', 'Events', 'Construction', 'Creative'];
+
+const items = [
+  { id: 1, label: 'Sandbanks Development', category: 'Property' },
+  { id: 2, label: 'Bournemouth Air Festival', category: 'Events' },
+  { id: 3, label: 'Harbour Heights Build', category: 'Construction' },
+  { id: 4, label: 'Old Harry Rocks', category: 'Creative' },
+  { id: 5, label: 'Canford Cliffs Villa', category: 'Property' },
+  { id: 6, label: 'Christchurch Regatta', category: 'Events' },
+  { id: 7, label: 'Westbourne Office Block', category: 'Construction' },
+  { id: 8, label: 'Jurassic Coast Dawn', category: 'Creative' },
+  { id: 9, label: 'Poole Quay Apartment', category: 'Property' },
+  { id: 10, label: 'Summer Music Festival', category: 'Events' },
+  { id: 11, label: 'BCP Infrastructure', category: 'Construction' },
+  { id: 12, label: 'Durdle Door Sunset', category: 'Creative' },
+];
+
+export default function Gallery() {
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const filtered = activeCategory === 'All'
+    ? items
+    : items.filter((item) => item.category === activeCategory);
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-24">
+      {/* Hero video strip */}
+      <div className="aspect-video max-h-[320px] w-full rounded-xl overflow-hidden bg-black/10 mb-16">
+        <video src={GALLERY_VIDEO} className="w-full h-full object-cover" muted loop playsInline autoPlay aria-hidden />
+      </div>
+
+      <h1 className="text-4xl md:text-5xl font-bold text-black">Our Work</h1>
+      <p className="mt-4 text-black-muted/70 max-w-2xl">
+        A selection of aerial projects from across Bournemouth, Poole, and the
+        Dorset coast. Each project is shot and edited in-house.
+      </p>
+
+      {/* Category filters */}
+      <div className="mt-10 flex flex-wrap gap-2">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`text-sm px-4 py-2 transition-colors ${
+              activeCategory === cat
+                ? 'bg-accent text-white'
+                : 'bg-cream-dark text-black-muted hover:text-black'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Grid with video backgrounds */}
+      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((item) => (
+          <div
+            key={item.id}
+            className="group relative aspect-video bg-black/10 overflow-hidden rounded-lg"
+          >
+            <video src={GALLERY_VIDEO} className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" muted loop playsInline aria-hidden />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-end p-5">
+              <div className="translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
+                <span className="text-xs font-medium text-white/80 uppercase tracking-wider">
+                  {item.category}
+                </span>
+                <h3 className="text-white font-medium mt-1">{item.label}</h3>
+              </div>
+            </div>
+            <span className="absolute bottom-4 left-5 text-xs text-white/60 uppercase tracking-wider group-hover:opacity-0 transition-opacity">
+              {item.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
