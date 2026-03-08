@@ -1,11 +1,12 @@
 const ABOUT_VIDEO = '/videos/paul-srv.mp4';
+const ABOUT_POSTER = '/gallery-poster.jpg';
 
 export default function About() {
   return (
     <>
-      {/* Hero with video background */}
+      {/* Hero with video background — single full load */}
       <section className="relative py-24 overflow-hidden bg-black rounded-b-3xl">
-        <video src={ABOUT_VIDEO} className="absolute inset-0 w-full h-full object-cover opacity-40" muted loop playsInline autoPlay aria-hidden />
+        <video src={ABOUT_VIDEO} poster={ABOUT_POSTER} className="absolute inset-0 w-full h-full object-cover opacity-40" muted loop playsInline autoPlay preload="auto" aria-hidden />
         <div className="absolute inset-0 bg-accent/30" aria-hidden />
         <div className="relative z-10 max-w-7xl mx-auto px-6">
           <h1 className="text-4xl md:text-5xl font-bold max-w-3xl text-white">
@@ -39,10 +40,10 @@ export default function About() {
         </div>
       </section>
 
-      {/* Video section */}
+      {/* Video section — metadata only until needed */}
       <section className="max-w-7xl mx-auto px-6 py-12">
         <div className="aspect-video max-h-[400px] w-full rounded-2xl overflow-hidden bg-black/40">
-          <video src={ABOUT_VIDEO} className="w-full h-full object-cover" muted loop playsInline autoPlay aria-hidden />
+          <video src={ABOUT_VIDEO} poster={ABOUT_POSTER} className="w-full h-full object-cover" muted loop playsInline autoPlay preload="metadata" aria-hidden />
         </div>
       </section>
 
@@ -81,11 +82,11 @@ export default function About() {
         </div>
       </section>
 
-      {/* Team placeholder with video */}
+      {/* Team placeholder with video — poster + metadata to avoid duplicate full load */}
       <section className="max-w-7xl mx-auto px-6 py-24">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="aspect-square rounded-2xl overflow-hidden bg-black/40">
-            <video src={ABOUT_VIDEO} className="w-full h-full object-cover" muted loop playsInline autoPlay aria-hidden />
+            <video src={ABOUT_VIDEO} poster={ABOUT_POSTER} className="w-full h-full object-cover" muted loop playsInline autoPlay preload="metadata" aria-hidden />
           </div>
           <div>
             <h2 className="text-3xl font-semibold text-white">Meet the pilot</h2>

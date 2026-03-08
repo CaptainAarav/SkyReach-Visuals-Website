@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useForm } from '../hooks/useForm.js';
 import { api } from '../api/client.js';
 
-const HERO_VIDEO = '/SkyReach Visuals Website Preview background.mp4';
+const HERO_VIDEO = '/skyreach-hero-background.mp4';
 
 const SERVICES = [
   { title: 'Roof & Chimney Inspections', description: 'Aerial photos to safely inspect roofs, chimneys and gutters without ladders.' },
@@ -12,6 +12,7 @@ const SERVICES = [
 ];
 
 const GALLERY_VIDEO = '/videos/paul-srv.mp4';
+const GALLERY_POSTER = '/gallery-poster.jpg';
 const categories = ['All', 'Property', 'Events', 'Construction', 'Creative'];
 const galleryItems = [
   { id: 1, label: 'Sandbanks Development', category: 'Property' },
@@ -112,7 +113,7 @@ export default function Home() {
         <h2 className="text-3xl md:text-4xl font-semibold text-white">About SkyReach Visuals</h2>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="aspect-video rounded-2xl overflow-hidden bg-black/40">
-            <img src="/skyreach_aboutme_image.png" alt="SkyReach Visuals" className="w-full h-full object-cover" />
+            <img src="/skyreach_aboutme_image.png" alt="SkyReach Visuals" className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </div>
           <div>
             <p className="text-cream/80 leading-relaxed">
@@ -185,9 +186,12 @@ export default function Home() {
           </div>
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredGallery.map((item) => (
-              <div key={item.id} className="group relative aspect-video bg-black/40 overflow-hidden rounded-2xl">
-                <video src={GALLERY_VIDEO} className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" muted loop playsInline aria-hidden />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-end p-5">
+              <div
+                key={item.id}
+                className="group relative aspect-video bg-black/40 overflow-hidden rounded-2xl bg-cover bg-center"
+                style={{ backgroundImage: `url(${GALLERY_POSTER})` }}
+              >
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-end p-5">
                   <div className="translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
                     <span className="text-xs font-medium text-white/80 uppercase tracking-wider">{item.category}</span>
                     <h3 className="text-white font-medium mt-1">{item.label}</h3>

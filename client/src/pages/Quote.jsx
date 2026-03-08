@@ -265,6 +265,7 @@ export default function Quote() {
               src="/logo-display-borderless.png"
               alt="SkyReach Visuals"
               className="w-full max-w-sm object-contain"
+              loading="lazy"
             />
           </div>
         )}

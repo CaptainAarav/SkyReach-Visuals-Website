@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 const GALLERY_VIDEO = '/videos/paul-srv.mp4';
+const GALLERY_POSTER = '/gallery-poster.jpg';
 
 const categories = ['All', 'Property', 'Events', 'Construction', 'Creative'];
 
@@ -28,9 +29,19 @@ export default function Gallery() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-24">
-      {/* Hero video strip */}
+      {/* Hero video strip — single video on page */}
       <div className="aspect-video max-h-[320px] w-full rounded-2xl overflow-hidden bg-black/40 mb-16">
-        <video src={GALLERY_VIDEO} className="w-full h-full object-cover" muted loop playsInline autoPlay aria-hidden />
+        <video
+          src={GALLERY_VIDEO}
+          poster={GALLERY_POSTER}
+          className="w-full h-full object-cover"
+          muted
+          loop
+          playsInline
+          autoPlay
+          preload="auto"
+          aria-hidden
+        />
       </div>
 
       <h1 className="text-4xl md:text-5xl font-bold text-white">Our Work</h1>
@@ -56,15 +67,15 @@ export default function Gallery() {
         ))}
       </div>
 
-      {/* Grid with video backgrounds */}
+      {/* Grid with poster image (one video request per page instead of 13) */}
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((item) => (
           <div
             key={item.id}
-            className="group relative aspect-video bg-black/40 overflow-hidden rounded-2xl"
+            className="group relative aspect-video bg-black/40 overflow-hidden rounded-2xl bg-cover bg-center"
+            style={{ backgroundImage: `url(${GALLERY_POSTER})` }}
           >
-            <video src={GALLERY_VIDEO} className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" muted loop playsInline aria-hidden />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-end p-5">
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-end p-5">
               <div className="translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
                 <span className="text-xs font-medium text-white/80 uppercase tracking-wider">
                   {item.category}

@@ -9,6 +9,7 @@ export default function Footer() {
               src="/logo-borderless.png"
               alt="SkyReach Visuals"
               className="h-10 mb-4"
+              loading="lazy"
             />
             <p className="text-white/70 text-sm leading-relaxed max-w-xs">
               Professional aerial videography based in Bournemouth. We capture

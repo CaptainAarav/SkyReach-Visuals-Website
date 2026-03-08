@@ -19,6 +19,10 @@ Full-stack website for a drone videography company based in Bournemouth, UK. Inc
 - Stripe account (test keys)
 - SMTP credentials (optional for dev — emails log to console without them)
 
+## Media assets (images and videos)
+
+Videos and some large assets are **gitignored**. For the site to show hero video, gallery, and logos, place the required files in `client/public/` before building (or host videos externally and point the app at those URLs). See **[client/public/README.md](client/public/README.md)** for the full list of required files and optional CDN hosting.
+
 ## Quick Start with Docker
 
 ```bash
