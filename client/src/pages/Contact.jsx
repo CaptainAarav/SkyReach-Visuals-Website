@@ -24,8 +24,8 @@ export default function Contact() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-24">
-      <h1 className="text-4xl md:text-5xl font-bold text-black">Get in touch</h1>
-      <p className="mt-4 text-black-muted/70 max-w-2xl">
+      <h1 className="text-4xl md:text-5xl font-bold text-white">Get in touch</h1>
+      <p className="mt-4 text-cream/70 max-w-2xl">
         Got a project in mind? Drop us a message and we&rsquo;ll get back to you
         within 24 hours.
       </p>
@@ -34,9 +34,9 @@ export default function Contact() {
         {/* Form */}
         <div>
           {success ? (
-            <div className="bg-cream-dark p-8 rounded-lg">
-              <h3 className="text-xl font-semibold text-black">Message sent</h3>
-              <p className="mt-2 text-black-muted/70">
+            <div className="bg-bg-card p-8 rounded-2xl border border-white/10">
+              <h3 className="text-xl font-semibold text-white">Message sent</h3>
+              <p className="mt-2 text-cream/70">
                 Thanks for getting in touch. We&rsquo;ll come back to you shortly.
               </p>
               <button
@@ -58,7 +58,7 @@ export default function Contact() {
                   type="text"
                   value={values.name}
                   onChange={handleChange}
-                  className="w-full bg-transparent border-b-2 border-black-muted/20 focus:border-accent outline-none py-2 transition-colors"
+                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40 "
                 />
                 {errors.name && <p className="mt-1 text-xs text-red">{errors.name}</p>}
               </div>
@@ -73,14 +73,14 @@ export default function Contact() {
                   type="email"
                   value={values.email}
                   onChange={handleChange}
-                  className="w-full bg-transparent border-b-2 border-black-muted/20 focus:border-accent outline-none py-2 transition-colors"
+                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40 "
                 />
                 {errors.email && <p className="mt-1 text-xs text-red">{errors.email}</p>}
               </div>
 
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium mb-2">
-                  Phone <span className="text-black-muted/50">(optional)</span>
+                  Phone <span className="text-cream/50">(optional)</span>
                 </label>
                 <input
                   id="phone"
@@ -88,7 +88,7 @@ export default function Contact() {
                   type="tel"
                   value={values.phone}
                   onChange={handleChange}
-                  className="w-full bg-transparent border-b-2 border-black-muted/20 focus:border-accent outline-none py-2 transition-colors"
+                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40 "
                 />
               </div>
 
@@ -102,7 +102,7 @@ export default function Contact() {
                   rows={5}
                   value={values.message}
                   onChange={handleChange}
-                  className="w-full bg-transparent border-b-2 border-black-muted/20 focus:border-accent outline-none py-2 transition-colors resize-none"
+                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors resize-none text-cream placeholder:text-cream/40 "
                 />
                 {errors.message && <p className="mt-1 text-xs text-red">{errors.message}</p>}
               </div>
@@ -114,7 +114,7 @@ export default function Contact() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-red text-white text-sm font-medium px-8 py-3 hover:bg-red-dark transition-colors disabled:opacity-50"
+                className="bg-red text-white text-sm font-medium px-8 py-3 rounded-xl hover:bg-red-dark transition-colors disabled:opacity-50"
               >
                 {submitting ? 'Sending...' : 'Send message'}
               </button>
@@ -125,24 +125,24 @@ export default function Contact() {
         {/* Contact details */}
         <div className="space-y-8">
           <div>
-            <h3 className="text-xs font-semibold tracking-widest uppercase text-black-muted/50 mb-3">Email</h3>
-            <p className="text-black-muted">hello@skyreachvisuals.co.uk</p>
+            <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Email</h3>
+            <p className="text-cream">hello@skyreachvisuals.co.uk</p>
           </div>
           <div>
-            <h3 className="text-xs font-semibold tracking-widest uppercase text-black-muted/50 mb-3">Phone</h3>
-            <p className="text-black-muted">+44 7700 900123</p>
+            <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Phone</h3>
+            <p className="text-cream">+44 7700 900123</p>
           </div>
           <div>
-            <h3 className="text-xs font-semibold tracking-widest uppercase text-black-muted/50 mb-3">Location</h3>
-            <p className="text-black-muted">Bournemouth, Dorset, UK</p>
-            <p className="mt-1 text-sm text-black-muted/70">
+            <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Location</h3>
+            <p className="text-cream">Bournemouth, Dorset, UK</p>
+            <p className="mt-1 text-sm text-cream/70">
               We cover all of Dorset, Hampshire, and Wiltshire. Further afield by arrangement.
             </p>
           </div>
           <div>
-            <h3 className="text-xs font-semibold tracking-widest uppercase text-black-muted/50 mb-3">Hours</h3>
-            <p className="text-black-muted">Monday to Friday, 9am – 5pm</p>
-            <p className="mt-1 text-sm text-black-muted/70">
+            <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Hours</h3>
+            <p className="text-cream">Monday to Friday, 9am – 5pm</p>
+            <p className="mt-1 text-sm text-cream/70">
               Weekend shoots available by prior arrangement.
             </p>
           </div>

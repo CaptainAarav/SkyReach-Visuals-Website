@@ -1,0 +1,176 @@
+import prisma from '../config/db.js';
+import { AppError } from '../utils/AppError.js';
+import { getPackageBySlug } from '../data/packages.js';
+import { createCheckoutSession, retrieveSession } from '../services/stripe.service.js';
+import { sendBookingConfirmation } from '../services/email.service.js';
+
+export async function createBooking(req, res, next) {
+  try {
+    const { packageSlug, shootDate, location, phone, notes } = req.body;
+
+    if (!packageSlug || !shootDate || !location || !phone) {
+      throw new AppError('Package, shoot date, location, and phone are required');
+    }
+
+    // Server-side price lookup — never trust client-sent price
+    const pkg = getPackageBySlug(packageSlug);
+    if (!pkg) {
+      throw new AppError('Invalid package', 404);
+    }
+
+    const booking = await prisma.booking.create({
+      data: {
+        userId: req.user.id,
+        packageName: pkg.name,
+        packagePrice: pkg.price,
+        shootDate: new Date(shootDate),
+        location,
+        phone,
+        notes: notes || null,
+        status: 'PENDING',
+      },
+    });
+
+    const session = await createCheckoutSession({
+      packageName: pkg.name,
+      priceInPence: pkg.price,
+      bookingId: booking.id,
+      userEmail: req.user.email,
+    });
+
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: { stripeSessionId: session.id },
+    });
+
+    res.status(201).json({
+      success: true,
+      data: { sessionUrl: session.url },
+      error: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function listBookings(req, res, next) {
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: { userId: req.user.id },
+      orderBy: { createdAt: 'desc' },
+      include: { reviews: true },
+    });
+
+    res.json({ success: true, data: bookings, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getBooking(req, res, next) {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+      include: { reviews: true },
+    });
+
+    if (!booking) {
+      throw new AppError('Booking not found', 404);
+    }
+    if (booking.userId !== req.user.id) {
+      throw new AppError('Not authorised', 403);
+    }
+
+    res.json({ success: true, data: booking, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function createReview(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+
+    if (!comment || !comment.trim()) {
+      throw new AppError('Comment is required');
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: { reviews: true },
+    });
+
+    if (!booking) {
+      throw new AppError('Booking not found', 404);
+    }
+    if (booking.userId !== req.user.id) {
+      throw new AppError('Not authorised', 403);
+    }
+    if (booking.status !== 'COMPLETED') {
+      throw new AppError('You can only review completed orders', 400);
+    }
+    if (booking.reviews.length > 0) {
+      throw new AppError('You have already reviewed this order', 409);
+    }
+
+    const review = await prisma.review.create({
+      data: {
+        bookingId: id,
+        userId: req.user.id,
+        rating: rating != null ? Number(rating) : null,
+        comment: comment.trim(),
+      },
+    });
+
+    res.status(201).json({ success: true, data: review, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function verifyBooking(req, res, next) {
+  try {
+    const { session_id } = req.query;
+    if (!session_id) {
+      throw new AppError('Session ID is required');
+    }
+
+    const session = await retrieveSession(session_id);
+    if (session.payment_status !== 'paid') {
+      throw new AppError('Payment not completed');
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { stripeSessionId: session_id },
+    });
+
+    if (!booking) {
+      throw new AppError('Booking not found', 404);
+    }
+    if (booking.userId !== req.user.id) {
+      throw new AppError('Not authorised', 403);
+    }
+
+    // Only update and email if not already confirmed (idempotent)
+    if (booking.status === 'PENDING') {
+      await prisma.booking.update({
+        where: { id: booking.id },
+        data: { status: 'CONFIRMED' },
+      });
+
+      await sendBookingConfirmation({
+        to: req.user.email,
+        booking: { ...booking, status: 'CONFIRMED' },
+      });
+    }
+
+    const updated = await prisma.booking.findUnique({
+      where: { id: booking.id },
+    });
+
+    res.json({ success: true, data: updated, error: null });
+  } catch (err) {
+    next(err);
+  }
+}

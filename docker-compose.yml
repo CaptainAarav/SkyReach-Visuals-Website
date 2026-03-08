@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: skyreach
+      POSTGRES_USER: skyreach
+      POSTGRES_PASSWORD: skyreach_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skyreach -d skyreach"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build: ./server
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://skyreach:skyreach_pass@db:5432/skyreach
+      JWT_SECRET: change-me-in-production
+      JWT_EXPIRES_IN: 7d
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
+      CLIENT_URL: http://localhost:3000
+      STRIPE_SUCCESS_URL: http://localhost:3000/booking/success?session_id={CHECKOUT_SESSION_ID}
+      STRIPE_CANCEL_URL: http://localhost:3000/services
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-bookings@skyreachvisuals.co.uk}
+      PORT: 5000
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+
+  client:
+    build: ./client
+    ports:
+      - "3003:80"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:

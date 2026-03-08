@@ -1,0 +1,172 @@
+import nodemailer from 'nodemailer';
+import { env } from '../config/env.js';
+
+let transporter = null;
+
+function getTransporter() {
+  if (!transporter && env.smtp.host && env.smtp.user) {
+    transporter = nodemailer.createTransport({
+      host: env.smtp.host,
+      port: env.smtp.port,
+      secure: env.smtp.port === 465,
+      auth: {
+        user: env.smtp.user,
+        pass: env.smtp.pass,
+      },
+    });
+  }
+  return transporter;
+}
+
+export async function sendBookingConfirmation({ to, booking }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.log('SMTP not configured — skipping booking confirmation email');
+    console.log('Would send to:', to, 'Booking:', booking.id);
+    return;
+  }
+
+  const shootDate = new Date(booking.shootDate).toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background-color:#F5F3EE;font-family:'Inter',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F3EE;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#1E2D4A;padding:32px 40px;">
+              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">SkyReach Visuals</h1>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="background-color:#ffffff;padding:40px;">
+              <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">Booking confirmed</h2>
+              <p style="margin:0 0 24px;color:#1E2D4A;font-size:15px;line-height:1.6;">
+                Thanks for booking with us. Here are your details:
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                <tr>
+                  <td style="padding:12px 0;border-bottom:1px solid #E8E4DB;">
+                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Package</span><br/>
+                    <strong style="color:#1E2D4A;font-size:15px;">${booking.packageName}</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0;border-bottom:1px solid #E8E4DB;">
+                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Shoot date</span><br/>
+                    <strong style="color:#1E2D4A;font-size:15px;">${shootDate}</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0;border-bottom:1px solid #E8E4DB;">
+                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Location</span><br/>
+                    <strong style="color:#1E2D4A;font-size:15px;">${booking.location}</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0;border-bottom:1px solid #E8E4DB;">
+                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Amount paid</span><br/>
+                    <strong style="color:#1E2D4A;font-size:15px;">&pound;${(booking.packagePrice / 100).toFixed(2)}</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0;">
+                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Reference</span><br/>
+                    <span style="color:#1E2D4A;font-size:13px;font-family:monospace;">${booking.id}</span>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0;color:#1E2D4A;font-size:14px;line-height:1.6;opacity:0.7;">
+                We'll be in touch within 24 hours to confirm the final details of your shoot.
+                If you have any questions in the meantime, reply to this email or call us on
+                +44 7700 900123.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 40px;text-align:center;">
+              <p style="margin:0;color:#1E2D4A;font-size:12px;opacity:0.4;">
+                SkyReach Visuals &middot; Bournemouth, Dorset, UK
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  await transport.sendMail({
+    from: env.emailFrom,
+    to,
+    subject: `Booking Confirmed — ${booking.packageName} | SkyReach Visuals`,
+    html,
+  });
+}
+
+export async function sendContactNotification({ name, email, phone, location, serviceType, extraDetails, message }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.log('SMTP not configured — skipping contact notification');
+    console.log('Contact from:', name, email, message);
+    return;
+  }
+
+  const locationLine = location ? `<p style="margin:0 0 8px;color:#1E2D4A;font-size:14px;"><strong>Location:</strong> ${location}</p>` : '';
+  const serviceTypeLine = serviceType ? `<p style="margin:0 0 8px;color:#1E2D4A;font-size:14px;"><strong>Service type:</strong> ${serviceType}</p>` : '';
+  const extraDetailsLine = extraDetails ? `<p style="margin:0 0 8px;color:#1E2D4A;font-size:14px;"><strong>Extra details:</strong></p><p style="margin:0 0 16px;color:#1E2D4A;font-size:14px;line-height:1.6;white-space:pre-wrap;">${extraDetails}</p>` : '';
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background-color:#F5F3EE;font-family:'Inter',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F3EE;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          <tr>
+            <td style="background-color:#1E2D4A;padding:32px 40px;">
+              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">New Enquiry</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#ffffff;padding:40px;">
+              <p style="margin:0 0 8px;color:#1E2D4A;font-size:14px;"><strong>Name:</strong> ${name}</p>
+              <p style="margin:0 0 8px;color:#1E2D4A;font-size:14px;"><strong>Email:</strong> ${email}</p>
+              ${phone ? `<p style="margin:0 0 8px;color:#1E2D4A;font-size:14px;"><strong>Phone:</strong> ${phone}</p>` : ''}
+              ${locationLine}
+              ${serviceTypeLine}
+              ${extraDetailsLine}
+              <hr style="border:none;border-top:1px solid #E8E4DB;margin:16px 0;" />
+              <p style="margin:0;color:#1E2D4A;font-size:14px;line-height:1.6;white-space:pre-wrap;">${message}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  await transport.sendMail({
+    from: env.emailFrom,
+    to: env.emailFrom,
+    replyTo: email,
+    subject: `New enquiry from ${name} | SkyReach Visuals`,
+    html,
+  });
+}

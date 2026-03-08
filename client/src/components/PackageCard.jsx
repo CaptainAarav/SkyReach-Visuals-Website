@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
 
 export default function PackageCard({ name, slug, displayPrice, duration, locations, features, highlighted, compact }) {
-  const bg = highlighted ? 'bg-accent text-white' : 'bg-cream-dark text-black-muted';
-  const featureColor = highlighted ? 'text-white/80' : 'text-black-muted/70';
+  const bg = highlighted ? 'bg-accent text-white' : 'bg-bg-card text-cream';
+  const featureColor = highlighted ? 'text-white/80' : 'text-cream/70';
   const btnClass = highlighted
     ? 'bg-red text-white hover:bg-red-dark'
-    : 'bg-black text-white hover:bg-black-muted';
+    : 'bg-white/10 text-white hover:bg-white/20 border border-white/20';
 
   return (
-    <div className={`${bg} p-8 flex flex-col`}>
+    <div className={`${bg} p-8 flex flex-col rounded-2xl`}>
       <h3 className="text-2xl font-semibold">{name}</h3>
       <div className="mt-2 flex items-baseline gap-1">
         <span className="text-4xl font-bold">£{displayPrice}</span>
@@ -34,7 +34,7 @@ export default function PackageCard({ name, slug, displayPrice, duration, locati
 
       <Link
         to={`/booking/${slug}`}
-        className={`mt-8 block text-center text-sm font-medium py-3 px-6 transition-colors ${btnClass}`}
+        className={`mt-8 block text-center text-sm font-medium py-3 px-6 rounded-xl transition-colors ${btnClass}`}
       >
         Book now
       </Link>

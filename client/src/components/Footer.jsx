@@ -1,14 +1,12 @@
-import { Link } from 'react-router-dom';
-
 export default function Footer() {
   return (
-    <footer className="bg-black text-white">
+    <footer className="bg-black text-white rounded-t-3xl">
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand */}
           <div>
             <img
-              src="/skyreach-visuals-logo-borderless.png"
+              src="/logo-borderless.png"
               alt="SkyReach Visuals"
               className="h-10 mb-4"
             />
@@ -25,18 +23,18 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2">
               {[
-                { to: '/services', label: 'Services' },
-                { to: '/gallery', label: 'Gallery' },
-                { to: '/about', label: 'About' },
-                { to: '/contact', label: 'Contact' },
+                { href: '/#services', label: 'Services' },
+                { href: '/#portfolio', label: 'Portfolio' },
+                { href: '/#about', label: 'About' },
+                { href: '/#contact', label: 'Contact' },
               ].map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
+                <li key={link.href}>
+                  <a
+                    href={link.href}
                     className="text-sm text-white/70 hover:text-red transition-colors"
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>

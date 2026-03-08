@@ -29,12 +29,12 @@ export default function Gallery() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-24">
       {/* Hero video strip */}
-      <div className="aspect-video max-h-[320px] w-full rounded-xl overflow-hidden bg-black/10 mb-16">
+      <div className="aspect-video max-h-[320px] w-full rounded-2xl overflow-hidden bg-black/40 mb-16">
         <video src={GALLERY_VIDEO} className="w-full h-full object-cover" muted loop playsInline autoPlay aria-hidden />
       </div>
 
-      <h1 className="text-4xl md:text-5xl font-bold text-black">Our Work</h1>
-      <p className="mt-4 text-black-muted/70 max-w-2xl">
+      <h1 className="text-4xl md:text-5xl font-bold text-white">Our Work</h1>
+      <p className="mt-4 text-cream/70 max-w-2xl">
         A selection of aerial projects from across Bournemouth, Poole, and the
         Dorset coast. Each project is shot and edited in-house.
       </p>
@@ -45,10 +45,10 @@ export default function Gallery() {
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            className={`text-sm px-4 py-2 transition-colors ${
+            className={`text-sm px-4 py-2 transition-colors rounded-xl ${
               activeCategory === cat
                 ? 'bg-accent text-white'
-                : 'bg-cream-dark text-black-muted hover:text-black'
+                : 'bg-bg-card text-cream/80 hover:text-white border border-white/10'
             }`}
           >
             {cat}
@@ -61,7 +61,7 @@ export default function Gallery() {
         {filtered.map((item) => (
           <div
             key={item.id}
-            className="group relative aspect-video bg-black/10 overflow-hidden rounded-lg"
+            className="group relative aspect-video bg-black/40 overflow-hidden rounded-2xl"
           >
             <video src={GALLERY_VIDEO} className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" muted loop playsInline aria-hidden />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-end p-5">

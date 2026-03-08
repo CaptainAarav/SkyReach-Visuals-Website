@@ -1,38 +1,90 @@
 @import "tailwindcss";
 
 @theme {
-  /* Light theme: white base with red, blue/purple, black accents */
+  /* Dark theme */
   --color-white: #FFFFFF;
-  --color-offwhite: #FAFAFA;
-  --color-cream: #F8F7F5;
-  --color-cream-dark: #EFEDE9;
-  --color-black: #0F0F0F;
-  --color-black-muted: #2A2A2A;
+  --color-offwhite: #F0F0F0;
+  --color-cream: #E8E8E8;
+  --color-cream-dark: #1a1a1a;
+  --color-bg: #0f0f0f;
+  --color-bg-elevated: #1a1a1a;
+  --color-bg-card: #242424;
+  --color-black: #0f0f0f;
+  --color-black-muted: #a0a0a0;
   --color-red: #C0392B;
   --color-red-light: #D44637;
   --color-red-dark: #96281B;
-  --color-accent: #4A3F8C;
-  --color-accent-light: #6B5BAD;
-  --color-accent-blue: #2C3E7A;
-  /* Legacy names for gradual migration */
+  --color-accent: #6B5BAD;
+  --color-accent-light: #8B7BC7;
   --color-navy: #2C3E7A;
   --color-navy-light: #3D5299;
   --color-navy-dark: #1E2D4A;
 
-  --font-sans: 'Inter', system-ui, sans-serif;
+  /* Fonts: Title = Nasalization, Subtitle = Exo SemiBold, Paragraph = Exo Regular */
+  --font-title: 'Nasalization', sans-serif;
+  --font-subtitle: 'Exo', system-ui, sans-serif;
+  --font-sans: 'Exo', system-ui, sans-serif;
+
+  /* Rounded corners site-wide */
+  --radius-sm: 0.5rem;
+  --radius: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    background-color: var(--color-white);
-    color: var(--color-black-muted);
+    background-color: var(--color-bg);
+    color: var(--color-cream);
     font-family: var(--font-sans);
+    font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  p {
+    font-family: var(--font-sans);
+    font-weight: 400;
   }
 
   ::selection {
     background-color: var(--color-accent);
     color: var(--color-white);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-title);
+    letter-spacing: 0.12em;
+    text-transform: none;
+  }
+
+  .subtitle,
+  h4,
+  label {
+    font-family: var(--font-subtitle);
+    font-weight: 600;
+  }
+
+  button:not(.rounded-none),
+  [type='button']:not(.rounded-none),
+  [type='submit']:not(.rounded-none),
+  input:not([type='checkbox']):not([type='radio']):not(.rounded-none),
+  textarea:not(.rounded-none),
+  select:not(.rounded-none) {
+    border-radius: var(--radius);
+  }
+
+  input:not([type='checkbox']):not([type='radio']),
+  textarea,
+  select {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    box-sizing: border-box;
   }
 }

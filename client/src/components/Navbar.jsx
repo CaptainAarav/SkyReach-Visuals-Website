@@ -1,68 +1,154 @@
-import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 
-const navLinks = [
-  { to: '/services', label: 'Services' },
-  { to: '/gallery', label: 'Gallery' },
-  { to: '/about', label: 'About' },
-  { to: '/contact', label: 'Contact' },
+const sectionLinks = [
+  { hash: '#services', label: 'Services' },
+  { hash: '#portfolio', label: 'Portfolio' },
+  { hash: '#about', label: 'About' },
+  { hash: '#contact', label: 'Contact' },
 ];
+
+function scrollToSection(hash) {
+  const id = hash.slice(1);
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+}
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const isHome = location.pathname === '/';
+  const isAdmin = user?.role === 'ADMIN';
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-cream-dark">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
+    <nav className="sticky top-0 z-50 bg-black/20 backdrop-blur-lg border-b border-white/10 rounded-b-2xl supports-[backdrop-filter]:bg-black/20">
+      <div className="w-full pl-4 pr-4 md:pr-6 min-h-[4rem] py-2 flex items-center justify-between md:justify-start md:gap-2">
+        <Link
+          to="/"
+          className="flex items-center shrink-0 rounded-xl overflow-hidden"
+          aria-label="Go to home"
+          onClick={(e) => {
+            if (isHome) {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+        >
           <img
-            src="/skyreach-visuals-logo-borderless.png"
+            src="/logo-display-borderless.png"
             alt="SkyReach Visuals"
-            className="h-10"
+            className="h-10 sm:h-11 md:h-12 lg:h-14 w-auto object-contain"
           />
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              className={({ isActive }) =>
-                `text-sm tracking-wide transition-colors ${
-                  isActive ? 'text-accent font-medium' : 'text-black-muted hover:text-black'
-                }`
+        {/* Center: SkyReach Visuals — flex-1 so it stays between logo and nav, truncates if needed */}
+        <div className="flex-1 flex justify-center min-w-0 overflow-hidden hidden md:flex">
+          <Link
+            to="/"
+            className="text-xl lg:text-2xl xl:text-3xl font-bold text-white hover:text-cream/90 transition-colors truncate max-w-full px-2"
+            style={{ fontFamily: 'var(--font-title)', letterSpacing: '0.12em' }}
+            onClick={(e) => {
+              if (isHome) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }
+            }}
+          >
+            SkyReach Visuals
+          </Link>
+        </div>
+
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-4 lg:gap-8 shrink-0">
+          {sectionLinks.map((link) => (
+            <Link
+              key={link.hash}
+              to={{ pathname: '/', hash: link.hash.slice(1) }}
+              onClick={(e) => {
+                if (isHome) {
+                  e.preventDefault();
+                  scrollToSection(link.hash);
+                }
+              }}
+              className="text-sm tracking-wide transition-colors text-cream/80 hover:text-white"
             >
               {link.label}
-            </NavLink>
+            </Link>
           ))}
 
+          <Link
+            to="/quote"
+            className="text-sm bg-red px-4 py-2 rounded-xl text-white hover:bg-red-dark transition-colors"
+          >
+            Get a Quote
+          </Link>
+
           {user ? (
-            <div className="flex items-center gap-4">
-              <NavLink
-                to="/dashboard"
-                className={({ isActive }) =>
-                  `text-sm tracking-wide transition-colors ${
-                    isActive ? 'text-accent font-medium' : 'text-black-muted hover:text-black'
-                  }`
-                }
-              >
-                Dashboard
-              </NavLink>
+            <div className="relative" ref={dropdownRef}>
               <button
-                onClick={logout}
-                className="text-sm text-black-muted/60 hover:text-black transition-colors"
+                type="button"
+                onClick={() => setDropdownOpen((o) => !o)}
+                className="text-sm tracking-wide transition-colors text-cream/80 hover:text-white flex items-center gap-1"
+                aria-expanded={dropdownOpen}
+                aria-haspopup="true"
               >
-                Log out
+                {user.name}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={dropdownOpen ? 'rotate-180' : ''}>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 py-2 w-48 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50">
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm text-cream/80 hover:text-white hover:bg-white/5"
+                  >
+                    Orders
+                  </Link>
+                  <Link
+                    to="/dashboard/profile"
+                    onClick={() => setDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm text-cream/80 hover:text-white hover:bg-white/5"
+                  >
+                    Profile
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-cream/80 hover:text-white hover:bg-white/5"
+                    >
+                      Admin
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setDropdownOpen(false); logout(); }}
+                    className="block w-full text-left px-4 py-2 text-sm text-cream/60 hover:text-cream hover:bg-white/5"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <Link
               to="/login"
-              className="text-sm bg-red px-4 py-2 text-white hover:bg-red-dark transition-colors"
+              className="text-sm bg-red px-4 py-2 rounded-xl text-white hover:bg-red-dark transition-colors"
             >
               Log in
             </Link>
@@ -72,7 +158,7 @@ export default function Navbar() {
         {/* Mobile hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-black p-2"
+          className="md:hidden text-cream p-2"
           aria-label="Toggle menu"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -85,45 +171,84 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile overlay */}
+      {/* Mobile menu — solid drawer below nav, no overlap with hero */}
       {menuOpen && (
-        <div className="md:hidden fixed inset-0 top-16 bg-white z-40 flex flex-col items-center justify-center gap-8">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              onClick={() => setMenuOpen(false)}
-              className="text-2xl text-black-muted hover:text-black transition-colors"
-            >
-              {link.label}
-            </NavLink>
-          ))}
-          {user ? (
-            <>
-              <NavLink
-                to="/dashboard"
+        <>
+          <div
+            className="md:hidden fixed inset-0 bg-black/70 z-40"
+            onClick={() => setMenuOpen(false)}
+            aria-hidden
+          />
+          <div className="md:hidden fixed left-0 right-0 top-[4rem] z-50 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-white/10 bg-bg-elevated shadow-xl">
+            <nav className="flex flex-col py-4 px-6" aria-label="Mobile menu">
+              {sectionLinks.map((link) => (
+                <Link
+                  key={link.hash}
+                  to={{ pathname: '/', hash: link.hash.slice(1) }}
+                  onClick={() => {
+                    if (isHome) scrollToSection(link.hash);
+                    setMenuOpen(false);
+                  }}
+                  className="py-3.5 text-lg text-cream/90 hover:text-white transition-colors border-b border-white/5 last:border-0"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Link
+                to="/quote"
                 onClick={() => setMenuOpen(false)}
-                className="text-2xl text-black-muted hover:text-black transition-colors"
+                className="mt-2 py-3.5 text-center text-lg font-medium bg-red text-white rounded-xl hover:bg-red-dark transition-colors"
               >
-                Dashboard
-              </NavLink>
-              <button
-                onClick={() => { logout(); setMenuOpen(false); }}
-                className="text-lg text-black-muted/60 hover:text-black transition-colors"
-              >
-                Log out
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/login"
-              onClick={() => setMenuOpen(false)}
-              className="text-2xl bg-red px-6 py-3 text-white"
-            >
-              Log in
-            </Link>
-          )}
-        </div>
+                Get a Quote
+              </Link>
+              <div className="mt-4 pt-4 border-t border-white/10">
+                {user ? (
+                  <>
+                    <p className="px-0 py-2 text-sm text-cream/50">{user.name}</p>
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setMenuOpen(false)}
+                      className="block py-3.5 text-lg text-cream/90 hover:text-white transition-colors"
+                    >
+                      Orders
+                    </Link>
+                    <Link
+                      to="/dashboard/profile"
+                      onClick={() => setMenuOpen(false)}
+                      className="block py-3.5 text-lg text-cream/90 hover:text-white transition-colors"
+                    >
+                      Profile
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setMenuOpen(false)}
+                        className="block py-3.5 text-lg text-cream/90 hover:text-white transition-colors"
+                      >
+                        Admin
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => { logout(); setMenuOpen(false); }}
+                      className="w-full text-left py-3.5 text-lg text-cream/60 hover:text-cream transition-colors"
+                    >
+                      Log out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-3.5 text-center text-lg font-medium bg-red text-white rounded-xl hover:bg-red-dark transition-colors"
+                  >
+                    Log in
+                  </Link>
+                )}
+              </div>
+            </nav>
+          </div>
+        </>
       )}
     </nav>
   );
