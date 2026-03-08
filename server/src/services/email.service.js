@@ -13,9 +13,17 @@ function getTransporter() {
         user: env.smtp.user,
         pass: env.smtp.pass,
       },
+      tls: { rejectUnauthorized: true },
     });
   }
   return transporter;
+}
+
+function mailHeaders() {
+  return {
+    'X-Mailer': 'SkyReachVisuals/1.0',
+    'List-Unsubscribe': `<mailto:${env.emailFrom}?subject=unsubscribe>`,
+  };
 }
 
 export async function sendBookingConfirmation({ to, booking }) {
@@ -110,9 +118,10 @@ export async function sendBookingConfirmation({ to, booking }) {
 </html>`;
 
   await transport.sendMail({
-    from: env.emailFrom,
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
     to,
     subject: `Booking Confirmed — ${booking.packageName} | SkyReach Visuals`,
+    headers: mailHeaders(),
     html,
   });
 }
@@ -163,10 +172,11 @@ export async function sendContactNotification({ name, email, phone, location, se
 </html>`;
 
   await transport.sendMail({
-    from: env.emailFrom,
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
     to: env.emailFrom,
     replyTo: email,
     subject: `New enquiry from ${name} | SkyReach Visuals`,
+    headers: mailHeaders(),
     html,
   });
 }
@@ -226,9 +236,10 @@ export async function sendVerificationEmail({ to, name, verifyUrl }) {
 
   try {
     await transport.sendMail({
-      from: env.emailFrom,
+      from: `"SkyReach Visuals" <${env.emailFrom}>`,
       to,
       subject: 'Verify your email | SkyReach Visuals',
+      headers: mailHeaders(),
       html,
     });
     console.log('Verification email sent to', to);
@@ -322,9 +333,10 @@ export async function sendBookingApproved({ to, booking, payUrl }) {
 </html>`;
 
   await transport.sendMail({
-    from: env.emailFrom,
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
     to,
     subject: `Booking Approved — ${booking.packageName} | SkyReach Visuals`,
+    headers: mailHeaders(),
     html,
   });
 }
@@ -378,9 +390,10 @@ export async function sendBookingDeclined({ to, booking }) {
 </html>`;
 
   await transport.sendMail({
-    from: env.emailFrom,
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
     to,
     subject: `Booking Update — ${booking.packageName} | SkyReach Visuals`,
+    headers: mailHeaders(),
     html,
   });
 }
@@ -440,9 +453,10 @@ export async function sendAdminLoginEmail({ to, name, verifyUrl }) {
 
   try {
     await transport.sendMail({
-      from: env.emailFrom,
+      from: `"SkyReach Visuals" <${env.emailFrom}>`,
       to,
       subject: 'Confirm your admin login | SkyReach Visuals',
+      headers: mailHeaders(),
       html,
     });
     console.log('Admin login verification email sent to', to);
