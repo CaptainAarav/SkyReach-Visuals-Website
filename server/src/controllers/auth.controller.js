@@ -9,14 +9,9 @@ import {
 } from '../services/auth.service.js';
 
 export async function register(req, res, next) {
-  // #region agent log
-  const _log = (step, data) => { fetch('http://127.0.0.1:7298/ingest/84d36a48-c059-450f-bcf1-32d935b76100',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'22e6a1'},body:JSON.stringify({sessionId:'22e6a1',location:'auth.controller.js:register',message:step,data,timestamp:Date.now()})).catch(()=>{}); };
-  // #endregion
   try {
     const { name, email, password } = req.body;
-    // #region agent log
-    _log('register_entry', { bodyKeys: req.body ? Object.keys(req.body) : [], hasName: !!name, hasEmail: !!email, hasPassword: !!password });
-    // #endregion
+
     if (!name || !email || !password) {
       throw new AppError('Name, email, and password are required');
     }
@@ -24,40 +19,22 @@ export async function register(req, res, next) {
       throw new AppError('Password must be at least 8 characters');
     }
 
-    // #region agent log
-    _log('register_before_findUnique', {});
-    // #endregion
     const existing = await prisma.user.findUnique({ where: { email } });
-    // #region agent log
-    _log('register_after_findUnique', { existing: !!existing });
-    // #endregion
     if (existing) {
       throw new AppError('An account with this email already exists', 409);
     }
 
-    // #region agent log
-    _log('register_before_hashPassword', {});
-    // #endregion
     const passwordHash = await hashPassword(password);
-    // #region agent log
-    _log('register_after_hashPassword', {});
-    // #endregion
     const user = await prisma.user.create({
       data: { name, email, passwordHash },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     });
-    // #region agent log
-    _log('register_after_create', { userId: user?.id });
-    // #endregion
 
     const token = signToken(user.id);
     setCookieToken(res, token);
 
     res.status(201).json({ success: true, data: user, error: null });
   } catch (err) {
-    // #region agent log
-    _log('register_catch', { errName: err?.constructor?.name, errMessage: err?.message, errCode: err?.code, statusCode: err?.statusCode });
-    // #endregion
     next(err);
   }
 }
