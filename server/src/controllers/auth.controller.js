@@ -42,7 +42,12 @@ export async function register(req, res, next) {
     });
 
     const verifyUrl = `${env.clientUrl}/verify-email?token=${token}`;
-    await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
+    try {
+      await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
+    } catch (err) {
+      console.error('Register: could not send verification email', err.message);
+      throw new AppError('We could not send the verification email. Please try again or contact support.', 500);
+    }
 
     res.status(201).json({
       success: true,
@@ -156,7 +161,12 @@ export async function resendVerification(req, res, next) {
     });
 
     const verifyUrl = `${env.clientUrl}/verify-email?token=${token}`;
-    await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
+    try {
+      await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
+    } catch (err) {
+      console.error('Resend verification: could not send email', err.message);
+      throw new AppError('We could not send the verification email. Please try again or contact support.', 500);
+    }
 
     res.json({
       success: true,

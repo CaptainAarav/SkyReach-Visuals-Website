@@ -1,4 +1,8 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), '..', '.env') });
 
 const required = [
   'DATABASE_URL',
@@ -41,3 +45,8 @@ export const env = {
   },
   emailFrom: process.env.EMAIL_FROM,
 };
+
+if (process.env.NODE_ENV !== 'test') {
+  const smtpOk = env.smtp.host && env.smtp.user && env.smtp.pass;
+  console.log(smtpOk ? 'SMTP configured — verification and booking emails will be sent' : 'SMTP not configured — set SMTP_HOST, SMTP_USER, SMTP_PASS (and EMAIL_FROM) for verification emails');
+}

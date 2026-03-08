@@ -174,9 +174,10 @@ export async function sendContactNotification({ name, email, phone, location, se
 export async function sendVerificationEmail({ to, name, verifyUrl }) {
   const transport = getTransporter();
   if (!transport) {
-    console.log('SMTP not configured — skipping verification email');
-    console.log('Would send verification to:', to, 'URL:', verifyUrl);
-    return;
+    console.warn('SMTP not configured — set SMTP_HOST, SMTP_USER, SMTP_PASS for verification emails.');
+    const err = new Error('SMTP not configured');
+    err.code = 'SMTP_NOT_CONFIGURED';
+    throw err;
   }
 
   const html = `
@@ -223,10 +224,16 @@ export async function sendVerificationEmail({ to, name, verifyUrl }) {
 </body>
 </html>`;
 
-  await transport.sendMail({
-    from: env.emailFrom,
-    to,
-    subject: 'Verify your email | SkyReach Visuals',
-    html,
-  });
+  try {
+    await transport.sendMail({
+      from: env.emailFrom,
+      to,
+      subject: 'Verify your email | SkyReach Visuals',
+      html,
+    });
+    console.log('Verification email sent to', to);
+  } catch (err) {
+    console.error('Failed to send verification email to', to, err.message);
+    throw err;
+  }
 }

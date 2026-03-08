@@ -83,7 +83,7 @@ export default function Home() {
           loop
           autoPlay
           preload="auto"
-          fetchPriority="high"
+          fetchpriority="high"
           aria-hidden
           onCanPlay={() => setHeroVideoReady(true)}
         />
