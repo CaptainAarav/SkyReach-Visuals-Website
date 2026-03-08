@@ -8,6 +8,7 @@ import Quote from './pages/Quote.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import VerifyEmail from './pages/VerifyEmail.jsx';
+import AdminLoginVerify from './pages/AdminLoginVerify.jsx';
 import BookingCheckout from './pages/BookingCheckout.jsx';
 import BookingSuccess from './pages/BookingSuccess.jsx';
 import Orders from './pages/Orders.jsx';
@@ -18,6 +19,7 @@ import AdminOrders from './pages/admin/AdminOrders.jsx';
 import AdminAccounts from './pages/admin/AdminAccounts.jsx';
 import AdminMessages from './pages/admin/AdminMessages.jsx';
 import AdminReviews from './pages/admin/AdminReviews.jsx';
+import AdminLogs from './pages/admin/AdminLogs.jsx';
 
 export default function App() {
   return (
@@ -32,6 +34,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/admin-login-verify" element={<AdminLoginVerify />} />
 
         <Route path="/booking/:packageSlug" element={
           <ProtectedRoute><BookingCheckout /></ProtectedRoute>
@@ -62,6 +65,7 @@ export default function App() {
           <Route path="accounts" element={<AdminAccounts />} />
           <Route path="messages" element={<AdminMessages />} />
           <Route path="reviews" element={<AdminReviews />} />
+          <Route path="logs" element={<AdminLogs />} />
         </Route>
       </Route>
     </Routes>

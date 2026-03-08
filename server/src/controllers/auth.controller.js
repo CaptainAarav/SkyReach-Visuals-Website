@@ -9,7 +9,7 @@ import {
   setCookieToken,
   clearCookieToken,
 } from '../services/auth.service.js';
-import { sendVerificationEmail } from '../services/email.service.js';
+import { sendVerificationEmail, sendAdminLoginEmail } from '../services/email.service.js';
 
 const VERIFICATION_EXPIRY_HOURS = 24;
 
@@ -72,6 +72,13 @@ export async function login(req, res, next) {
       throw new AppError('Invalid credentials', 401);
     }
 
+    if (user.status === 'SUSPENDED') {
+      throw new AppError('Your account has been suspended. Contact support for help.', 403);
+    }
+    if (user.status === 'BANNED') {
+      throw new AppError('Your account has been banned.', 403);
+    }
+
     if (!user.emailVerified) {
       throw new AppError('Please verify your email before signing in. Check your inbox for the verification link.', 403);
     }
@@ -81,12 +88,40 @@ export async function login(req, res, next) {
       throw new AppError('Invalid credentials', 401);
     }
 
+    if (user.role === 'ADMIN' || user.role === 'CUSTOMER_SUPPORT') {
+      const adminToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+      await prisma.adminLoginToken.create({
+        data: { userId: user.id, token: adminToken, expiresAt },
+      });
+
+      const verifyUrl = `${env.clientUrl}/admin-login-verify?token=${adminToken}`;
+      try {
+        await sendAdminLoginEmail({ to: user.email, name: user.name, verifyUrl });
+      } catch (err) {
+        console.error('Admin login: could not send verification email', err.message);
+        throw new AppError('Could not send login verification email. Please try again.', 500);
+      }
+
+      return res.json({
+        success: true,
+        data: { message: 'Check your email to complete sign-in', requiresAdminVerification: true },
+        error: null,
+      });
+    }
+
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date(), lastLoginIp: ip },
+    });
+
     const token = signToken(user.id);
     setCookieToken(res, token);
 
     res.json({
       success: true,
-      data: { id: user.id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt },
+      data: { id: user.id, name: user.name, email: user.email, role: user.role, status: user.status, createdAt: user.createdAt },
       error: null,
     });
   } catch (err) {
@@ -178,13 +213,55 @@ export async function resendVerification(req, res, next) {
   }
 }
 
+export async function adminLoginVerify(req, res, next) {
+  try {
+    const { token } = req.query;
+    if (!token || typeof token !== 'string') {
+      throw new AppError('Login verification link is invalid or expired', 400);
+    }
+
+    const record = await prisma.adminLoginToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+    if (!record) {
+      throw new AppError('Login verification link is invalid or expired', 400);
+    }
+    if (new Date() > record.expiresAt) {
+      await prisma.adminLoginToken.delete({ where: { id: record.id } }).catch(() => {});
+      throw new AppError('Login verification link has expired. Please log in again.', 400);
+    }
+
+    const user = record.user;
+    await prisma.adminLoginToken.delete({ where: { id: record.id } });
+
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date(), lastLoginIp: ip },
+    });
+
+    const jwt = signToken(user.id);
+    setCookieToken(res, jwt);
+
+    res.json({
+      success: true,
+      data: { message: 'Admin login verified.', user: { id: user.id, name: user.name, email: user.email, role: user.role, status: user.status, createdAt: user.createdAt } },
+      error: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function logout(req, res) {
   clearCookieToken(res);
   res.json({ success: true, data: null, error: null });
 }
 
 export async function me(req, res) {
-  res.json({ success: true, data: req.user, error: null });
+  const { id, name, email, role, status, createdAt } = req.user;
+  res.json({ success: true, data: { id, name, email, role, status, createdAt }, error: null });
 }
 
 export async function updateProfile(req, res, next) {

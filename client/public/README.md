@@ -6,7 +6,7 @@ Video files and the `videos/` folder are **gitignored**. Add these files at buil
 
 | Path | Description |
 |------|-------------|
-| `skyreach-hero-background.mp4` | Hero background video on the home page (no spaces in filename). |
+| `SkyReach Visuals Website Preview background.mp4` | Hero background video on the home page (exact filename, in `client/public/`). |
 | `hero-poster.jpg` | Poster frame shown while the hero video loads. |
 | `videos/paul-srv.mp4` | Gallery / About page video clip. |
 | `gallery-poster.jpg` | Poster image for gallery and portfolio grid tiles (and optional About section). |

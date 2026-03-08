@@ -12,11 +12,18 @@ export async function requireAuth(req, res, next) {
     const decoded = verifyToken(token);
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, status: true, createdAt: true },
     });
 
     if (!user) {
       return next(new AppError('User not found', 401));
+    }
+
+    if (user.status === 'SUSPENDED') {
+      return next(new AppError('Your account has been suspended. Contact support for help.', 403));
+    }
+    if (user.status === 'BANNED') {
+      return next(new AppError('Your account has been banned.', 403));
     }
 
     req.user = user;
@@ -32,6 +39,16 @@ export async function requireAdmin(req, res, next) {
   }
   if (req.user.role !== 'ADMIN') {
     return next(new AppError('Admin access required', 403));
+  }
+  next();
+}
+
+export async function requireStaff(req, res, next) {
+  if (!req.user) {
+    return next(new AppError('Not authenticated', 401));
+  }
+  if (req.user.role !== 'ADMIN' && req.user.role !== 'CUSTOMER_SUPPORT') {
+    return next(new AppError('Staff access required', 403));
   }
   next();
 }

@@ -10,11 +10,101 @@ const statusColors = {
   CANCELLED: 'bg-red/20 text-red',
 };
 
+function EditOrderModal({ order, onClose, onSave }) {
+  const [status, setStatus] = useState(order.status);
+  const [shootDate, setShootDate] = useState(order.shootDate ? new Date(order.shootDate).toISOString().slice(0, 10) : '');
+  const [shootTime, setShootTime] = useState(order.shootTime || '');
+  const [adminNotes, setAdminNotes] = useState(order.adminNotes || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const body = {};
+      if (status !== order.status) body.status = status;
+      if (shootDate && shootDate !== new Date(order.shootDate).toISOString().slice(0, 10)) body.shootDate = shootDate;
+      if (shootTime !== (order.shootTime || '')) body.shootTime = shootTime;
+      if (adminNotes !== (order.adminNotes || '')) body.adminNotes = adminNotes;
+
+      if (Object.keys(body).length === 0) {
+        onClose();
+        return;
+      }
+      const updated = await api.patch(`/api/admin/orders/${order.id}`, body);
+      onSave(updated);
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <h2 className="text-lg font-bold text-white">Adapt Booking</h2>
+          <button onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && <p className="text-sm text-red">{error}</p>}
+
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Client</p>
+            <p className="text-sm text-white">{order.user?.name} ({order.user?.email})</p>
+          </div>
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Package</p>
+            <p className="text-sm text-white">{order.packageName}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">Shoot Date</label>
+              <input type="date" value={shootDate} onChange={(e) => setShootDate(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+            </div>
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">Shoot Time</label>
+              <input type="time" value={shootTime} onChange={(e) => setShootTime(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Status</label>
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream">
+              {statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Admin Notes</label>
+            <textarea value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} rows={3} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none" placeholder="Internal notes about this booking..." />
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={saving} className="bg-accent text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-accent/80 disabled:opacity-50 transition-colors">
+              {saving ? 'Saving...' : 'Save changes'}
+            </button>
+            <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(null);
+  const [editingOrder, setEditingOrder] = useState(null);
 
   useEffect(() => {
     api.get('/api/admin/orders')
@@ -23,13 +113,20 @@ export default function AdminOrders() {
       .finally(() => setLoading(false));
   }, []);
 
-  const updateStatus = (id, status) => {
+  const acceptOrder = async (id) => {
     setUpdating(id);
-    api.patch('/api/admin/orders/' + id, { status }).then(() => {
-      setOrders((list) =>
-        list.map((o) => (o.id === id ? { ...o, status } : o))
-      );
-    }).catch((err) => setError(err.message)).finally(() => setUpdating(null));
+    try {
+      const updated = await api.patch(`/api/admin/orders/${id}`, { status: 'CONFIRMED' });
+      setOrders((list) => list.map((o) => o.id === id ? { ...o, ...updated } : o));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleEditSave = (updated) => {
+    setOrders((list) => list.map((o) => o.id === updated.id ? { ...o, ...updated } : o));
   };
 
   if (loading) return <LoadingSpinner />;
@@ -44,6 +141,7 @@ export default function AdminOrders() {
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Client</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Package</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Date</th>
+              <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Time</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Status</th>
               <th className="pb-3 text-xs font-semibold uppercase text-cream/60">Actions</th>
             </tr>
@@ -59,22 +157,37 @@ export default function AdminOrders() {
                 <td className="py-4 pr-4">
                   {new Date(order.shootDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </td>
+                <td className="py-4 pr-4 text-sm text-cream/70">
+                  {order.shootTime || '—'}
+                </td>
                 <td className="py-4 pr-4">
                   <span className={`text-xs font-medium px-2 py-1 rounded-lg ${statusColors[order.status]}`}>
                     {order.status}
                   </span>
                 </td>
                 <td className="py-4">
-                  <select
-                    value={order.status}
-                    onChange={(e) => updateStatus(order.id, e.target.value)}
-                    disabled={updating === order.id}
-                    className="bg-bg border border-white/20 rounded-lg py-1.5 px-2 text-sm text-cream"
-                  >
-                    {statusOptions.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-center gap-2">
+                    {order.status === 'PENDING' && (
+                      <button
+                        onClick={() => acceptOrder(order.id)}
+                        disabled={updating === order.id}
+                        className="text-xs font-medium bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                      >
+                        Accept
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setEditingOrder(order)}
+                      className="text-xs font-medium bg-white/10 text-cream px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors"
+                    >
+                      Adapt
+                    </button>
+                  </div>
+                  {order.adminNotes && (
+                    <p className="text-xs text-cream/40 mt-1 max-w-xs truncate" title={order.adminNotes}>
+                      Note: {order.adminNotes}
+                    </p>
+                  )}
                 </td>
               </tr>
             ))}
@@ -83,6 +196,14 @@ export default function AdminOrders() {
       </div>
       {orders.length === 0 && !loading && (
         <p className="text-cream/60 py-8">No orders yet.</p>
+      )}
+
+      {editingOrder && (
+        <EditOrderModal
+          order={editingOrder}
+          onClose={() => setEditingOrder(null)}
+          onSave={handleEditSave}
+        />
       )}
     </div>
   );

@@ -21,7 +21,7 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const isHome = location.pathname === '/';
-  const isAdmin = user?.role === 'ADMIN';
+  const isStaff = user?.role === 'ADMIN' || user?.role === 'CUSTOMER_SUPPORT';
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -126,7 +126,7 @@ export default function Navbar() {
                   >
                     Profile
                   </Link>
-                  {isAdmin && (
+                  {isStaff && (
                     <Link
                       to="/admin"
                       onClick={() => setDropdownOpen(false)}
@@ -219,7 +219,7 @@ export default function Navbar() {
                     >
                       Profile
                     </Link>
-                    {isAdmin && (
+                    {isStaff && (
                       <Link
                         to="/admin"
                         onClick={() => setMenuOpen(false)}

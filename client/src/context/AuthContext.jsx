@@ -19,6 +19,9 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     const data = await api.post('/api/auth/login', { email, password });
+    if (data?.requiresAdminVerification) {
+      return data;
+    }
     setUser(data);
     return data;
   }, []);

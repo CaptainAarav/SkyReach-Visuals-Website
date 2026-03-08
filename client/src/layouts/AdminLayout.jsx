@@ -5,6 +5,7 @@ const tabs = [
   { to: '/admin/accounts', label: 'Accounts' },
   { to: '/admin/messages', label: 'Messages' },
   { to: '/admin/reviews', label: 'Reviews' },
+  { to: '/admin/logs', label: 'Logs' },
 ];
 
 export default function AdminLayout() {

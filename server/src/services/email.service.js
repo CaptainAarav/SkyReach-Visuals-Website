@@ -237,3 +237,70 @@ export async function sendVerificationEmail({ to, name, verifyUrl }) {
     throw err;
   }
 }
+
+export async function sendAdminLoginEmail({ to, name, verifyUrl }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.warn('SMTP not configured — cannot send admin login verification email.');
+    const err = new Error('SMTP not configured');
+    err.code = 'SMTP_NOT_CONFIGURED';
+    throw err;
+  }
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background-color:#F5F3EE;font-family:'Inter',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F3EE;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          <tr>
+            <td style="background-color:#1E2D4A;padding:32px 40px;">
+              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">SkyReach Visuals</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#ffffff;padding:40px;">
+              <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">Confirm your admin login</h2>
+              <p style="margin:0 0 24px;color:#1E2D4A;font-size:15px;line-height:1.6;">
+                Hi ${name}, someone (hopefully you) is trying to sign in to your admin account. Click below to confirm.
+              </p>
+              <p style="margin:0 0 24px;">
+                <a href="${verifyUrl}" style="display:inline-block;background-color:#C41E3A;color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;padding:14px 28px;border-radius:8px;">Confirm sign-in</a>
+              </p>
+              <p style="margin:0;color:#1E2D4A;font-size:13px;line-height:1.6;opacity:0.7;">
+                If the button doesn't work, copy and paste this link into your browser:<br/>
+                <a href="${verifyUrl}" style="color:#C41E3A;word-break:break-all;">${verifyUrl}</a>
+              </p>
+              <p style="margin:24px 0 0;color:#1E2D4A;font-size:12px;opacity:0.6;">
+                This link expires in 15 minutes. If you didn't try to sign in, change your password immediately.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px;text-align:center;">
+              <p style="margin:0;color:#1E2D4A;font-size:12px;opacity:0.4;">SkyReach Visuals &middot; Bournemouth, Dorset, UK</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  try {
+    await transport.sendMail({
+      from: env.emailFrom,
+      to,
+      subject: 'Confirm your admin login | SkyReach Visuals',
+      html,
+    });
+    console.log('Admin login verification email sent to', to);
+  } catch (err) {
+    console.error('Failed to send admin login email to', to, err.message);
+    throw err;
+  }
+}

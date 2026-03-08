@@ -8,6 +8,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [resendSent, setResendSent] = useState(false);
   const [resending, setResending] = useState(false);
+  const [adminVerify, setAdminVerify] = useState(false);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit } = useForm({
     initialValues: { email: '', password: '' },
@@ -18,7 +19,11 @@ export default function Login() {
       return errs;
     },
     onSubmit: async (vals) => {
-      await login(vals.email, vals.password);
+      const data = await login(vals.email, vals.password);
+      if (data?.requiresAdminVerification) {
+        setAdminVerify(true);
+        return;
+      }
       navigate('/orders');
     },
   });
@@ -30,12 +35,28 @@ export default function Login() {
     try {
       await resendVerification(values.email);
       setResendSent(true);
-    } catch (e) {
-      // submitError will show from form if needed
+    } catch {
+      // handled by form
     } finally {
       setResending(false);
     }
   };
+
+  if (adminVerify) {
+    return (
+      <div className="max-w-md mx-auto px-6 py-24 text-center">
+        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent/20 flex items-center justify-center">
+          <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold">Check your email</h1>
+        <p className="mt-3 text-navy/60 text-sm leading-relaxed">
+          We sent a login verification link to your email. Click the link to complete sign-in. The link expires in 15 minutes.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto px-6 py-24">

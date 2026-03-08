@@ -7,6 +7,7 @@ import {
   me,
   verifyEmail,
   resendVerification,
+  adminLoginVerify,
   updateProfile,
   changePassword,
 } from '../controllers/auth.controller.js';
@@ -18,6 +19,7 @@ router.post('/login', login);
 router.post('/logout', logout);
 router.get('/verify-email', verifyEmail);
 router.post('/resend-verification', resendVerification);
+router.get('/admin-login-verify', adminLoginVerify);
 router.get('/me', requireAuth, me);
 router.put('/profile', requireAuth, updateProfile);
 router.put('/password', requireAuth, changePassword);
