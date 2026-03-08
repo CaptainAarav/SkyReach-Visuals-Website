@@ -48,7 +48,7 @@ export default function Navbar() {
           }}
         >
           <img
-            src="/logo-display-borderless.png"
+            src="/logo_without_text.PNG"
             alt="SkyReach Visuals"
             className="h-10 sm:h-11 md:h-12 lg:h-14 w-auto object-contain"
           />
@@ -90,10 +90,10 @@ export default function Navbar() {
           ))}
 
           <Link
-            to="/quote"
+            to="/get-started"
             className="text-sm bg-red px-4 py-2 rounded-xl text-white hover:bg-red-dark transition-colors"
           >
-            Get a Quote
+            Get Started
           </Link>
 
           {user ? (
@@ -195,11 +195,11 @@ export default function Navbar() {
                 </Link>
               ))}
               <Link
-                to="/quote"
+                to="/get-started"
                 onClick={() => setMenuOpen(false)}
                 className="mt-2 py-3.5 text-center text-lg font-medium bg-red text-white rounded-xl hover:bg-red-dark transition-colors"
               >
-                Get a Quote
+                Get Started
               </Link>
               <div className="mt-4 pt-4 border-t border-white/10">
                 {user ? (

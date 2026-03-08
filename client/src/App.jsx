@@ -4,17 +4,20 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
 import AdminLayout from './layouts/AdminLayout.jsx';
 import Home from './pages/Home.jsx';
+import GetStarted from './pages/GetStarted.jsx';
+import BookNow from './pages/BookNow.jsx';
 import Quote from './pages/Quote.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import VerifyEmail from './pages/VerifyEmail.jsx';
 import AdminLoginVerify from './pages/AdminLoginVerify.jsx';
-import BookingCheckout from './pages/BookingCheckout.jsx';
+import BookingPay from './pages/BookingPay.jsx';
 import BookingSuccess from './pages/BookingSuccess.jsx';
 import Orders from './pages/Orders.jsx';
 import Dashboard from './pages/dashboard/Dashboard.jsx';
 import BookingDetail from './pages/dashboard/BookingDetail.jsx';
 import Profile from './pages/dashboard/Profile.jsx';
+import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import AdminOrders from './pages/admin/AdminOrders.jsx';
 import AdminAccounts from './pages/admin/AdminAccounts.jsx';
 import AdminMessages from './pages/admin/AdminMessages.jsx';
@@ -30,14 +33,18 @@ export default function App() {
         <Route path="/gallery" element={<Navigate to="/#portfolio" replace />} />
         <Route path="/about" element={<Navigate to="/#about" replace />} />
         <Route path="/contact" element={<Navigate to="/#contact" replace />} />
+        <Route path="/get-started" element={<GetStarted />} />
         <Route path="/quote" element={<Quote />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/admin-login-verify" element={<AdminLoginVerify />} />
 
-        <Route path="/booking/:packageSlug" element={
-          <ProtectedRoute><BookingCheckout /></ProtectedRoute>
+        <Route path="/book" element={
+          <ProtectedRoute><BookNow /></ProtectedRoute>
+        } />
+        <Route path="/booking/pay/:bookingId" element={
+          <ProtectedRoute><BookingPay /></ProtectedRoute>
         } />
         <Route path="/booking/success" element={
           <ProtectedRoute><BookingSuccess /></ProtectedRoute>
@@ -60,7 +67,8 @@ export default function App() {
         <Route path="/admin" element={
           <AdminRoute><AdminLayout /></AdminRoute>
         }>
-          <Route index element={<Navigate to="/admin/orders" replace />} />
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="accounts" element={<AdminAccounts />} />
           <Route path="messages" element={<AdminMessages />} />

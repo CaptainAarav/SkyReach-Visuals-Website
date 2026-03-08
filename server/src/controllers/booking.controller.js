@@ -1,39 +1,60 @@
 import prisma from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
-import { getPackageBySlug } from '../data/packages.js';
+import { getServiceBySlug } from '../data/packages.js';
 import { createCheckoutSession, retrieveSession } from '../services/stripe.service.js';
 import { sendBookingConfirmation } from '../services/email.service.js';
 
 export async function createBooking(req, res, next) {
   try {
-    const { packageSlug, shootDate, location, phone, notes } = req.body;
+    const { serviceSlug, propertyAddress, preferredDate, timeWindow, phone, notes } = req.body;
 
-    if (!packageSlug || !shootDate || !location || !phone) {
-      throw new AppError('Package, shoot date, location, and phone are required');
+    if (!serviceSlug || !propertyAddress || !preferredDate || !timeWindow || !phone) {
+      throw new AppError('Service, property address, preferred date, time window, and phone are required');
     }
 
-    // Server-side price lookup — never trust client-sent price
-    const pkg = getPackageBySlug(packageSlug);
-    if (!pkg) {
-      throw new AppError('Invalid package', 404);
+    const service = getServiceBySlug(serviceSlug);
+    if (!service) {
+      throw new AppError('Invalid service', 404);
     }
 
     const booking = await prisma.booking.create({
       data: {
         userId: req.user.id,
-        packageName: pkg.name,
-        packagePrice: pkg.price,
-        shootDate: new Date(shootDate),
-        location,
+        packageName: service.name,
+        packagePrice: service.basePrice,
+        shootDate: new Date(preferredDate),
+        shootTime: timeWindow,
+        location: propertyAddress,
         phone,
         notes: notes || null,
         status: 'PENDING',
       },
     });
 
+    res.status(201).json({
+      success: true,
+      data: booking,
+      error: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function payBooking(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    const booking = await prisma.booking.findUnique({ where: { id } });
+    if (!booking) throw new AppError('Booking not found', 404);
+    if (booking.userId !== req.user.id) throw new AppError('Not authorised', 403);
+    if (booking.status !== 'APPROVED') {
+      throw new AppError('This booking is not ready for payment', 400);
+    }
+
     const session = await createCheckoutSession({
-      packageName: pkg.name,
-      priceInPence: pkg.price,
+      packageName: booking.packageName,
+      priceInPence: booking.packagePrice,
       bookingId: booking.id,
       userEmail: req.user.email,
     });
@@ -43,7 +64,7 @@ export async function createBooking(req, res, next) {
       data: { stripeSessionId: session.id },
     });
 
-    res.status(201).json({
+    res.json({
       success: true,
       data: { sessionUrl: session.url },
       error: null,
@@ -152,8 +173,7 @@ export async function verifyBooking(req, res, next) {
       throw new AppError('Not authorised', 403);
     }
 
-    // Only update and email if not already confirmed (idempotent)
-    if (booking.status === 'PENDING') {
+    if (booking.status === 'APPROVED') {
       await prisma.booking.update({
         where: { id: booking.id },
         data: { status: 'CONFIRMED' },

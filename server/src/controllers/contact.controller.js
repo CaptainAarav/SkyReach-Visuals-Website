@@ -4,7 +4,10 @@ import { sendContactNotification } from '../services/email.service.js';
 
 export async function submitContact(req, res, next) {
   try {
-    const { name, email, phone, location, serviceType, extraDetails, message } = req.body;
+    const {
+      name, email, phone, location, serviceType, extraDetails, message,
+      businessName, budget, preferredDate, preferredTime,
+    } = req.body;
 
     if (!name || !email || !message) {
       throw new AppError('Name, email, and message are required');
@@ -19,6 +22,10 @@ export async function submitContact(req, res, next) {
         serviceType: serviceType || null,
         extraDetails: extraDetails || null,
         message,
+        businessName: businessName || null,
+        budget: budget || null,
+        preferredDate: preferredDate ? new Date(preferredDate) : null,
+        preferredTime: preferredTime || null,
       },
     });
 

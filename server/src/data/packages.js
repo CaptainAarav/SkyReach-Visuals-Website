@@ -1,27 +1,11 @@
-export const PACKAGES = [
-  {
-    name: 'Horizon',
-    slug: 'horizon',
-    price: 14900,
-    duration: '30 minutes',
-    locations: '1 location',
-  },
-  {
-    name: 'Aerial Pro',
-    slug: 'aerial-pro',
-    price: 29900,
-    duration: '90 minutes',
-    locations: 'Up to 2 locations',
-  },
-  {
-    name: 'Cinematic Full Day',
-    slug: 'cinematic-full-day',
-    price: 59900,
-    duration: 'Full day',
-    locations: 'Up to 5 locations',
-  },
+export const SERVICES = [
+  { name: 'Gutter Inspection', slug: 'gutter', basePrice: 2500, displayPrice: '25.00' },
+  { name: 'Chimney Inspection', slug: 'chimney', basePrice: 2500, displayPrice: '25.00' },
+  { name: 'Roof Inspection', slug: 'roof-inspection', basePrice: 3500, displayPrice: '35.00' },
+  { name: 'Property Roof Inspection', slug: 'property-roof-inspection', basePrice: 4500, displayPrice: '45.00' },
+  { name: 'Property Aerial Photos (Photos Only)', slug: 'aerial-photos', basePrice: 3500, displayPrice: '35.00' },
 ];
 
-export function getPackageBySlug(slug) {
-  return PACKAGES.find((p) => p.slug === slug) || null;
+export function getServiceBySlug(slug) {
+  return SERVICES.find((s) => s.slug === slug) || null;
 }

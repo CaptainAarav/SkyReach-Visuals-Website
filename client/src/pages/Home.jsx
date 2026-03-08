@@ -7,8 +7,8 @@ const HERO_VIDEO = '/SkyReach Visuals Website Preview background.mp4';
 
 const SERVICES = [
   { title: 'Roof & Chimney Inspections', description: 'Aerial photos to safely inspect roofs, chimneys and gutters without ladders.' },
-  { title: 'Property Photography', description: 'High-quality aerial photos for homes, property listings and estate marketing.' },
-  { title: 'Business & Promotional Content', description: 'Drone photos and video for websites, social media and advertising.' },
+  { title: 'Property Aerial Photos', description: 'High-quality aerial photos for homes, property listings and estate marketing.' },
+  { title: 'Gutter Inspections', description: 'Safe, fast drone inspections of gutters and hard-to-reach areas.' },
 ];
 
 const GALLERY_VIDEO = '/videos/paul-srv.mp4';
@@ -157,10 +157,10 @@ export default function Home() {
           ))}
         </div>
         <Link
-          to="/quote"
+          to="/get-started"
           className="mt-10 inline-block bg-red text-white text-sm font-medium px-10 py-4 rounded-full hover:bg-red-dark transition-colors"
         >
-          Get a quote
+          Get Started
         </Link>
       </section>
 
@@ -252,11 +252,11 @@ export default function Home() {
             <div className="space-y-8">
               <div>
                 <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Email</h3>
-                <p className="text-cream">hello@skyreachvisuals.co.uk</p>
+                <p className="text-cream">support@skyreachvisuals.co.uk</p>
               </div>
               <div>
                 <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Phone</h3>
-                <p className="text-cream">+44 7700 900123</p>
+                <p className="text-cream">07877 691861</p>
               </div>
               <div>
                 <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Location</h3>

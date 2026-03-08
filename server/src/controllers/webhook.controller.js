@@ -29,7 +29,7 @@ export async function handleStripeWebhook(req, res) {
           include: { user: { select: { email: true } } },
         });
 
-        if (booking && booking.status === 'PENDING') {
+        if (booking && (booking.status === 'APPROVED' || booking.status === 'PENDING')) {
           await prisma.booking.update({
             where: { id: bookingId },
             data: { status: 'CONFIRMED' },

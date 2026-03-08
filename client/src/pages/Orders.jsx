@@ -5,9 +5,20 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx';
 
 const statusColors = {
   PENDING: 'bg-amber-500/20 text-amber-400',
+  APPROVED: 'bg-blue-500/20 text-blue-400',
   CONFIRMED: 'bg-emerald-500/20 text-emerald-400',
   COMPLETED: 'bg-cream/20 text-cream',
   CANCELLED: 'bg-red/20 text-red',
+  DECLINED: 'bg-red/20 text-red-400',
+};
+
+const statusLabels = {
+  PENDING: 'Request Pending',
+  APPROVED: 'Approved — Pay Now',
+  CONFIRMED: 'Confirmed',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+  DECLINED: 'Declined',
 };
 
 export default function Orders() {
@@ -61,11 +72,21 @@ export default function Orders() {
                         {' '}&middot;{' '}{booking.location}
                       </p>
                     </div>
-                    <span className={`text-xs font-medium px-3 py-1 rounded-lg ${statusColors[booking.status]}`}>
-                      {booking.status}
+                    <span className={`text-xs font-medium px-3 py-1 rounded-lg ${statusColors[booking.status] || 'bg-white/10 text-cream'}`}>
+                      {statusLabels[booking.status] || booking.status}
                     </span>
                   </div>
                 </Link>
+                {booking.status === 'APPROVED' && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <Link
+                      to={`/booking/pay/${booking.id}`}
+                      className="inline-block text-sm font-medium bg-red text-white px-6 py-2 rounded-xl hover:bg-red-dark transition-colors"
+                    >
+                      Pay &pound;{(booking.packagePrice / 100).toFixed(2)}
+                    </Link>
+                  </div>
+                )}
                 {canReview && (
                   <div className="mt-4 pt-4 border-t border-white/10">
                     <Link

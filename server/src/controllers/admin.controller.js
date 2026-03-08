@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import prisma from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword } from '../services/auth.service.js';
+import { sendBookingApproved, sendBookingDeclined } from '../services/email.service.js';
+import { env } from '../config/env.js';
 
 // ── Admin Audit Log helper ──────────────────────────────────────────
 export async function logAdminAction(adminId, action, targetUserId, details) {
@@ -13,15 +15,51 @@ export async function logAdminAction(adminId, action, targetUserId, details) {
 // ── Stats ───────────────────────────────────────────────────────────
 export async function getStats(req, res, next) {
   try {
-    const [total, admins, customerSupport, active, suspended, banned] = await Promise.all([
+    const { period } = req.query;
+
+    let dateFilter = {};
+    const now = new Date();
+    if (period === 'monthly') {
+      dateFilter = { createdAt: { gte: new Date(now.getFullYear(), now.getMonth(), 1) } };
+    } else if (period === 'yearly') {
+      dateFilter = { createdAt: { gte: new Date(now.getFullYear(), 0, 1) } };
+    }
+
+    const paidStatuses = ['CONFIRMED', 'COMPLETED'];
+    const acceptedStatuses = ['APPROVED', 'CONFIRMED', 'COMPLETED'];
+
+    const [
+      total, admins, customerSupport, active, suspended, banned,
+      totalQuotes, totalBookings, totalAccepted, totalDeclined,
+      revenueResult,
+    ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: 'ADMIN' } }),
       prisma.user.count({ where: { role: 'CUSTOMER_SUPPORT' } }),
       prisma.user.count({ where: { status: 'ACTIVE' } }),
       prisma.user.count({ where: { status: 'SUSPENDED' } }),
       prisma.user.count({ where: { status: 'BANNED' } }),
+      prisma.contactMessage.count({ where: dateFilter }),
+      prisma.booking.count({ where: dateFilter }),
+      prisma.booking.count({ where: { ...dateFilter, status: { in: acceptedStatuses } } }),
+      prisma.booking.count({ where: { ...dateFilter, status: 'DECLINED' } }),
+      prisma.booking.aggregate({
+        _sum: { packagePrice: true },
+        where: { ...dateFilter, status: { in: paidStatuses } },
+      }),
     ]);
-    res.json({ success: true, data: { total, admins, customerSupport, active, suspended, banned }, error: null });
+
+    const revenue = revenueResult._sum.packagePrice || 0;
+
+    res.json({
+      success: true,
+      data: {
+        total, admins, customerSupport, active, suspended, banned,
+        totalQuotes, totalBookings, totalAccepted, totalDeclined,
+        revenue,
+      },
+      error: null,
+    });
   } catch (err) {
     next(err);
   }
@@ -252,12 +290,15 @@ export async function listOrders(req, res, next) {
 export async function updateOrder(req, res, next) {
   try {
     const { id } = req.params;
-    const { status, shootDate, shootTime, adminNotes } = req.body;
+    const { status, shootDate, shootTime, adminNotes, quotedPrice } = req.body;
 
-    const booking = await prisma.booking.findUnique({ where: { id } });
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
     if (!booking) throw new AppError('Booking not found', 404);
 
-    const validStatuses = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
+    const validStatuses = ['PENDING', 'APPROVED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'DECLINED'];
     if (status && !validStatuses.includes(status)) {
       throw new AppError('Valid status is required', 400);
     }
@@ -267,6 +308,9 @@ export async function updateOrder(req, res, next) {
     if (shootDate) data.shootDate = new Date(shootDate);
     if (shootTime !== undefined) data.shootTime = shootTime;
     if (adminNotes !== undefined) data.adminNotes = adminNotes;
+    if (quotedPrice !== undefined && quotedPrice !== null) {
+      data.packagePrice = Math.round(Number(quotedPrice));
+    }
 
     const updated = await prisma.booking.update({
       where: { id },
@@ -279,8 +323,22 @@ export async function updateOrder(req, res, next) {
     if (shootDate) changes.push(`Shoot date updated`);
     if (shootTime !== undefined) changes.push(`Shoot time: ${shootTime || 'cleared'}`);
     if (adminNotes !== undefined) changes.push(`Admin notes updated`);
+    if (quotedPrice !== undefined) changes.push(`Price set to ${quotedPrice}`);
     if (changes.length > 0) {
       await logAdminAction(req.user.id, 'UPDATE_ORDER', null, `Order ${id}: ${changes.join('; ')}`);
+    }
+
+    if (status === 'APPROVED' && booking.status !== 'APPROVED' && updated.user?.email) {
+      const payUrl = `${env.clientUrl}/booking/pay/${booking.id}`;
+      await sendBookingApproved({ to: updated.user.email, booking: updated, payUrl }).catch((err) => {
+        console.error('Failed to send approval email:', err.message);
+      });
+    }
+
+    if (status === 'DECLINED' && booking.status !== 'DECLINED' && updated.user?.email) {
+      await sendBookingDeclined({ to: updated.user.email, booking: updated }).catch((err) => {
+        console.error('Failed to send decline email:', err.message);
+      });
     }
 
     res.json({ success: true, data: updated, error: null });

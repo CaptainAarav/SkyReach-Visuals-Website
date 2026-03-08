@@ -32,7 +32,7 @@ export default function BookingSuccess() {
         <p className="mt-4 text-navy/60">{error}</p>
         <p className="mt-2 text-navy/60 text-sm">
           If you&rsquo;ve been charged, don&rsquo;t worry — please contact us at
-          hello@skyreachvisuals.co.uk and we&rsquo;ll sort it out.
+          support@skyreachvisuals.co.uk and we&rsquo;ll sort it out.
         </p>
         <Link
           to="/dashboard"

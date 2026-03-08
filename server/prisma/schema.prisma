@@ -100,22 +100,28 @@ model Booking {
 
 enum BookingStatus {
   PENDING
+  APPROVED
   CONFIRMED
   COMPLETED
   CANCELLED
+  DECLINED
 }
 
 model ContactMessage {
-  id           String   @id @default(cuid())
-  name         String
-  email        String
-  phone        String?
-  location     String?
-  serviceType  String?
-  extraDetails String?
-  message      String
-  read         Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  id             String    @id @default(cuid())
+  name           String
+  email          String
+  phone          String?
+  location       String?
+  serviceType    String?
+  extraDetails   String?
+  message        String
+  read           Boolean   @default(false)
+  businessName   String?
+  budget         String?
+  preferredDate  DateTime?
+  preferredTime  String?
+  createdAt      DateTime  @default(now())
 }
 
 model Review {

@@ -33,10 +33,10 @@ export default function Services() {
 
       <div className="mt-12">
         <Link
-          to="/quote"
+          to="/get-started"
           className="inline-block bg-red text-white text-sm font-medium px-10 py-4 rounded-full hover:bg-red-dark transition-colors"
         >
-          Get a quote
+          Get Started
         </Link>
       </div>
     </div>

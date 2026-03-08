@@ -5,15 +5,24 @@ import { api } from '../api/client.js';
 const POSTCODE_AUTOCOMPLETE_URL = 'https://api.postcodes.io/postcodes';
 const POSTCODE_DEBOUNCE_MS = 300;
 
-const SERVICE_OPTIONS = [
-  { label: 'Roof Inspection Photos', price: 35 },
-  { label: 'Chimney / Gutter Inspection', price: 25 },
-  { label: 'Business / Commercial Aerial Photos', price: 35 },
-  { label: 'Promotional Drone Video', price: 45 },
-  { label: 'Construction Progress Photos/Video', price: 60 },
-  { label: 'Event Aerial Photography', price: 75 },
-  { label: 'Social Media Drone Content', price: 40 },
-  { label: 'Other', price: null },
+const PROJECT_TYPE_OPTIONS = [
+  'Roof Inspection Photos',
+  'Chimney / Gutter Inspection',
+  'Business / Commercial Aerial Photos',
+  'Promotional Drone Video',
+  'Construction Progress Photos/Video',
+  'Event Aerial Photography',
+  'Social Media Drone Content',
+  'Property Photography',
+  'Real Estate Marketing',
+  'Other',
+];
+
+const TIME_OPTIONS = [
+  { value: 'Morning (8am–12pm)', label: 'Morning (8am–12pm)' },
+  { value: 'Afternoon (12pm–5pm)', label: 'Afternoon (12pm–5pm)' },
+  { value: 'Evening (5pm–8pm)', label: 'Evening (5pm–8pm)' },
+  { value: 'Flexible', label: 'Flexible' },
 ];
 
 export default function Quote() {
@@ -23,20 +32,37 @@ export default function Quote() {
   const postcodeDropdownRef = useRef(null);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit, reset } = useForm({
-    initialValues: { name: '', email: '', phone: '', location: '', serviceType: '', message: '' },
+    initialValues: {
+      name: '',
+      email: '',
+      phone: '',
+      businessName: '',
+      location: '',
+      serviceType: '',
+      message: '',
+      budget: '',
+      preferredDate: '',
+      preferredTime: '',
+    },
     validate: (vals) => {
       const errs = {};
       if (!vals.name.trim()) errs.name = 'Name is required';
       if (!vals.email.trim()) errs.email = 'Email is required';
       else if (!/\S+@\S+\.\S+/.test(vals.email)) errs.email = 'Enter a valid email';
       if (!vals.phone.trim()) errs.phone = 'Phone is required';
-      if (!vals.location.trim()) errs.location = 'Location of project is required';
-      if (!vals.serviceType.trim()) errs.serviceType = 'Service type is required';
-      if (!vals.message.trim()) errs.message = 'Project details are required';
+      if (!vals.location.trim()) errs.location = 'Location is required';
+      if (!vals.serviceType.trim()) errs.serviceType = 'Project type is required';
+      if (!vals.message.trim()) errs.message = 'Description is required';
       return errs;
     },
     onSubmit: async (vals) => {
-      await api.post('/api/contact', vals);
+      await api.post('/api/contact', {
+        ...vals,
+        preferredDate: vals.preferredDate || null,
+        preferredTime: vals.preferredTime || null,
+        businessName: vals.businessName || null,
+        budget: vals.budget || null,
+      });
       setSuccess(true);
       reset();
     },
@@ -98,7 +124,7 @@ export default function Quote() {
     <div className="max-w-7xl mx-auto px-6 py-24">
       <h1 className="text-4xl md:text-5xl font-bold text-white">Get a Quote</h1>
       <p className="mt-4 text-cream/70 max-w-2xl">
-        Tell us about your project and we&rsquo;ll get back to you with a quote.
+        Tell us about your project and we&rsquo;ll get back to you with a tailored quote.
       </p>
 
       <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
@@ -119,58 +145,50 @@ export default function Quote() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-2">
-                Name
-              </label>
+              <label htmlFor="name" className="block text-sm font-medium mb-2">Name</label>
               <input
-                id="name"
-                name="name"
-                type="text"
-                value={values.name}
-                onChange={handleChange}
+                id="name" name="name" type="text"
+                value={values.name} onChange={handleChange}
                 className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
               />
               {errors.name && <p className="mt-1 text-xs text-red">{errors.name}</p>}
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2">
-                Email
-              </label>
+              <label htmlFor="email" className="block text-sm font-medium mb-2">Email</label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                value={values.email}
-                onChange={handleChange}
+                id="email" name="email" type="email"
+                value={values.email} onChange={handleChange}
                 className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
               />
               {errors.email && <p className="mt-1 text-xs text-red">{errors.email}</p>}
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium mb-2">
-                Phone
-              </label>
+              <label htmlFor="phone" className="block text-sm font-medium mb-2">Phone</label>
               <input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={values.phone}
-                onChange={handleChange}
+                id="phone" name="phone" type="tel"
+                value={values.phone} onChange={handleChange}
                 className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
               />
               {errors.phone && <p className="mt-1 text-xs text-red">{errors.phone}</p>}
             </div>
 
-            <div ref={postcodeDropdownRef} className="relative">
-              <label htmlFor="location" className="block text-sm font-medium mb-2">
-                Location of project
+            <div>
+              <label htmlFor="businessName" className="block text-sm font-medium mb-2">
+                Business Name <span className="text-cream/40">(optional)</span>
               </label>
               <input
-                id="location"
-                name="location"
-                type="text"
+                id="businessName" name="businessName" type="text"
+                value={values.businessName} onChange={handleChange}
+                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
+              />
+            </div>
+
+            <div ref={postcodeDropdownRef} className="relative">
+              <label htmlFor="location" className="block text-sm font-medium mb-2">Location</label>
+              <input
+                id="location" name="location" type="text"
                 value={values.location}
                 onChange={handleLocationChange}
                 onBlur={handleLocationBlur}
@@ -197,51 +215,70 @@ export default function Quote() {
             </div>
 
             <div>
-              <label htmlFor="serviceType" className="block text-sm font-medium mb-2">
-                Service type
-              </label>
+              <label htmlFor="serviceType" className="block text-sm font-medium mb-2">Project Type</label>
               <select
-                id="serviceType"
-                name="serviceType"
-                value={values.serviceType}
-                onChange={handleChange}
+                id="serviceType" name="serviceType"
+                value={values.serviceType} onChange={handleChange}
                 className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream appearance-none cursor-pointer [&>option]:bg-bg [&>option]:text-cream"
               >
-                <option value="">Select a service...</option>
-                {SERVICE_OPTIONS.map((opt) => (
-                  <option key={opt.label} value={opt.label} className="bg-bg text-cream">
-                    {opt.label}
-                  </option>
+                <option value="">Select a project type...</option>
+                {PROJECT_TYPE_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
                 ))}
               </select>
-              {values.serviceType && (() => {
-                const option = SERVICE_OPTIONS.find((o) => o.label === values.serviceType);
-                if (option?.price != null) {
-                  return (
-                    <p className="mt-2 text-sm text-red">
-                      Starting at £{option.price}
-                    </p>
-                  );
-                }
-                return null;
-              })()}
               {errors.serviceType && <p className="mt-1 text-xs text-red">{errors.serviceType}</p>}
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium mb-2">
-                Project Details
-              </label>
+              <label htmlFor="message" className="block text-sm font-medium mb-2">Description</label>
               <textarea
-                id="message"
-                name="message"
-                rows={5}
-                value={values.message}
-                onChange={handleChange}
-                placeholder="Tell us about your project"
+                id="message" name="message" rows={5}
+                value={values.message} onChange={handleChange}
+                placeholder="Tell us about your project — what you need, the scope, any special requirements..."
                 className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors resize-none text-cream placeholder:text-cream/40"
               />
               {errors.message && <p className="mt-1 text-xs text-red">{errors.message}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="budget" className="block text-sm font-medium mb-2">
+                Budget <span className="text-cream/40">(optional)</span>
+              </label>
+              <input
+                id="budget" name="budget" type="text"
+                value={values.budget} onChange={handleChange}
+                placeholder="e.g. £200–£500"
+                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="preferredDate" className="block text-sm font-medium mb-2">
+                  Preferred Date <span className="text-cream/40">(optional)</span>
+                </label>
+                <input
+                  id="preferredDate" name="preferredDate" type="date"
+                  value={values.preferredDate} onChange={handleChange}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
+                />
+              </div>
+              <div>
+                <label htmlFor="preferredTime" className="block text-sm font-medium mb-2">
+                  Preferred Time <span className="text-cream/40">(optional)</span>
+                </label>
+                <select
+                  id="preferredTime" name="preferredTime"
+                  value={values.preferredTime} onChange={handleChange}
+                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream appearance-none cursor-pointer [&>option]:bg-bg [&>option]:text-cream"
+                >
+                  <option value="">Select a time...</option>
+                  {TIME_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {submitError && (
@@ -262,7 +299,7 @@ export default function Quote() {
         {!success && (
           <div className="hidden lg:flex flex-col items-center justify-center sticky top-24">
             <img
-              src="/logo-display-borderless.png"
+              src="/logo_with_text Background Removed.png"
               alt="SkyReach Visuals"
               className="w-full max-w-sm object-contain"
               loading="lazy"
