@@ -5,6 +5,8 @@ import {
   login,
   logout,
   me,
+  verifyEmail,
+  resendVerification,
   updateProfile,
   changePassword,
 } from '../controllers/auth.controller.js';
@@ -14,6 +16,8 @@ const router = Router();
 router.post('/register', register);
 router.post('/login', login);
 router.post('/logout', logout);
+router.get('/verify-email', verifyEmail);
+router.post('/resend-verification', resendVerification);
 router.get('/me', requireAuth, me);
 router.put('/profile', requireAuth, updateProfile);
 router.put('/password', requireAuth, changePassword);

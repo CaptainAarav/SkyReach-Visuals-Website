@@ -7,12 +7,15 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    api.get('/api/auth/me')
+  const refreshUser = useCallback(() => {
+    return api.get('/api/auth/me')
       .then(setUser)
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+      .catch(() => setUser(null));
   }, []);
+
+  useEffect(() => {
+    refreshUser().finally(() => setLoading(false));
+  }, [refreshUser]);
 
   const login = useCallback(async (email, password) => {
     const data = await api.post('/api/auth/login', { email, password });
@@ -22,7 +25,11 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (name, email, password) => {
     const data = await api.post('/api/auth/register', { name, email, password });
-    setUser(data);
+    return data;
+  }, []);
+
+  const resendVerification = useCallback(async (email) => {
+    const data = await api.post('/api/auth/resend-verification', { email });
     return data;
   }, []);
 
@@ -32,7 +39,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, resendVerification }}>
       {children}
     </AuthContext.Provider>
   );

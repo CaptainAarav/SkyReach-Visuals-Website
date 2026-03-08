@@ -64,6 +64,11 @@ docker compose logs server --tail 80
 ```
 Fix any DB connection or startup errors shown there.
 
+**Email verification:** New users must verify their email via the link sent to them before they can log in. Ensure `SMTP_*` and `EMAIL_FROM` are set (e.g. IONOS) so verification emails are sent. After the first deploy that adds verification, existing users will have `emailVerified = false`; to allow them to log in, run once:
+```bash
+docker compose exec db psql -U skyreach -d skyreach -c "UPDATE \"User\" SET \"emailVerified\" = true;"
+```
+
 ## Development Setup (without Docker)
 
 You'll need a running PostgreSQL instance.
@@ -144,9 +149,11 @@ Open `http://localhost:5173` in your browser.
 ### Auth
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/api/auth/register` | No | Create account |
-| POST | `/api/auth/login` | No | Log in |
+| POST | `/api/auth/register` | No | Create account (sends verification email) |
+| POST | `/api/auth/login` | No | Log in (requires verified email) |
 | POST | `/api/auth/logout` | No | Log out |
+| GET | `/api/auth/verify-email?token=` | No | Verify email via link in email |
+| POST | `/api/auth/resend-verification` | No | Resend verification email (body: `{ email }`) |
 | GET | `/api/auth/me` | Yes | Get current user |
 | PUT | `/api/auth/profile` | Yes | Update name/email |
 | PUT | `/api/auth/password` | Yes | Change password |

@@ -7,6 +7,7 @@ import Home from './pages/Home.jsx';
 import Quote from './pages/Quote.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import VerifyEmail from './pages/VerifyEmail.jsx';
 import BookingCheckout from './pages/BookingCheckout.jsx';
 import BookingSuccess from './pages/BookingSuccess.jsx';
 import Orders from './pages/Orders.jsx';
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/quote" element={<Quote />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
         <Route path="/booking/:packageSlug" element={
           <ProtectedRoute><BookingCheckout /></ProtectedRoute>

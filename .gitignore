@@ -7,11 +7,6 @@ build/
 .vite/
 *.local
 
-# Env and secrets
-.env
-.env.local
-.env.*.local
-
 # IDE / OS
 .DS_Store
 *.swp

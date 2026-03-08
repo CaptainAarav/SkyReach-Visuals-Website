@@ -1,10 +1,57 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useForm } from '../hooks/useForm.js';
 
+function RegisterSuccessScreen({ email, resendVerification }) {
+  const [resendSent, setResendSent] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendError, setResendError] = useState(null);
+
+  const handleResend = async () => {
+    setResendError(null);
+    setResending(true);
+    try {
+      await resendVerification(email);
+      setResendSent(true);
+    } catch (err) {
+      setResendError(err?.message || 'Failed to resend. Try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto px-6 py-24">
+      <h1 className="text-3xl font-bold">Check your email</h1>
+      <p className="mt-4 text-navy/80">
+        We&rsquo;ve sent a verification link to <strong>{email}</strong>. Click the button in that email to verify your account, then you can log in.
+      </p>
+      <p className="mt-6 text-sm text-navy/60">
+        Didn&rsquo;t get the email? Check your spam folder.
+      </p>
+      <button
+        type="button"
+        onClick={handleResend}
+        disabled={resending}
+        className="mt-4 text-sm font-medium text-red hover:underline disabled:opacity-50"
+      >
+        {resendSent ? 'Verification email sent — check your inbox' : 'Resend verification email'}
+      </button>
+      {resendError && <p className="mt-2 text-sm text-red">{resendError}</p>}
+      <Link
+        to="/login"
+        className="mt-8 inline-block bg-red text-white text-sm font-medium py-3 px-6 hover:bg-red-dark transition-colors"
+      >
+        Go to log in
+      </Link>
+    </div>
+  );
+}
+
 export default function Register() {
-  const { register } = useAuth();
-  const navigate = useNavigate();
+  const { register, resendVerification } = useAuth();
+  const [successEmail, setSuccessEmail] = useState(null);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit } = useForm({
     initialValues: { name: '', email: '', password: '' },
@@ -18,10 +65,19 @@ export default function Register() {
       return errs;
     },
     onSubmit: async (vals) => {
-      await register(vals.name, vals.email, vals.password);
-      navigate('/dashboard');
+      const data = await register(vals.name, vals.email, vals.password);
+      setSuccessEmail(data?.email ?? vals.email);
     },
   });
+
+  if (successEmail) {
+    return (
+      <RegisterSuccessScreen
+        email={successEmail}
+        resendVerification={resendVerification}
+      />
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto px-6 py-24">
