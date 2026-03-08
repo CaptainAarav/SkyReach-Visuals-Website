@@ -1,6 +1,41 @@
+# Dependencies
 node_modules/
+
+# Build / cache
 dist/
+build/
+.vite/
+*.local
+
+# Env and secrets
 .env
-*.log
+.env.local
+.env.*.local
+
+# IDE / OS
 .DS_Store
-.claude/
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Large media – keep these out of Git (host elsewhere or add on deploy)
+*.mp4
+*.mov
+*.avi
+*.webm
+*.mkv
+client/public/videos/
+client/public/**/Website_Background_Video/
+**/Website_Background_Video/
+# Optional: uncomment if you want to ignore all large images
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# *.webp
+
+# Logs and temp
+*.log
+npm-debug.log*
+.cache/
