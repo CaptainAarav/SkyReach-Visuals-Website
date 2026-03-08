@@ -113,7 +113,7 @@ export default function Navbar() {
               {dropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 py-2 w-48 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50">
                   <Link
-                    to="/dashboard"
+                    to="/orders"
                     onClick={() => setDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-cream/80 hover:text-white hover:bg-white/5"
                   >
@@ -206,7 +206,7 @@ export default function Navbar() {
                   <>
                     <p className="px-0 py-2 text-sm text-cream/50">{user.name}</p>
                     <Link
-                      to="/dashboard"
+                      to="/orders"
                       onClick={() => setMenuOpen(false)}
                       className="block py-3.5 text-lg text-cream/90 hover:text-white transition-colors"
                     >

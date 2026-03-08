@@ -9,6 +9,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import BookingCheckout from './pages/BookingCheckout.jsx';
 import BookingSuccess from './pages/BookingSuccess.jsx';
+import Orders from './pages/Orders.jsx';
 import Dashboard from './pages/dashboard/Dashboard.jsx';
 import BookingDetail from './pages/dashboard/BookingDetail.jsx';
 import Profile from './pages/dashboard/Profile.jsx';
@@ -35,6 +36,10 @@ export default function App() {
         } />
         <Route path="/booking/success" element={
           <ProtectedRoute><BookingSuccess /></ProtectedRoute>
+        } />
+
+        <Route path="/orders" element={
+          <ProtectedRoute><Orders /></ProtectedRoute>
         } />
 
         <Route path="/dashboard" element={
