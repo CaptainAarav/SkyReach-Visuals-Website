@@ -30,7 +30,7 @@ export default function Register() {
         Register to book a shoot and manage your projects.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-10 space-y-6">
+      <form onSubmit={handleSubmit} className="mt-10 space-y-6" noValidate>
         <div>
           <label htmlFor="name" className="block text-sm font-medium mb-2">
             Full name
