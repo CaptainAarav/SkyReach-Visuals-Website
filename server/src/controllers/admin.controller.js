@@ -3,6 +3,7 @@ import prisma from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword } from '../services/auth.service.js';
 import { sendBookingApproved, sendBookingDeclined, sendAdminMessage, sendReviewRequestEmail } from '../services/email.service.js';
+import { getInboxList, getSentList, getMessage } from '../services/imap.service.js';
 import { env } from '../config/env.js';
 
 // ── Admin Audit Log helper ──────────────────────────────────────────
@@ -538,6 +539,49 @@ export async function listAdminLogs(req, res, next) {
     });
     res.json({ success: true, data: logs, error: null });
   } catch (err) {
+    next(err);
+  }
+}
+
+// ── Live mailbox (IMAP) ──────────────────────────────────────────────
+export async function getMailInbox(req, res, next) {
+  try {
+    const limit = Math.min(parseInt(req.query.limit || '50', 10) || 50, 100);
+    const list = await getInboxList(limit);
+    res.json({ success: true, data: list, error: null });
+  } catch (err) {
+    if (err.code === 'IMAP_NOT_CONFIGURED') {
+      return next(new AppError('Mailbox is not configured. Set IMAP_* or SMTP_USER/SMTP_PASS.', 503));
+    }
+    next(err);
+  }
+}
+
+export async function getMailSent(req, res, next) {
+  try {
+    const limit = Math.min(parseInt(req.query.limit || '50', 10) || 50, 100);
+    const list = await getSentList(limit);
+    res.json({ success: true, data: list, error: null });
+  } catch (err) {
+    if (err.code === 'IMAP_NOT_CONFIGURED') {
+      return next(new AppError('Mailbox is not configured. Set IMAP_* or SMTP_USER/SMTP_PASS.', 503));
+    }
+    next(err);
+  }
+}
+
+export async function getMailMessage(req, res, next) {
+  try {
+    const { folder, uid } = req.params;
+    if (!folder || !uid) throw new AppError('Folder and UID required', 400);
+    const normalized = folder.toUpperCase() === 'INBOX' ? 'INBOX' : 'Sent';
+    const message = await getMessage(normalized, uid);
+    if (!message) throw new AppError('Message not found', 404);
+    res.json({ success: true, data: message, error: null });
+  } catch (err) {
+    if (err.code === 'IMAP_NOT_CONFIGURED') {
+      return next(new AppError('Mailbox is not configured. Set IMAP_* or SMTP_USER/SMTP_PASS.', 503));
+    }
     next(err);
   }
 }

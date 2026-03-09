@@ -20,6 +20,9 @@ import {
   listSentMessages,
   listReviews,
   listAdminLogs,
+  getMailInbox,
+  getMailSent,
+  getMailMessage,
 } from '../controllers/admin.controller.js';
 
 const router = Router();
@@ -56,5 +59,10 @@ router.get('/reviews', listReviews);
 
 // Admin Logs (admin only)
 router.get('/logs', requireAdmin, listAdminLogs);
+
+// Live mailbox (IMAP) — same mailbox as SMTP
+router.get('/mail/inbox', getMailInbox);
+router.get('/mail/sent', getMailSent);
+router.get('/mail/messages/:folder/:uid', getMailMessage);
 
 export default router;

@@ -26,12 +26,12 @@ export default function GetStarted() {
                   <path d="M16 2v4M8 2v4M3 10h18" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white">Make a Booking</h2>
+              <h2 className="text-2xl font-bold text-white">Create booking</h2>
               <p className="mt-3 text-cream/70 text-sm leading-relaxed">
                 Standard drone services with fixed pricing. Roof, gutter and chimney inspections; property aerial photos.
               </p>
               <span className="mt-6 text-sm font-medium text-red group-hover:text-red-dark transition-colors">
-                £24.99 &rarr;
+                Create booking &rarr;
               </span>
             </Link>
           </AnimateInView>
@@ -71,12 +71,12 @@ export default function GetStarted() {
                 <line x1="1" y1="10" x2="23" y2="10" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-white">Already discussed a project?</h2>
+            <h2 className="text-xl font-bold text-white">Quick pay</h2>
             <p className="mt-2 text-cream/70 text-sm leading-relaxed">
               Pay here with your order number. Log in when prompted to complete payment.
             </p>
             <span className="mt-4 text-sm font-medium text-accent transition-colors">
-              Pay here &rarr;
+              Quick pay &rarr;
             </span>
           </Link>
         </AnimateInView>

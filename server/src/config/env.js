@@ -44,9 +44,19 @@ export const env = {
     pass: process.env.SMTP_PASS,
   },
   emailFrom: process.env.EMAIL_FROM,
+  // IONOS IMAP: imap.ionos.co.uk:993 SSL (reuse SMTP credentials for same mailbox)
+  imap: {
+    host: process.env.IMAP_HOST || 'imap.ionos.co.uk',
+    port: parseInt(process.env.IMAP_PORT || '993', 10),
+    user: process.env.IMAP_USER || process.env.SMTP_USER,
+    pass: process.env.IMAP_PASS || process.env.SMTP_PASS,
+    secure: true,
+  },
 };
 
 if (process.env.NODE_ENV !== 'test') {
   const smtpOk = env.smtp.host && env.smtp.user && env.smtp.pass;
   console.log(smtpOk ? 'SMTP configured — verification and booking emails will be sent' : 'SMTP not configured — set SMTP_HOST, SMTP_USER, SMTP_PASS (and EMAIL_FROM) for verification emails');
+  const imapOk = env.imap.host && env.imap.user && env.imap.pass;
+  console.log(imapOk ? 'IMAP configured — admin live mailbox available' : 'IMAP not configured — set IMAP_* or SMTP_USER/SMTP_PASS for admin mailbox');
 }

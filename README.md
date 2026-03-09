@@ -69,6 +69,8 @@ Fix any DB connection or startup errors shown there.
 docker compose exec db psql -U skyreach -d skyreach -c "UPDATE \"User\" SET \"emailVerified\" = true;"
 ```
 
+**Admin live mailbox (Admin → Email):** View your IONOS inbox and sent folder and send emails from the app. Defaults use `imap.ionos.co.uk:993` and the same credentials as SMTP; set `IMAP_HOST`/`IMAP_PORT`/`IMAP_USER`/`IMAP_PASS` if needed.
+
 ## Development Setup (without Docker)
 
 You'll need a running PostgreSQL instance.
@@ -137,11 +139,15 @@ Open `http://localhost:5173` in your browser.
 | `CLIENT_URL` | Frontend URL (for CORS) | Yes |
 | `STRIPE_SUCCESS_URL` | Redirect after successful payment | For payments |
 | `STRIPE_CANCEL_URL` | Redirect after cancelled payment | For payments |
-| `SMTP_HOST` | SMTP server hostname | For emails |
+| `SMTP_HOST` | SMTP server hostname (e.g. `smtp.ionos.co.uk`) | For emails |
 | `SMTP_PORT` | SMTP port (587 or 465) | For emails |
-| `SMTP_USER` | SMTP username | For emails |
+| `SMTP_USER` | SMTP username (full email) | For emails |
 | `SMTP_PASS` | SMTP password | For emails |
 | `EMAIL_FROM` | Sender email address | For emails |
+| `IMAP_HOST` | IMAP server (default `imap.ionos.co.uk`) | For admin live mailbox |
+| `IMAP_PORT` | IMAP port (default 993) | For admin live mailbox |
+| `IMAP_USER` | IMAP username (defaults to `SMTP_USER`) | For admin live mailbox |
+| `IMAP_PASS` | IMAP password (defaults to `SMTP_PASS`) | For admin live mailbox |
 | `PORT` | Server port (default: 5000) | No |
 
 **Live payments:** To receive real payouts to your bank account, use Stripe **live** keys in production: set `STRIPE_SECRET_KEY` to your live secret (`sk_live_...`) and `STRIPE_WEBHOOK_SECRET` to the signing secret for your live webhook endpoint. Configure the webhook in the Stripe Dashboard to point at your production URL (e.g. `https://your-api.com/api/webhooks/stripe`) for `checkout.session.completed`.

@@ -5,6 +5,7 @@ const tabs = [
   { to: '/admin/orders', label: 'Orders' },
   { to: '/admin/accounts', label: 'Accounts' },
   { to: '/admin/messages', label: 'Messages' },
+  { to: '/admin/email', label: 'Email' },
   { to: '/admin/reviews', label: 'Reviews' },
   { to: '/admin/logs', label: 'Logs' },
 ];
