@@ -6,9 +6,9 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <img
-              src="/logo_with_text Background Removed.png"
+              src="/skyreach_visuals_text_logo.png"
               alt="SkyReach Visuals"
-              className="h-16 mb-4"
+              className="h-20 w-auto mb-4"
               loading="lazy"
             />
             <p className="text-white/70 text-sm leading-relaxed max-w-xs">

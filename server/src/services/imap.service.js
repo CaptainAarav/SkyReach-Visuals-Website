@@ -127,3 +127,25 @@ export async function getMessage(folder, uid) {
     await client.logout();
   }
 }
+
+/**
+ * Append a sent message (raw RFC822) to the Sent folder so it appears in Sent.
+ * content: string or Buffer, full message with \r\n line endings.
+ */
+export async function appendToSent(content) {
+  const client = getClient();
+  try {
+    await client.connect();
+    const sentPath = await getSentPath(client);
+    const raw = Buffer.isBuffer(content) ? content : Buffer.from(content, 'utf-8');
+    await client.append(sentPath, raw, ['\\Seen']);
+  } catch (err) {
+    console.error('IMAP append to Sent failed (message was still sent):', err.message);
+  } finally {
+    try {
+      await client.logout();
+    } catch {
+      client.close();
+    }
+  }
+}

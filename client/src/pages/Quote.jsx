@@ -306,9 +306,9 @@ export default function Quote() {
         {!success && (
           <div className="hidden lg:flex flex-col items-center justify-center sticky top-24">
             <img
-              src="/logo_with_text Background Removed.png"
+              src="/skyreach_visuals_text_logo.png"
               alt="SkyReach Visuals"
-              className="w-full max-w-md object-contain"
+              className="w-full max-w-xl object-contain"
               loading="lazy"
             />
           </div>

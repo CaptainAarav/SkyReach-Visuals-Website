@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
+import { appendToSent } from './imap.service.js';
 
 let transporter = null;
 
@@ -27,7 +28,8 @@ function mailHeaders() {
 }
 
 function logoUrl() {
-  return 'https://skyreachvisuals.co.uk/logo_without_text.PNG';
+  const base = (env.clientUrl || 'https://skyreachvisuals.co.uk').replace(/\/$/, '');
+  return `${base}/skyreach_visuals_text_logo.png`;
 }
 
 const EMAIL_DARK = {
@@ -405,6 +407,69 @@ export async function sendBookingDeclined({ to, booking }) {
   });
 }
 
+/** Build plain-text signature (for multipart email). */
+function adminSignatureText(senderName) {
+  const fromAddr = env.emailFrom || 'support@skyreachvisuals.co.uk';
+  return [
+    '',
+    '--',
+    'SkyReach Visuals',
+    `${senderName} — Drone Aerial Photography & Inspection`,
+    '+44 7877691861',
+    fromAddr,
+  ].join('\r\n');
+}
+
+/** Build minimal HTML for admin message (normal email look, not marketing card). */
+function adminMessageHtml(body, senderName) {
+  const escaped = body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
+  const fromAddr = env.emailFrom || 'support@skyreachvisuals.co.uk';
+  return [
+    '<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:12px 16px;font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#111;">',
+    `<p style="margin:0;">${escaped}</p>`,
+    '<p style="margin:24px 0 0;padding-top:16px;border-top:1px solid #ddd;font-size:13px;color:#333;">',
+    '<strong>SkyReach Visuals</strong><br/>',
+    `${senderName} — Drone Aerial Photography &amp; Inspection<br/>`,
+    '+44 7877691861<br/>',
+    `<a href="mailto:${fromAddr}">${fromAddr}</a>`,
+    '</p>',
+    `<p style="margin:12px 0 0;"><img src="${logoUrl()}" alt="SkyReach Visuals" width="140" style="display:block;"/></p>`,
+    '</body></html>',
+  ].join('');
+}
+
+/** Build raw RFC822 message (multipart/alternative) for sending and appending to Sent. */
+function buildAdminMessageRaw(to, subject, body, senderName) {
+  const fromAddr = env.emailFrom || 'support@skyreachvisuals.co.uk';
+  const fromHeader = `"SkyReach Visuals" <${fromAddr}>`;
+  const dateHeader = new Date().toUTCString().replace(/GMT/, '+0000');
+  const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const plainBody = body + adminSignatureText(senderName);
+  const htmlBody = adminMessageHtml(body, senderName);
+
+  const lines = [
+    `From: ${fromHeader}`,
+    `To: <${to}>`,
+    `Subject: ${subject}`,
+    `Date: ${dateHeader}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset=utf-8',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    plainBody,
+    `--${boundary}`,
+    'Content-Type: text/html; charset=utf-8',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    htmlBody,
+    `--${boundary}--`,
+  ];
+  return lines.join('\r\n');
+}
+
 export async function sendAdminMessage({ to, subject, body, senderName }) {
   const transport = getTransporter();
   if (!transport) {
@@ -413,50 +478,19 @@ export async function sendAdminMessage({ to, subject, body, senderName }) {
     return;
   }
 
-  const escapedBody = body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader()}
-          <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;">${subject}</h2>
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;white-space:pre-wrap;">${escapedBody}</p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${EMAIL_DARK.border};margin:24px auto 0;padding-top:24px;max-width:400px;">
-                <tr>
-                  <td style="text-align:center;">
-                    <p style="margin:0 0 4px;color:${EMAIL_DARK.text};font-size:14px;font-weight:600;">SkyReach Visuals</p>
-                    <p style="margin:0 0 4px;color:${EMAIL_DARK.textMuted};font-size:13px;">${senderName} &mdash; Drone Aerial Photography &amp; Inspection</p>
-                    <p style="margin:0 0 2px;color:${EMAIL_DARK.textMuted};font-size:13px;">&#x1F4DE; +44 7877691861</p>
-                    <p style="margin:0 0 12px;color:${EMAIL_DARK.textMuted};font-size:13px;">&#x2709; ${env.emailFrom || 'support@skyreachvisuals.co.uk'}</p>
-                    <img src="${logoUrl()}" alt="SkyReach Visuals" width="120" style="display:block;margin:0 auto;" />
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          ${emailFooter()}
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const fullSubject = subject.includes('| SkyReach') ? subject : `${subject} | SkyReach Visuals`;
+  const raw = buildAdminMessageRaw(to, fullSubject, body, senderName);
 
   await transport.sendMail({
-    from: `"SkyReach Visuals" <${env.emailFrom}>`,
-    to,
-    subject: `${subject} | SkyReach Visuals`,
-    headers: mailHeaders(),
-    html,
+    envelope: { from: env.emailFrom, to: [to] },
+    raw,
   });
+
+  try {
+    await appendToSent(raw);
+  } catch (err) {
+    console.error('Append to Sent failed:', err.message);
+  }
 }
 
 export async function sendAdminLoginEmail({ to, name, verifyUrl }) {
