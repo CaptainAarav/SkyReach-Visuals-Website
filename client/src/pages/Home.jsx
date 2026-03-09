@@ -141,7 +141,7 @@ export default function Home() {
       </section>
 
       {/* About */}
-      <AnimateInView as="section" id="about" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
+      <AnimateInView as="section" id="about" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
         <h2 className="text-3xl md:text-4xl font-semibold text-white">About SkyReach Visuals</h2>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="aspect-video rounded-2xl overflow-hidden bg-black/40">
@@ -173,7 +173,7 @@ export default function Home() {
       </AnimateInView>
 
       {/* Services */}
-      <AnimateInView as="section" id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
+      <AnimateInView as="section" id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
         <p className="text-lg text-red font-medium">
           <CountUp value={35} decimals={2} duration={1200} prefix="£" />
         </p>
@@ -198,36 +198,26 @@ export default function Home() {
         </Link>
       </AnimateInView>
 
-      {/* Reviews carousel */}
-      <AnimateInView as="section" id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
+      {/* Reviews carousel — big card, arrows below, hover interactive */}
+      <AnimateInView as="section" id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
         <h2 className="text-3xl md:text-4xl font-semibold text-white">What People Think About Us</h2>
         <p className="mt-3 text-cream/70 max-w-2xl">
           Real feedback from verified customers who have used our drone photography services.
         </p>
-        <div className="mt-12 relative flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => setReviewIndex((i) => (i <= 0 ? reviews.length - 1 : i - 1))}
-            className="shrink-0 w-12 h-12 rounded-full bg-black/20 backdrop-blur border border-white/10 text-white hover:bg-white/10 transition-colors flex items-center justify-center"
-            aria-label="Previous review"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="mt-12">
+          <div className="min-w-0 overflow-hidden">
             <div
               className="flex transition-[transform] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
               style={{ transform: `translateX(-${reviewIndex * 100}%)` }}
             >
               {reviews.map((r) => (
-                <div key={r.id} className="w-full shrink-0 px-2">
-                  <div className="bg-bg-card p-6 md:p-8 rounded-2xl border border-white/5 flex flex-col gap-4">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-white">{r.name}</span>
+                <div key={r.id} className="w-full shrink-0 px-1">
+                  <div className="review-card group/card bg-bg-card p-8 md:p-12 rounded-2xl border border-white/10 flex flex-col gap-6 min-h-[280px] md:min-h-[320px] transition-all duration-300 hover:scale-[1.02] hover:border-white/20 hover:shadow-xl hover:shadow-black/30 cursor-default">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-base md:text-lg font-semibold text-white">{r.name}</span>
                         <span className="verified-badge group/verified relative inline-flex shrink-0 cursor-help" title="Verified Purchase">
-                          <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                          <svg className="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                           </svg>
                           <span className="verified-tooltip pointer-events-none absolute left-1/2 bottom-full -translate-x-1/2 mb-1.5 px-2 py-1 text-xs font-medium text-white bg-neutral-800 rounded shadow-lg whitespace-nowrap opacity-0 invisible group-hover/verified:opacity-100 group-hover/verified:visible transition-all duration-150 z-10">
@@ -237,32 +227,44 @@ export default function Home() {
                       </div>
                       <StarRating rating={r.rating} />
                     </div>
-                    <p className="text-cream/80 text-sm md:text-base leading-relaxed">{r.comment}</p>
+                    <p className="text-cream/80 text-base md:text-lg leading-relaxed flex-1">{r.comment}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setReviewIndex((i) => (i >= reviews.length - 1 ? 0 : i + 1))}
-            className="shrink-0 w-12 h-12 rounded-full bg-black/20 backdrop-blur border border-white/10 text-white hover:bg-white/10 transition-colors flex items-center justify-center"
-            aria-label="Next review"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          {reviews.length > 1 && (
+            <div className="mt-8 flex items-center justify-center gap-6">
+              <button
+                type="button"
+                onClick={() => setReviewIndex((i) => (i <= 0 ? reviews.length - 1 : i - 1))}
+                className="w-12 h-12 rounded-full bg-black/30 backdrop-blur border border-white/15 text-white hover:bg-white/15 hover:border-white/25 transition-all duration-200 flex items-center justify-center shadow-lg"
+                aria-label="Previous review"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <p className="text-sm text-cream/50 min-w-[4rem] text-center">
+                <CountUp key={`cur-${reviewIndex}`} value={reviewIndex + 1} duration={600} /> of <CountUp value={reviews.length} duration={800} />
+              </p>
+              <button
+                type="button"
+                onClick={() => setReviewIndex((i) => (i >= reviews.length - 1 ? 0 : i + 1))}
+                className="w-12 h-12 rounded-full bg-black/30 backdrop-blur border border-white/15 text-white hover:bg-white/15 hover:border-white/25 transition-all duration-200 flex items-center justify-center shadow-lg"
+                aria-label="Next review"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
-        {reviews.length > 1 && (
-          <p className="mt-4 text-center text-sm text-cream/50">
-            <CountUp key={`cur-${reviewIndex}`} value={reviewIndex + 1} duration={600} /> of <CountUp value={reviews.length} duration={800} />
-          </p>
-        )}
       </AnimateInView>
 
       {/* Portfolio */}
-      <AnimateInView as="section" id="portfolio" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20">
+      <AnimateInView as="section" id="portfolio" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-semibold text-white">Portfolio</h2>
           <p className="mt-3 text-cream/70 max-w-2xl">
@@ -302,7 +304,7 @@ export default function Home() {
       </AnimateInView>
 
       {/* Contact */}
-      <AnimateInView as="section" id="contact" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20">
+      <AnimateInView as="section" id="contact" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold text-white">Get in touch</h2>
           <p className="mt-4 text-cream/70 max-w-2xl">
