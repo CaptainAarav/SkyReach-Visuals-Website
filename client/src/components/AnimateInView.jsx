@@ -9,6 +9,7 @@ export default function AnimateInView({
   className = '',
   animation = 'animate-fade-in-up',
   as: Tag = 'div',
+  ...rest
 }) {
   const [ref, inView] = useInView({ threshold: 0.08, rootMargin: '0px 0px -30px 0px', triggerOnce: true });
 
@@ -16,6 +17,7 @@ export default function AnimateInView({
     <Tag
       ref={ref}
       className={`reveal ${inView ? animation : ''} ${className}`.trim()}
+      {...rest}
     >
       {children}
     </Tag>
