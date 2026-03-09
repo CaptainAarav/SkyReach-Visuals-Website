@@ -123,29 +123,25 @@ export default function Quote() {
   };
 
   return (
-    <div className="relative max-w-7xl mx-auto px-6 py-28">
-      <div className="absolute top-10 -right-20 w-80 h-80 bg-accent/[0.04] rounded-full blur-[120px] pointer-events-none" aria-hidden />
-      <h1 className="text-4xl md:text-5xl font-bold text-gradient">Get a Quote</h1>
-      <p className="mt-4 text-cream/60 max-w-2xl">
+    <div className="max-w-7xl mx-auto px-6 py-24">
+      <h1 className="text-4xl md:text-5xl font-bold text-white">Get a Quote</h1>
+      <p className="mt-4 text-cream/70 max-w-2xl">
         Tell us about your project and we&rsquo;ll get back to you with a tailored quote.
       </p>
 
       <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
         <div className="max-w-xl">
         {success ? (
-          <div className="glass p-8 rounded-2xl glow-accent">
-            <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-            </div>
+          <div className="bg-bg-card p-8 rounded-2xl border border-white/10">
             <h3 className="text-xl font-semibold text-white">Request sent</h3>
-            <p className="mt-2 text-cream/60">
+            <p className="mt-2 text-cream/70">
               Thanks for getting in touch. We&rsquo;ll come back to you with a quote shortly.
             </p>
             <button
               onClick={() => setSuccess(false)}
-              className="mt-6 text-sm font-medium text-accent-light hover:text-white transition-colors"
+              className="mt-4 text-sm font-medium text-accent border-b-2 border-accent pb-1 hover:border-red hover:text-red transition-colors"
             >
-              Send another request &rarr;
+              Send another request
             </button>
           </div>
         ) : (
@@ -155,7 +151,7 @@ export default function Quote() {
               <input
                 id="name" name="name" type="text"
                 value={values.name} onChange={handleChange}
-                className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
               />
               {errors.name && <p className="mt-1 text-xs text-red">{errors.name}</p>}
             </div>
@@ -165,7 +161,7 @@ export default function Quote() {
               <input
                 id="email" name="email" type="email"
                 value={values.email} onChange={handleChange}
-                className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
               />
               {errors.email && <p className="mt-1 text-xs text-red">{errors.email}</p>}
             </div>
@@ -175,7 +171,7 @@ export default function Quote() {
               <input
                 id="phone" name="phone" type="tel"
                 value={values.phone} onChange={handleChange}
-                className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
               />
               {errors.phone && <p className="mt-1 text-xs text-red">{errors.phone}</p>}
             </div>
@@ -189,10 +185,10 @@ export default function Quote() {
                 onBlur={handleLocationBlur}
                 autoComplete="off"
                 placeholder="Start typing a UK postcode..."
-                className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
               />
               {showPostcodeDropdown && postcodeSuggestions.length > 0 && (
-                <ul className="absolute left-0 right-0 top-full mt-1 py-1 glass rounded-xl shadow-2xl z-50 max-h-48 overflow-auto">
+                <ul className="absolute left-0 right-0 top-full mt-1 py-1 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50 max-h-48 overflow-auto">
                   {postcodeSuggestions.map((pc) => (
                     <li key={pc}>
                       <button
@@ -214,7 +210,7 @@ export default function Quote() {
               <select
                 id="serviceType" name="serviceType"
                 value={values.serviceType} onChange={handleChange}
-                className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream appearance-none cursor-pointer rounded-xl [&>option]:bg-bg [&>option]:text-cream focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream appearance-none cursor-pointer [&>option]:bg-bg [&>option]:text-cream"
               >
                 <option value="">Select a project type...</option>
                 {PROJECT_TYPE_OPTIONS.map((opt) => (
@@ -230,7 +226,7 @@ export default function Quote() {
                 id="message" name="message" rows={5}
                 value={values.message} onChange={handleChange}
                 placeholder="Tell us about your project — what you need, the scope, any special requirements..."
-                className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 resize-none text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors resize-none text-cream placeholder:text-cream/40"
               />
               {errors.message && <p className="mt-1 text-xs text-red">{errors.message}</p>}
             </div>
@@ -244,7 +240,7 @@ export default function Quote() {
                   id="preferredDate" name="preferredDate" type="date"
                   value={values.preferredDate} onChange={handleChange}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
                 />
               </div>
               <div>
@@ -254,7 +250,7 @@ export default function Quote() {
                 <select
                   id="preferredTime" name="preferredTime"
                   value={values.preferredTime} onChange={handleChange}
-                  className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream appearance-none cursor-pointer rounded-xl [&>option]:bg-bg [&>option]:text-cream focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream appearance-none cursor-pointer [&>option]:bg-bg [&>option]:text-cream"
                 >
                   <option value="">Select a time...</option>
                   {TIME_OPTIONS.map((opt) => (
@@ -266,7 +262,7 @@ export default function Quote() {
                     type="time"
                     value={customTime}
                     onChange={(e) => setCustomTime(e.target.value)}
-                    className="mt-3 w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 outline-none py-3 px-4 transition-all duration-300 text-cream rounded-xl"
+                    className="mt-3 w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
                   />
                 )}
               </div>
@@ -279,7 +275,7 @@ export default function Quote() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-gradient-to-r from-accent via-accent-light to-accent text-white text-sm font-semibold px-8 py-3.5 rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:scale-[1.02] animate-gradient-x disabled:opacity-50"
+              className="bg-red text-white text-sm font-medium px-8 py-3 rounded-xl hover:bg-red-dark transition-colors disabled:opacity-50"
             >
               {submitting ? 'Sending...' : 'Submit request'}
             </button>

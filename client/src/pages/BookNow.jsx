@@ -105,40 +105,36 @@ export default function BookNow() {
 
   if (success) {
     return (
-      <div className="relative max-w-xl mx-auto px-6 py-28 text-center">
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-emerald-500/[0.05] rounded-full blur-[100px] pointer-events-none" aria-hidden />
-        <div className="relative glass rounded-2xl p-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 rounded-2xl mb-6">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400">
-              <path d="M6 16l7 7L26 9" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-white">Booking Request Submitted</h1>
-          <p className="mt-4 text-cream/60">
-            Your request is now pending review. We&rsquo;ll get back to you shortly to confirm your booking. Once approved, you&rsquo;ll receive an email with a link to complete payment.
-          </p>
-          <button
-            onClick={() => setSuccess(false)}
-            className="mt-8 inline-block bg-gradient-to-r from-red via-red-light to-red text-white text-sm font-semibold px-8 py-3.5 rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] animate-gradient-x"
-          >
-            Submit another request
-          </button>
+      <div className="max-w-xl mx-auto px-6 py-24 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 rounded-full mb-6">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400">
+            <path d="M6 16l7 7L26 9" />
+          </svg>
         </div>
+        <h1 className="text-3xl font-bold text-white">Booking Request Submitted</h1>
+        <p className="mt-4 text-cream/70">
+          Your request is now pending review. We&rsquo;ll get back to you shortly to confirm your booking. Once approved, you&rsquo;ll receive an email with a link to complete payment.
+        </p>
+        <button
+          onClick={() => setSuccess(false)}
+          className="mt-8 inline-block bg-red text-white text-sm font-medium px-8 py-3 rounded-xl hover:bg-red-dark transition-colors"
+        >
+          Submit another request
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="relative max-w-4xl mx-auto px-6 py-28">
-      <div className="absolute top-10 -left-20 w-72 h-72 bg-red/[0.04] rounded-full blur-[120px] pointer-events-none" aria-hidden />
-      <h1 className="text-4xl md:text-5xl font-bold text-gradient">Book Now</h1>
-      <p className="mt-4 text-cream/60 max-w-2xl">
+    <div className="max-w-4xl mx-auto px-6 py-24">
+      <h1 className="text-4xl md:text-5xl font-bold text-white">Book Now</h1>
+      <p className="mt-4 text-cream/70 max-w-2xl">
         Select a service and fill in the details below. Your request will be reviewed and you&rsquo;ll receive an email to complete payment once approved.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-12 space-y-6 max-w-xl">
         <div>
-          <label htmlFor="serviceSlug" className="block text-sm font-medium mb-2 text-cream/70">
+          <label htmlFor="serviceSlug" className="block text-sm font-medium mb-2">
             Service
           </label>
           <select
@@ -146,7 +142,7 @@ export default function BookNow() {
             name="serviceSlug"
             value={values.serviceSlug}
             onChange={handleChange}
-            className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream appearance-none cursor-pointer rounded-xl [&>option]:bg-bg [&>option]:text-cream focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+            className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream appearance-none cursor-pointer [&>option]:bg-bg [&>option]:text-cream"
           >
             <option value="">Select a service...</option>
             {SERVICES.map((s) => (
@@ -156,7 +152,7 @@ export default function BookNow() {
             ))}
           </select>
           {selectedService && (
-            <p className="mt-2 text-sm text-red-light font-semibold">
+            <p className="mt-2 text-sm text-red">
               £{selectedService.displayPrice}
             </p>
           )}
@@ -164,7 +160,7 @@ export default function BookNow() {
         </div>
 
         <div ref={postcodeDropdownRef} className="relative">
-          <label htmlFor="propertyAddress" className="block text-sm font-medium mb-2 text-cream/70">
+          <label htmlFor="propertyAddress" className="block text-sm font-medium mb-2">
             Property Address
           </label>
           <input
@@ -176,10 +172,10 @@ export default function BookNow() {
             onBlur={handleAddressBlur}
             autoComplete="off"
             placeholder="Start typing a UK postcode..."
-            className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+            className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
           />
           {showPostcodeDropdown && postcodeSuggestions.length > 0 && (
-            <ul className="absolute left-0 right-0 top-full mt-1 py-1 glass rounded-xl shadow-2xl z-50 max-h-48 overflow-auto">
+            <ul className="absolute left-0 right-0 top-full mt-1 py-1 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50 max-h-48 overflow-auto">
               {postcodeSuggestions.map((pc) => (
                 <li key={pc}>
                   <button
@@ -197,7 +193,7 @@ export default function BookNow() {
         </div>
 
         <div>
-          <label htmlFor="preferredDate" className="block text-sm font-medium mb-2 text-cream/70">
+          <label htmlFor="preferredDate" className="block text-sm font-medium mb-2">
             Preferred Date
           </label>
           <input
@@ -207,13 +203,13 @@ export default function BookNow() {
             value={values.preferredDate}
             onChange={handleChange}
             min={new Date().toISOString().split('T')[0]}
-            className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+            className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
           />
           {errors.preferredDate && <p className="mt-1 text-xs text-red">{errors.preferredDate}</p>}
         </div>
 
         <div>
-          <label htmlFor="timeWindow" className="block text-sm font-medium mb-2 text-cream/70">
+          <label htmlFor="timeWindow" className="block text-sm font-medium mb-2">
             Time Window
           </label>
           <select
@@ -221,7 +217,7 @@ export default function BookNow() {
             name="timeWindow"
             value={values.timeWindow}
             onChange={handleChange}
-            className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream appearance-none cursor-pointer rounded-xl [&>option]:bg-bg [&>option]:text-cream focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+            className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream appearance-none cursor-pointer [&>option]:bg-bg [&>option]:text-cream"
           >
             <option value="">Select a time window...</option>
             {TIME_WINDOWS.map((tw) => (
@@ -235,14 +231,14 @@ export default function BookNow() {
               type="time"
               value={customTime}
               onChange={(e) => setCustomTime(e.target.value)}
-              className="mt-3 w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 outline-none py-3 px-4 transition-all duration-300 text-cream rounded-xl"
+              className="mt-3 w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
             />
           )}
           {errors.timeWindow && <p className="mt-1 text-xs text-red">{errors.timeWindow}</p>}
         </div>
 
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium mb-2 text-cream/70">
+          <label htmlFor="phone" className="block text-sm font-medium mb-2">
             Phone Number
           </label>
           <input
@@ -251,13 +247,13 @@ export default function BookNow() {
             type="tel"
             value={values.phone}
             onChange={handleChange}
-            className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+            className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
           />
           {errors.phone && <p className="mt-1 text-xs text-red">{errors.phone}</p>}
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium mb-2 text-cream/70">
+          <label htmlFor="notes" className="block text-sm font-medium mb-2">
             Notes <span className="text-cream/40">(optional)</span>
           </label>
           <textarea
@@ -267,7 +263,7 @@ export default function BookNow() {
             placeholder="Any specific requirements or details about the property"
             value={values.notes}
             onChange={handleChange}
-            className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 resize-none text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]"
+            className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors resize-none text-cream placeholder:text-cream/40"
           />
         </div>
 
@@ -278,12 +274,12 @@ export default function BookNow() {
         <button
           type="submit"
           disabled={submitting}
-          className="bg-gradient-to-r from-red via-red-light to-red text-white text-sm font-semibold px-8 py-3.5 rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(220,38,38,0.4)] hover:scale-[1.02] animate-gradient-x disabled:opacity-50"
+          className="bg-red text-white text-sm font-medium px-8 py-3 rounded-xl hover:bg-red-dark transition-colors disabled:opacity-50"
         >
           {submitting ? 'Submitting...' : 'Submit Booking Request'}
         </button>
 
-        <p className="text-xs text-cream/35">
+        <p className="text-xs text-cream/40">
           Your request will be reviewed. You&rsquo;ll only be asked to pay after we confirm availability.
         </p>
       </form>
