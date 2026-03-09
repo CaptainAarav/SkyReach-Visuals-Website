@@ -54,6 +54,9 @@ const galleryItems = [
 
 const ABOUT_VIDEO = '/media/paul-srv.mp4';
 
+/** Per-card hover rotation (any direction) so the carousel feels less uniform */
+const REVIEW_HOVER_ROTATIONS = ['hover:rotate-1', 'hover:-rotate-1', 'hover:rotate-2', 'hover:-rotate-2', 'hover:rotate-1', 'hover:-rotate-2'];
+
 function scrollToSection(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 }
@@ -210,9 +213,9 @@ export default function Home() {
               className="flex transition-[transform] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
               style={{ transform: `translateX(-${reviewIndex * 100}%)` }}
             >
-              {reviews.map((r) => (
+              {reviews.map((r, i) => (
                 <div key={r.id} className="w-full shrink-0 px-3">
-                  <div className="review-card isolate bg-bg-card p-8 md:p-12 rounded-2xl border border-white/10 flex flex-col gap-6 min-h-[300px] md:min-h-[340px] cursor-default transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:rotate-1 hover:border-accent/50 hover:shadow-xl hover:shadow-accent/15 ">
+                  <div className={`review-card isolate bg-bg-card p-8 md:p-12 rounded-2xl border border-white/10 flex flex-col gap-6 min-h-[300px] md:min-h-[340px] cursor-default transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 ${REVIEW_HOVER_ROTATIONS[i % REVIEW_HOVER_ROTATIONS.length]} hover:border-accent/50 hover:shadow-xl hover:shadow-accent/15`}>
                     <div className="flex items-center justify-between flex-wrap gap-3">
                       <div className="flex items-center gap-3">
                         <span className="text-base md:text-lg font-semibold text-white">{r.name}</span>
@@ -264,8 +267,8 @@ export default function Home() {
       </AnimateInView>
 
       {/* Portfolio */}
-      <AnimateInView as="section" id="portfolio" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20 border border-white/5" animation="animate-slide-in-left">
-        <div className="max-w-7xl mx-auto px-6">
+      <AnimateInView as="section" id="portfolio" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
+        <div>
           <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4">Portfolio</h2>
           <p className="mt-3 text-cream/70 max-w-2xl">
             A selection of aerial projects from across Bournemouth, Poole, and the Dorset coast.
@@ -304,8 +307,8 @@ export default function Home() {
       </AnimateInView>
 
       {/* Contact */}
-      <AnimateInView as="section" id="contact" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20 border border-white/5" animation="animate-slide-in-right">
-        <div className="max-w-7xl mx-auto px-6">
+      <AnimateInView as="section" id="contact" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
+        <div>
           <h2 className="text-4xl md:text-5xl font-bold text-white border-l-4 border-red pl-4">Get in touch</h2>
           <p className="mt-4 text-cream/70 max-w-2xl">
             Got a project in mind? Drop us a message and we&rsquo;ll get back to you within 24 hours.

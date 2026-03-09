@@ -155,10 +155,10 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile hamburger — rounded, transparent like nav bar */}
+        {/* Mobile hamburger — solid for clear tap target */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-cream p-2.5 rounded-xl bg-black/20 backdrop-blur border border-white/10 hover:bg-white/10 transition-colors"
+          className="md:hidden text-cream p-2.5 rounded-xl bg-white/15 hover:bg-white/25 transition-colors"
           aria-label="Toggle menu"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
