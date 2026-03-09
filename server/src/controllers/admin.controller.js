@@ -31,10 +31,13 @@ export async function getStats(req, res, next) {
       ? { paidAt: { not: null, ...dateFilter.createdAt } }
       : { paidAt: { not: null } };
 
+    const externalDateFilter = dateFilter.createdAt ? { paidAt: dateFilter.createdAt } : {};
+
     const [
       total, admins, customerSupport, active, suspended, banned,
       totalQuotes, totalBookings, totalAccepted, totalDeclined,
       revenueResult,
+      externalRevenueResult,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: 'ADMIN' } }),
@@ -50,9 +53,13 @@ export async function getStats(req, res, next) {
         _sum: { packagePrice: true },
         where: paidDateFilter,
       }),
+      prisma.externalProject.aggregate({
+        _sum: { amount: true },
+        where: externalDateFilter,
+      }),
     ]);
 
-    const revenue = revenueResult._sum.packagePrice || 0;
+    const revenue = (revenueResult._sum.packagePrice || 0) + (externalRevenueResult._sum.amount || 0);
 
     res.json({
       success: true,
@@ -277,11 +284,43 @@ export async function getAccountReviews(req, res, next) {
   }
 }
 
+// ── External projects (admin-only, revenue from outside website) ─────
+export async function createExternalProject(req, res, next) {
+  try {
+    const { amount, label } = req.body;
+    const amountPence = Math.round(Number(amount) * 100);
+    if (!Number.isFinite(amountPence) || amountPence <= 0) {
+      throw new AppError('Amount must be a positive number', 400);
+    }
+    const project = await prisma.externalProject.create({
+      data: {
+        amount: amountPence,
+        label: label && String(label).trim() ? String(label).trim() : null,
+      },
+    });
+    await logAdminAction(req.user.id, 'CREATE_EXTERNAL_PROJECT', null, `Amount: £${(amountPence / 100).toFixed(2)}${project.label ? ` — ${project.label}` : ''}`);
+    res.status(201).json({ success: true, data: project, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ── Orders ──────────────────────────────────────────────────────────
 export async function listOrders(req, res, next) {
   try {
+    const { status, sort = 'shootDate', order = 'asc' } = req.query;
+    const where = {};
+    if (status === 'accepted') {
+      where.status = { in: ['APPROVED', 'CONFIRMED', 'COMPLETED'] };
+    } else if (status === 'declined') {
+      where.status = 'DECLINED';
+    } else if (status === 'pending') {
+      where.status = 'PENDING';
+    }
+    const orderBy = sort === 'createdAt' ? { createdAt: order } : { shootDate: order };
     const orders = await prisma.booking.findMany({
-      orderBy: { createdAt: 'desc' },
+      where,
+      orderBy,
       include: { user: { select: { id: true, name: true, email: true } } },
     });
     res.json({ success: true, data: orders, error: null });
@@ -365,8 +404,11 @@ export async function updateOrder(req, res, next) {
 // ── Messages ────────────────────────────────────────────────────────
 export async function listMessages(req, res, next) {
   try {
-    const read = req.query.read;
-    const where = read === 'false' ? { read: false } : {};
+    const { read, archived } = req.query;
+    const where = {};
+    if (read === 'false') where.read = false;
+    if (archived === 'true') where.archived = true;
+    else if (archived === 'false') where.archived = false;
     const messages = await prisma.contactMessage.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -385,6 +427,22 @@ export async function markMessageRead(req, res, next) {
     const updated = await prisma.contactMessage.update({
       where: { id },
       data: { read: true },
+    });
+    res.json({ success: true, data: updated, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function markMessageArchived(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { archived } = req.body;
+    const msg = await prisma.contactMessage.findUnique({ where: { id } });
+    if (!msg) throw new AppError('Message not found', 404);
+    const updated = await prisma.contactMessage.update({
+      where: { id },
+      data: { archived: Boolean(archived) },
     });
     res.json({ success: true, data: updated, error: null });
   } catch (err) {

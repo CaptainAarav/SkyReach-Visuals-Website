@@ -127,7 +127,7 @@ export default function BookNow() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-24">
-      <h1 className="text-4xl md:text-5xl font-bold text-white">Book Now</h1>
+      <h1 className="text-4xl md:text-5xl font-bold text-white">Make a Booking</h1>
       <p className="mt-4 text-cream/70 max-w-2xl">
         Select a service and fill in the details below. Your request will be reviewed and you&rsquo;ll receive an email to complete payment once approved.
       </p>
@@ -152,9 +152,10 @@ export default function BookNow() {
             ))}
           </select>
           {selectedService && (
-            <p className="mt-2 text-sm text-red">
-              £{selectedService.displayPrice}
-            </p>
+            <div className="mt-4 p-4 rounded-2xl border border-white/10 bg-bg-card/50">
+              <p className="font-semibold text-white">{selectedService.name} — £{selectedService.displayPrice}</p>
+              <p className="mt-2 text-sm text-cream/80 leading-relaxed">{selectedService.description}</p>
+            </div>
           )}
           {errors.serviceSlug && <p className="mt-1 text-xs text-red">{errors.serviceSlug}</p>}
         </div>
@@ -227,12 +228,16 @@ export default function BookNow() {
             ))}
           </select>
           {values.timeWindow === 'Custom' && (
-            <input
-              type="time"
-              value={customTime}
-              onChange={(e) => setCustomTime(e.target.value)}
-              className="mt-3 w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
-            />
+            <div className="mt-3">
+              <label htmlFor="customTime" className="block text-xs text-cream/60 mb-1">Suggested time</label>
+              <input
+                id="customTime"
+                type="time"
+                value={customTime}
+                onChange={(e) => setCustomTime(e.target.value)}
+                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
+              />
+            </div>
           )}
           {errors.timeWindow && <p className="mt-1 text-xs text-red">{errors.timeWindow}</p>}
         </div>
@@ -276,7 +281,7 @@ export default function BookNow() {
           disabled={submitting}
           className="bg-red text-white text-sm font-medium px-8 py-3 rounded-xl hover:bg-red-dark transition-colors disabled:opacity-50"
         >
-          {submitting ? 'Submitting...' : 'Submit Booking Request'}
+          {submitting ? 'Submitting...' : 'Submit booking request'}
         </button>
 
         <p className="text-xs text-cream/40">

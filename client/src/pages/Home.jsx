@@ -4,13 +4,13 @@ import { useForm } from '../hooks/useForm.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { api } from '../api/client.js';
 import AnimateInView from '../components/AnimateInView.jsx';
-import CountUp from '../components/CountUp.jsx';
 
 const HERO_VIDEO = '/media/hero-bg.mp4';
 
 const SERVICES = [
-  { title: 'Property Roof Inspections', description: 'Comprehensive aerial photos to safely inspect roofs without ladders or scaffolding.' },
-  { title: 'Property Aerial Photos', description: 'High-quality aerial photos for homes, property listings and estate marketing.' },
+  { title: 'Roof Inspection', description: 'Aerial roof check using drone. Identify damage, leaks, or missing tiles. Includes photos and short video.' },
+  { title: 'Property Aerial Photos', description: 'Professional aerial photos of your property. Fully edited and colour graded. High-quality images delivered digitally.' },
+  { title: 'Inspection packages', description: 'Gutter and chimney inspections. Safe, no ladders. Fixed prices — book online or get a quote for custom projects.' },
 ];
 
 const PLACEHOLDER_REVIEWS = [
@@ -58,7 +58,8 @@ const ABOUT_VIDEO = '/media/paul-srv.mp4';
 const REVIEW_HOVER_ROTATIONS = ['hover:rotate-1', 'hover:-rotate-1', 'hover:rotate-2', 'hover:-rotate-2', 'hover:rotate-1', 'hover:-rotate-2'];
 
 function scrollToSection(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 export default function Home() {
@@ -160,15 +161,15 @@ export default function Home() {
           </div>
         </div>
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div className="p-5 rounded-2xl border border-white/10 bg-bg-card/50 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+          <div className="p-5 rounded-2xl border-2 border-emerald-500/50 bg-bg-card/50 cursor-default">
             <h3 className="text-lg font-semibold text-white text-accent-light">Cinematic quality</h3>
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">We shoot in 4K with professional-grade drones. Every clip is colour-graded and edited to a high standard.</p>
           </div>
-          <div className="p-5 rounded-2xl border border-white/10 bg-bg-card/50 hover:border-red/40 hover:shadow-lg hover:shadow-red/10 transition-all duration-300">
+          <div className="p-5 rounded-2xl border-2 border-blue-500/50 bg-bg-card/50 cursor-default">
             <h3 className="text-lg font-semibold text-white text-red-light">Fast & Affordable</h3>
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">Quick turnaround and competitive pricing for inspections, property photography and business content.</p>
           </div>
-          <div className="p-5 rounded-2xl border border-white/10 bg-bg-card/50 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300">
+          <div className="p-5 rounded-2xl border-2 border-red/50 bg-bg-card/50 cursor-default">
             <h3 className="text-lg font-semibold text-white text-emerald-400">Reliable delivery</h3>
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">We give you a delivery date and we stick to it. Standard turnaround 3–7 working days.</p>
           </div>
@@ -176,10 +177,10 @@ export default function Home() {
       </AnimateInView>
 
       {/* Services */}
-      <AnimateInView as="section" id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
+      <AnimateInView as="section" id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-24" animation="animate-slide-in-left">
         <h2 className="text-3xl md:text-4xl font-semibold text-white mb-2">Services</h2>
-        <p className="text-lg text-red font-medium">
-          <CountUp value={35} decimals={2} duration={1200} prefix="£" />
+        <p className="text-lg text-cream/70 font-medium">
+          Fixed-price packages
         </p>
         <p className="mt-4 text-cream/70 max-w-2xl">
           Every package includes a fully licensed, CAA-certified drone operator,
@@ -187,7 +188,7 @@ export default function Home() {
         </p>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
           {SERVICES.map((s) => (
-            <div key={s.title} className="bg-bg-card p-8 rounded-2xl border border-white/10 hover:border-accent/40 transition-all duration-300 border-t-4 border-t-accent/30 hover:border-t-accent hover:shadow-xl hover:shadow-accent/10">
+            <div key={s.title} className="bg-bg-card p-8 rounded-2xl border border-white/10 cursor-default">
               <h3 className="text-xl font-semibold text-white text-accent-light">{s.title}</h3>
               <p className="mt-3 text-cream/80 text-sm leading-relaxed">{s.description}</p>
             </div>
@@ -249,7 +250,7 @@ export default function Home() {
                 </svg>
               </button>
               <p className="text-sm text-cream/50 min-w-[4rem] text-center">
-                <CountUp key={`cur-${reviewIndex}`} value={reviewIndex + 1} duration={600} /> of <CountUp value={reviews.length} duration={800} />
+                {reviewIndex + 1} of {reviews.length}
               </p>
               <button
                 type="button"

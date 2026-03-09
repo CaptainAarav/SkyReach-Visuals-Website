@@ -144,6 +144,8 @@ Open `http://localhost:5173` in your browser.
 | `EMAIL_FROM` | Sender email address | For emails |
 | `PORT` | Server port (default: 5000) | No |
 
+**Live payments:** To receive real payouts to your bank account, use Stripe **live** keys in production: set `STRIPE_SECRET_KEY` to your live secret (`sk_live_...`) and `STRIPE_WEBHOOK_SECRET` to the signing secret for your live webhook endpoint. Configure the webhook in the Stripe Dashboard to point at your production URL (e.g. `https://your-api.com/api/webhooks/stripe`) for `checkout.session.completed`.
+
 ## API Endpoints
 
 ### Auth

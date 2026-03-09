@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
+import { formatOrderNumber } from '../../utils/format.js';
 
 const statusOptions = ['PENDING', 'APPROVED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'DECLINED'];
 const statusColors = {
@@ -105,6 +106,7 @@ function EditOrderModal({ order, onClose, onSave }) {
   const [shootDate, setShootDate] = useState(order.shootDate ? new Date(order.shootDate).toISOString().slice(0, 10) : '');
   const [shootTime, setShootTime] = useState(order.shootTime || '');
   const [adminNotes, setAdminNotes] = useState(order.adminNotes || '');
+  const [quotedPrice, setQuotedPrice] = useState(order.packagePrice != null ? (order.packagePrice / 100).toFixed(2) : '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
@@ -118,7 +120,9 @@ function EditOrderModal({ order, onClose, onSave }) {
       if (shootDate && shootDate !== new Date(order.shootDate).toISOString().slice(0, 10)) body.shootDate = shootDate;
       if (shootTime !== (order.shootTime || '')) body.shootTime = shootTime;
       if (adminNotes !== (order.adminNotes || '')) body.adminNotes = adminNotes;
-
+      if (quotedPrice !== '' && parseFloat(quotedPrice) !== order.packagePrice / 100) {
+        body.quotedPrice = parseFloat(quotedPrice);
+      }
       if (Object.keys(body).length === 0) {
         onClose();
         return;
@@ -159,8 +163,13 @@ function EditOrderModal({ order, onClose, onSave }) {
             </div>
             <div>
               <label className="block text-xs text-cream/50 mb-1">Shoot Time</label>
-              <input type="time" value={shootTime} onChange={(e) => setShootTime(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+              <input type="text" value={shootTime} onChange={(e) => setShootTime(e.target.value)} placeholder="e.g. Morning (8am–12pm) or 2pm" className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Change Price (£)</label>
+            <input type="number" step="0.01" min="0" value={quotedPrice} onChange={(e) => setQuotedPrice(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
           </div>
 
           <div>
@@ -204,17 +213,20 @@ export default function AdminOrders() {
   const [editingOrder, setEditingOrder] = useState(null);
   const [approvingOrder, setApprovingOrder] = useState(null);
 
+  const [viewOrder, setViewOrder] = useState(null);
+
   useEffect(() => {
-    api.get('/api/admin/orders')
+    const params = new URLSearchParams();
+    if (statusFilter) params.set('status', statusFilter);
+    params.set('sort', 'shootDate');
+    params.set('order', 'asc');
+    api.get(`/api/admin/orders?${params}`)
       .then(setOrders)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [statusFilter]);
 
-  const allowedStatuses = statusFilter ? STATUS_FILTER_MAP[statusFilter] : null;
-  const filteredOrders = allowedStatuses
-    ? orders.filter((o) => allowedStatuses.includes(o.status))
-    : orders;
+  const filteredOrders = orders;
 
   const declineOrder = async (id) => {
     setUpdating(id);
@@ -237,6 +249,22 @@ export default function AdminOrders() {
   return (
     <div>
       {error && <p className="text-sm text-red mb-4">{error}</p>}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {FILTERS.map((f) => (
+          <button
+            key={f.value || 'all'}
+            onClick={() => setSearchParams(f.value ? { status: f.value } : {})}
+            className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+              (f.value === '' && !statusFilter) || statusFilter === f.value
+                ? 'bg-accent text-white'
+                : 'bg-bg-card text-cream/80 hover:text-white border border-white/10'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-cream/50 mb-2">Sorted by shoot date (soonest first)</p>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
@@ -248,14 +276,14 @@ export default function AdminOrders() {
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Time</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Price</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Status</th>
-              <th className="pb-3 text-xs font-semibold uppercase text-cream/60">Actions</th>
+              <th className="pb-3 text-xs font-semibold uppercase text-cream/60">View</th>
             </tr>
           </thead>
           <tbody className="text-cream/90">
             {filteredOrders.map((order) => (
               <tr key={order.id} className="border-b border-white/10">
                 <td className="py-4 pr-4 text-sm font-semibold text-white">
-                  {order.orderNumber ?? '—'}
+                  {order.orderNumber != null ? formatOrderNumber(order.orderNumber) : '—'}
                 </td>
                 <td className="py-4 pr-4">
                   <p className="font-medium text-white">{order.user?.name}</p>
@@ -277,36 +305,12 @@ export default function AdminOrders() {
                   </span>
                 </td>
                 <td className="py-4">
-                  <div className="flex items-center gap-2">
-                    {order.status === 'PENDING' && (
-                      <>
-                        <button
-                          onClick={() => setApprovingOrder(order)}
-                          className="text-xs font-medium bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors"
-                        >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => declineOrder(order.id)}
-                          disabled={updating === order.id}
-                          className="text-xs font-medium bg-red/80 text-white px-3 py-1.5 rounded-lg hover:bg-red disabled:opacity-50 transition-colors"
-                        >
-                          Decline
-                        </button>
-                      </>
-                    )}
-                    <button
-                      onClick={() => setEditingOrder(order)}
-                      className="text-xs font-medium bg-white/10 text-cream px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                  {order.adminNotes && (
-                    <p className="text-xs text-cream/40 mt-1 max-w-xs truncate" title={order.adminNotes}>
-                      Note: {order.adminNotes}
-                    </p>
-                  )}
+                  <button
+                    onClick={() => setViewOrder(order)}
+                    className="text-xs font-medium bg-white/10 text-cream px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors"
+                  >
+                    View
+                  </button>
                 </td>
               </tr>
             ))}
@@ -325,6 +329,17 @@ export default function AdminOrders() {
         />
       )}
 
+      {viewOrder && (
+        <ViewOrderModal
+          order={viewOrder}
+          onClose={() => setViewOrder(null)}
+          onEdit={() => { setEditingOrder(viewOrder); setViewOrder(null); }}
+          onAccept={() => { setApprovingOrder(viewOrder); setViewOrder(null); }}
+          onDecline={async () => { await declineOrder(viewOrder.id); setViewOrder(null); }}
+          onSave={handleEditSave}
+        />
+      )}
+
       {editingOrder && (
         <EditOrderModal
           order={editingOrder}
@@ -332,6 +347,68 @@ export default function AdminOrders() {
           onSave={handleEditSave}
         />
       )}
+    </div>
+  );
+}
+
+function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <h2 className="text-lg font-bold text-white">Order {order.orderNumber != null ? formatOrderNumber(order.orderNumber) : ''}</h2>
+          <button onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Name</p>
+            <p className="text-sm text-white">{order.user?.name}</p>
+          </div>
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Email</p>
+            <a href={`mailto:${order.user?.email}`} className="text-sm text-accent hover:underline">{order.user?.email}</a>
+          </div>
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Phone</p>
+            <p className="text-sm text-white">{order.phone || '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Service</p>
+            <p className="text-sm text-white">{order.packageName}</p>
+          </div>
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Shoot date</p>
+            <p className="text-sm text-white">{order.shootDate ? new Date(order.shootDate).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Shoot time</p>
+            <p className="text-sm text-white">{order.shootTime || '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Status</p>
+            <p><span className={`text-xs font-medium px-2 py-1 rounded-lg ${statusColors[order.status] || 'bg-white/10 text-cream'}`}>{order.status}</span></p>
+          </div>
+          <div>
+            <p className="text-xs text-cream/50 mb-1">Price</p>
+            <p className="text-sm font-medium text-white">&pound;{(order.packagePrice / 100).toFixed(2)}</p>
+          </div>
+          {order.adminNotes && (
+            <div>
+              <p className="text-xs text-cream/50 mb-1">Admin notes</p>
+              <p className="text-sm text-cream/80">{order.adminNotes}</p>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
+            {order.status === 'PENDING' && (
+              <>
+                <button type="button" onClick={onAccept} className="text-sm font-medium bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">Accept</button>
+                <button type="button" onClick={onDecline} className="text-sm font-medium bg-red/80 text-white px-4 py-2 rounded-lg hover:bg-red">Decline</button>
+              </>
+            )}
+            <button type="button" onClick={onEdit} className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20">Edit Booking</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

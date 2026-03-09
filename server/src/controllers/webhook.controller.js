@@ -30,14 +30,14 @@ export async function handleStripeWebhook(req, res) {
         });
 
         if (booking && (booking.status === 'APPROVED' || booking.status === 'PENDING')) {
-          await prisma.booking.update({
+          const updated = await prisma.booking.update({
             where: { id: bookingId },
             data: { status: 'CONFIRMED', paidAt: new Date() },
           });
 
           await sendBookingConfirmation({
             to: booking.user.email,
-            booking: { ...booking, status: 'CONFIRMED' },
+            booking: { ...updated, user: booking.user },
           });
         }
       } catch (err) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
+import { formatOrderNumber } from '../utils/format.js';
 
 const TIME_WINDOWS = [
   { value: 'Morning (8am–12pm)', label: 'Morning (8am–12pm)' },
@@ -108,10 +109,10 @@ export default function BookingPay() {
       </div>
 
       <div className="bg-bg-card border border-white/10 rounded-2xl p-8 space-y-5">
-        {booking.orderNumber && (
+        {booking.orderNumber != null && (
           <div className="flex justify-between">
             <span className="text-sm text-cream/60">Order No</span>
-            <span className="text-sm font-semibold text-white">{booking.orderNumber}</span>
+            <span className="text-sm font-semibold text-white">{formatOrderNumber(booking.orderNumber)}</span>
           </div>
         )}
         <div className="flex justify-between">
@@ -127,17 +128,17 @@ export default function BookingPay() {
           </span>
         </div>
         <div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-cream/60">Time</span>
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <span className="text-sm text-cream/60">Shoot time</span>
             {!editingTime ? (
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-white">{booking.shootTime || 'Not set'}</span>
                 <button
                   type="button"
                   onClick={() => { setEditingTime(true); setNewTime(booking.shootTime || ''); }}
-                  className="text-xs text-accent hover:text-accent-light transition-colors"
+                  className="text-xs font-medium text-accent hover:text-accent-light transition-colors underline"
                 >
-                  Change
+                  Adjust shoot time
                 </button>
               </div>
             ) : (

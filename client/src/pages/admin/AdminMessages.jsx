@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useAuth } from '../../hooks/useAuth.js';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 
 function ComposeModal({ onClose, onSent, defaults = {} }) {
+  const { user } = useAuth();
   const [recipientEmail, setRecipientEmail] = useState(defaults.recipientEmail || '');
   const [subject, setSubject] = useState(defaults.subject || '');
   const [body, setBody] = useState(defaults.body || '');
@@ -114,7 +116,7 @@ function ComposeModal({ onClose, onSent, defaults = {} }) {
           <div className="bg-bg rounded-lg p-3 border border-white/10 text-xs text-cream/50">
             <p className="font-semibold text-cream/70 mb-1">Email signature (auto-included):</p>
             <p>SkyReach Visuals</p>
-            <p>[Your Name] &mdash; Drone Aerial Photography &amp; Inspection</p>
+            <p>{user?.name || 'SkyReach'} &mdash; Drone Aerial Photography &amp; Inspection</p>
             <p>07877691861</p>
             <p>support@skyreachvisuals.co.uk</p>
           </div>
@@ -146,11 +148,15 @@ export default function AdminMessages() {
   const [showCompose, setShowCompose] = useState(false);
   const [composeDefaults, setComposeDefaults] = useState({});
   const [tab, setTab] = useState('inbox');
+  const [expandedInboxId, setExpandedInboxId] = useState(null);
+  const [expandedSentId, setExpandedSentId] = useState(null);
 
   const loadInbox = useCallback(() => {
     setLoading(true);
-    const path = filter === 'unread' ? '/api/admin/messages?read=false' : '/api/admin/messages';
-    api.get(path)
+    const params = new URLSearchParams();
+    if (filter === 'unread') params.set('read', 'false');
+    if (filter === 'archived') params.set('archived', 'true');
+    api.get(`/api/admin/messages?${params}`)
       .then(setMessages)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -172,6 +178,12 @@ export default function AdminMessages() {
   const markRead = (id) => {
     api.patch('/api/admin/messages/' + id, { read: true }).then(() => {
       setMessages((list) => list.map((m) => (m.id === id ? { ...m, read: true } : m)));
+    }).catch((err) => setError(err.message));
+  };
+
+  const markArchived = (id, archived) => {
+    api.patch(`/api/admin/messages/${id}/archived`, { archived }).then(() => {
+      setMessages((list) => list.filter((m) => m.id !== id));
     }).catch((err) => setError(err.message));
   };
 
@@ -224,25 +236,40 @@ export default function AdminMessages() {
             >
               New (unread)
             </button>
+            <button
+              type="button"
+              onClick={() => setFilter('archived')}
+              className={`text-sm px-4 py-2 rounded-xl ${filter === 'archived' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 border border-white/10'}`}
+            >
+              Archived
+            </button>
           </div>
           <div className="space-y-6">
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`bg-bg-card border rounded-2xl p-6 ${msg.read ? 'border-white/10' : 'border-accent/50'}`}
+                className={`bg-bg-card border rounded-2xl p-6 ${msg.read ? 'border-white/10' : 'border-accent/50'} ${expandedInboxId === msg.id ? '' : 'cursor-pointer hover:border-white/20'}`}
+                onClick={() => setExpandedInboxId(expandedInboxId === msg.id ? null : msg.id)}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-white">{msg.name}</p>
-                    <a href={`mailto:${msg.email}`} className="block text-sm text-cream/70 hover:text-accent transition-colors">{msg.email}</a>
-                    {msg.phone && <a href={`tel:${msg.phone.replace(/\s/g, '')}`} className="block text-sm text-cream/60 hover:text-accent transition-colors">{msg.phone}</a>}
-                    <p className="mt-3 text-cream/80">{msg.message}</p>
+                    <a href={`mailto:${msg.email}`} className="block text-sm text-cream/70 hover:text-accent transition-colors" onClick={(e) => e.stopPropagation()}>{msg.email}</a>
+                    {msg.phone && <a href={`tel:${msg.phone.replace(/\s/g, '')}`} className="block text-sm text-cream/60 hover:text-accent transition-colors" onClick={(e) => e.stopPropagation()}>{msg.phone}</a>}
+                    <p className="mt-3 text-cream/80 text-sm">
+                      {expandedInboxId === msg.id ? msg.message : (msg.message.length > 80 ? msg.message.slice(0, 80) + '…' : msg.message)}
+                    </p>
+                    {msg.message.length > 80 && (
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedInboxId(expandedInboxId === msg.id ? null : msg.id); }} className="mt-1 text-xs text-accent hover:underline">
+                        {expandedInboxId === msg.id ? 'Show less' : 'Read more'}
+                      </button>
+                    )}
                     <p className="mt-2 text-xs text-cream/50">
                       {new Date(msg.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       {msg.read && ' · Read'}
                     </p>
                   </div>
-                  <div className="flex flex-col gap-2 shrink-0">
+                  <div className="flex flex-col gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
                       onClick={() => {
@@ -262,6 +289,13 @@ export default function AdminMessages() {
                         Mark read
                       </button>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => markArchived(msg.id, !msg.archived)}
+                      className="text-sm font-medium text-cream/60 hover:text-cream"
+                    >
+                      {msg.archived ? 'Unarchive' : 'Archive'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -276,12 +310,23 @@ export default function AdminMessages() {
       {tab === 'sent' && (
         <div className="space-y-6">
           {sentMessages.map((msg) => (
-            <div key={msg.id} className="bg-bg-card border border-white/10 rounded-2xl p-6">
+            <div
+              key={msg.id}
+              className={`bg-bg-card border border-white/10 rounded-2xl p-6 cursor-pointer hover:border-white/20 transition-colors ${expandedSentId === msg.id ? '' : ''}`}
+              onClick={() => setExpandedSentId(expandedSentId === msg.id ? null : msg.id)}
+            >
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs text-cream/50 mb-1">To: <a href={`mailto:${msg.recipientEmail}`} className="text-cream/70 hover:text-accent transition-colors">{msg.recipientEmail}</a></p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-cream/50 mb-1">To: <a href={`mailto:${msg.recipientEmail}`} className="text-cream/70 hover:text-accent transition-colors" onClick={(e) => e.stopPropagation()}>{msg.recipientEmail}</a></p>
                   <p className="font-medium text-white">{msg.subject}</p>
-                  <p className="mt-2 text-cream/80 text-sm whitespace-pre-wrap">{msg.body}</p>
+                  <p className="mt-2 text-cream/80 text-sm whitespace-pre-wrap">
+                    {expandedSentId === msg.id ? msg.body : (msg.body.length > 80 ? msg.body.slice(0, 80) + '…' : msg.body)}
+                  </p>
+                  {msg.body.length > 80 && (
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedSentId(expandedSentId === msg.id ? null : msg.id); }} className="mt-1 text-xs text-accent hover:underline">
+                      {expandedSentId === msg.id ? 'Show less' : 'Read more'}
+                    </button>
+                  )}
                   <p className="mt-2 text-xs text-cream/50">
                     Sent by {msg.sender?.name} &middot; {new Date(msg.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </p>

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { requireAuth, requireAdmin, requireStaff } from '../middleware/auth.js';
 import {
   getStats,
+  createExternalProject,
   listAccounts,
   getAccount,
   updateAccount,
@@ -14,6 +15,7 @@ import {
   updateOrder,
   listMessages,
   markMessageRead,
+  markMessageArchived,
   sendMessageToClient,
   listSentMessages,
   listReviews,
@@ -26,6 +28,7 @@ router.use(requireAuth, requireStaff);
 
 // Stats
 router.get('/stats', getStats);
+router.post('/external-projects', requireAdmin, createExternalProject);
 
 // Accounts
 router.get('/accounts', listAccounts);
@@ -44,6 +47,7 @@ router.patch('/orders/:id', updateOrder);
 // Messages
 router.get('/messages', listMessages);
 router.patch('/messages/:id', markMessageRead);
+router.patch('/messages/:id/archived', markMessageArchived);
 router.post('/messages/send', sendMessageToClient);
 router.get('/messages/sent', listSentMessages);
 

@@ -7,6 +7,7 @@ import Home from './pages/Home.jsx';
 import GetStarted from './pages/GetStarted.jsx';
 import BookNow from './pages/BookNow.jsx';
 import Quote from './pages/Quote.jsx';
+import QuickPay from './pages/QuickPay.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import VerifyEmail from './pages/VerifyEmail.jsx';
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/about" element={<Navigate to="/#about" replace />} />
         <Route path="/contact" element={<Navigate to="/#contact" replace />} />
         <Route path="/get-started" element={<GetStarted />} />
+        <Route path="/quick-pay" element={<QuickPay />} />
         <Route path="/quote" element={<Quote />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

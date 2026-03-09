@@ -3,6 +3,7 @@ import { AppError } from '../utils/AppError.js';
 import { getServiceBySlug } from '../data/packages.js';
 import { createCheckoutSession, retrieveSession } from '../services/stripe.service.js';
 import { sendBookingConfirmation } from '../services/email.service.js';
+import { generateInvoiceHtml } from '../services/invoice.service.js';
 
 export async function createBooking(req, res, next) {
   try {
@@ -103,6 +104,57 @@ export async function getBooking(req, res, next) {
     }
 
     res.json({ success: true, data: booking, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** Return invoice HTML for a paid booking (user's own). */
+export async function getInvoice(req, res, next) {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+      include: { user: { select: { name: true, email: true } } },
+    });
+
+    if (!booking) throw new AppError('Booking not found', 404);
+    if (booking.userId !== req.user.id) throw new AppError('Not authorised', 403);
+    if (!booking.paidAt) throw new AppError('Invoice available after payment', 400);
+
+    const html = generateInvoiceHtml(booking, booking.user);
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** Public: lookup by order number for quick-pay flow. Returns bookingId if status is APPROVED. */
+export async function getBookingByOrderNumber(req, res, next) {
+  try {
+    const orderNumber = parseInt(req.params.orderNumber, 10);
+    if (Number.isNaN(orderNumber)) {
+      throw new AppError('Invalid order number', 400);
+    }
+
+    const booking = await prisma.booking.findFirst({
+      where: { orderNumber, status: 'APPROVED' },
+      select: { id: true, packageName: true, packagePrice: true },
+    });
+
+    if (!booking) {
+      throw new AppError('No approved booking found for this order number', 404);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        bookingId: booking.id,
+        packageName: booking.packageName,
+        amount: booking.packagePrice,
+      },
+      error: null,
+    });
   } catch (err) {
     next(err);
   }

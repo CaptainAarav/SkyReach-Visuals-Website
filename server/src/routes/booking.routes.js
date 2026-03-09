@@ -4,6 +4,8 @@ import {
   createBooking,
   listBookings,
   getBooking,
+  getBookingByOrderNumber,
+  getInvoice,
   verifyBooking,
   createReview,
   payBooking,
@@ -12,10 +14,12 @@ import {
 
 const router = Router();
 
+router.get('/by-order/:orderNumber', getBookingByOrderNumber);
 router.post('/', requireAuth, createBooking);
 router.get('/', requireAuth, listBookings);
 router.get('/verify', requireAuth, verifyBooking);
 router.get('/:id', requireAuth, getBooking);
+router.get('/:id/invoice', requireAuth, getInvoice);
 router.post('/:id/pay', requireAuth, payBooking);
 router.patch('/:id/time', requireAuth, updateBookingTime);
 router.post('/:id/review', requireAuth, createReview);

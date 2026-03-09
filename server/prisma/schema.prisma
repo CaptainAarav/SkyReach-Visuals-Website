@@ -111,6 +111,16 @@ enum BookingStatus {
   DECLINED
 }
 
+model ExternalProject {
+  id        String   @id @default(cuid())
+  amount    Int      // pence
+  label     String?
+  paidAt    DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([paidAt])
+}
+
 model ContactMessage {
   id             String    @id @default(cuid())
   name           String
@@ -121,6 +131,7 @@ model ContactMessage {
   extraDetails   String?
   message        String
   read           Boolean   @default(false)
+  archived       Boolean   @default(false)
   businessName   String?
   budget         String?
   preferredDate  DateTime?

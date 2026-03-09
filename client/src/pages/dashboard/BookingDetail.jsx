@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
+import { formatOrderNumber } from '../../utils/format.js';
 
 const statusColors = {
   PENDING: 'bg-amber-500/20 text-amber-400',
@@ -117,7 +118,7 @@ export default function BookingDetail() {
 
         <div>
           <span className="text-xs font-semibold tracking-widest uppercase text-cream/50">Order No</span>
-          <p className="mt-1 font-semibold text-cream">{booking.orderNumber}</p>
+          <p className="mt-1 font-semibold text-cream">{formatOrderNumber(booking.orderNumber)}</p>
         </div>
 
         <div>
@@ -129,6 +130,19 @@ export default function BookingDetail() {
           </p>
         </div>
       </div>
+
+      {(booking.status === 'CONFIRMED' || booking.status === 'COMPLETED') && booking.paidAt && (
+        <div className="mt-6">
+          <a
+            href={`/api/bookings/${id}/invoice`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-accent hover:text-accent-light transition-colors"
+          >
+            Download invoice
+          </a>
+        </div>
+      )}
 
       {canReview && (
         <div className="mt-10 bg-bg-card border border-white/10 p-8 rounded-2xl">

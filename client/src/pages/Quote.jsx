@@ -2,22 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from '../hooks/useForm.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { api } from '../api/client.js';
+import { QUOTE_SERVICES } from '../data/packages.js';
 
 const POSTCODE_AUTOCOMPLETE_URL = 'https://api.postcodes.io/postcodes';
 const POSTCODE_DEBOUNCE_MS = 300;
-
-const PROJECT_TYPE_OPTIONS = [
-  'Property Roof Inspection',
-  'Property Aerial Photos',
-  'Business / Commercial Aerial Photos',
-  'Promotional Drone Video',
-  'Construction Progress Photos/Video',
-  'Event Aerial Photography',
-  'Social Media Drone Content',
-  'Property Photography',
-  'Real Estate Marketing',
-  'Other',
-];
 
 const TIME_OPTIONS = [
   { value: 'Morning (8am–12pm)', label: 'Morning (8am–12pm)' },
@@ -33,7 +21,10 @@ export default function Quote() {
   const [postcodeSuggestions, setPostcodeSuggestions] = useState([]);
   const [showPostcodeDropdown, setShowPostcodeDropdown] = useState(false);
   const [customTime, setCustomTime] = useState('');
+  const [budgetDigits, setBudgetDigits] = useState('');
   const postcodeDropdownRef = useRef(null);
+
+  const selectedQuoteService = QUOTE_SERVICES.find((s) => s.slug === values.serviceType);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit, reset } = useForm({
     initialValues: {
@@ -43,6 +34,7 @@ export default function Quote() {
       location: '',
       serviceType: '',
       message: '',
+      budget: '',
       preferredDate: '',
       preferredTime: '',
     },
@@ -61,11 +53,13 @@ export default function Quote() {
       const timeValue = vals.preferredTime === 'Custom' ? customTime : vals.preferredTime;
       await api.post('/api/contact', {
         ...vals,
+        budget: budgetDigits ? `£${budgetDigits}` : null,
         preferredDate: vals.preferredDate || null,
         preferredTime: timeValue || null,
       });
       setSuccess(true);
       setCustomTime('');
+      setBudgetDigits('');
       reset();
     },
   });
@@ -213,11 +207,33 @@ export default function Quote() {
                 className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream appearance-none cursor-pointer [&>option]:bg-bg [&>option]:text-cream"
               >
                 <option value="">Select a project type...</option>
-                {PROJECT_TYPE_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
+                {QUOTE_SERVICES.map((s) => (
+                  <option key={s.slug} value={s.slug}>{s.name}</option>
                 ))}
               </select>
+              {selectedQuoteService && (
+                <div className="mt-4 p-4 rounded-2xl border border-white/10 bg-bg-card/50">
+                  <p className="font-semibold text-white">Get a Quote — {selectedQuoteService.name}</p>
+                  <p className="mt-2 text-sm text-cream/80 leading-relaxed">{selectedQuoteService.description}</p>
+                </div>
+              )}
               {errors.serviceType && <p className="mt-1 text-xs text-red">{errors.serviceType}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="budget" className="block text-sm font-medium mb-2">Budget <span className="text-cream/40">(optional)</span></label>
+              <div className="flex items-center">
+                <span className="text-cream/80 mr-1">£</span>
+                <input
+                  id="budget"
+                  type="text"
+                  inputMode="numeric"
+                  value={budgetDigits}
+                  onChange={(e) => setBudgetDigits(e.target.value.replace(/\D/g, ''))}
+                  placeholder="e.g. 500"
+                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
+                />
+              </div>
             </div>
 
             <div>
@@ -258,12 +274,16 @@ export default function Quote() {
                   ))}
                 </select>
                 {values.preferredTime === 'Custom' && (
-                  <input
-                    type="time"
-                    value={customTime}
-                    onChange={(e) => setCustomTime(e.target.value)}
-                    className="mt-3 w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
-                  />
+                  <div className="mt-3">
+                    <label htmlFor="customTime" className="block text-xs text-cream/60 mb-1">Suggested time</label>
+                    <input
+                      id="customTime"
+                      type="time"
+                      value={customTime}
+                      onChange={(e) => setCustomTime(e.target.value)}
+                      className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
+                    />
+                  </div>
                 )}
               </div>
             </div>
