@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
+import { useTheme } from '../hooks/useTheme.js';
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -12,6 +13,7 @@ function ScrollToTop() {
 }
 
 export default function MainLayout() {
+  useTheme();
   return (
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />

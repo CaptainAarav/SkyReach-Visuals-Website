@@ -46,17 +46,18 @@ const EMAIL_DARK = {
 };
 
 function emailHeader(title) {
+  if (!title) return '';
   return `<tr>
-  <td style="background-color:${EMAIL_DARK.cardBg};padding:32px 40px;text-align:center;">
-    <img src="${logoUrl()}" alt="SkyReach Visuals" width="160" style="display:block;margin:0 auto 12px;border-radius:12px;" />
-    ${title ? `<h1 style="margin:0;color:${EMAIL_DARK.text};font-size:20px;font-weight:600;">${title}</h1>` : ''}
+  <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:left;">
+    <h1 style="margin:0;color:${EMAIL_DARK.text};font-size:20px;font-weight:600;">${title}</h1>
   </td>
 </tr>`;
 }
 
 function emailFooter() {
   return `<tr>
-  <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:center;">
+  <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:left;">
+    <p style="margin:0 0 8px;"><img src="${logoUrl()}" alt="SkyReach Visuals" width="80" style="display:inline-block;border-radius:8px;filter:brightness(0) invert(1);opacity:0.9;" /></p>
     <p style="margin:0;color:${EMAIL_DARK.footer};font-size:12px;">SkyReach Visuals &middot; Bournemouth, Dorset, UK</p>
   </td>
 </tr>`;
@@ -86,46 +87,45 @@ export async function sendBookingConfirmation({ to, booking }) {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader()}
+          ${emailHeader('Booking confirmed')}
           <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;">Booking confirmed</h2>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
               <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
                 Thanks for booking with us. Here are your details:
               </p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;max-width:400px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;max-width:400px;">
                 <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
+                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
                     <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Package</span><br/>
                     <strong style="color:${EMAIL_DARK.text};font-size:15px;">${booking.packageName}</strong>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
+                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
                     <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Shoot date</span><br/>
                     <strong style="color:${EMAIL_DARK.text};font-size:15px;">${shootDate}</strong>
                   </td>
                 </tr>
                 ${booking.shootTime ? `<tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
+                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
                     <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Shoot time</span><br/>
                     <strong style="color:${EMAIL_DARK.text};font-size:15px;">${booking.shootTime}</strong>
                   </td>
                 </tr>` : ''}
                 <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
+                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
                     <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Location</span><br/>
                     <strong style="color:${EMAIL_DARK.text};font-size:15px;">${booking.location}</strong>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
+                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
                     <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Amount paid</span><br/>
                     <strong style="color:${EMAIL_DARK.text};font-size:15px;">&pound;${(booking.packagePrice / 100).toFixed(2)}</strong>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:12px 0;text-align:center;">
+                  <td style="padding:12px 0;text-align:left;">
                     <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Order No</span><br/>
                     <span style="color:${EMAIL_DARK.text};font-size:15px;font-weight:600;">${booking.orderNumber}</span>
                   </td>
@@ -178,7 +178,7 @@ export async function sendContactNotification({ name, email, phone, location, se
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           ${emailHeader('New Enquiry')}
           <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;">
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
               <p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Name:</strong> ${name}</p>
               <p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Email:</strong> ${email}</p>
               ${phone ? `<p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Phone:</strong> ${phone}</p>` : ''}
@@ -189,6 +189,7 @@ export async function sendContactNotification({ name, email, phone, location, se
               <p style="margin:0;color:${EMAIL_DARK.text};font-size:14px;line-height:1.6;white-space:pre-wrap;">${message}</p>
             </td>
           </tr>
+          ${emailFooter()}
         </table>
       </td>
     </tr>
@@ -420,35 +421,30 @@ function adminSignatureText(senderName) {
   ].join('\r\n');
 }
 
-/** Build admin message HTML: website-themed card, left-aligned signature, rounded logo. */
+/** Build admin message HTML: real-email look, left-aligned, no logo at top, inline signature, small white logo at bottom. */
 function adminMessageHtml(body, subject, senderName) {
   const escaped = body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
   const fromAddr = env.emailFrom || 'support@skyreachvisuals.co.uk';
   return `
 <!DOCTYPE html>
-<html>
+<html dir="ltr">
 <head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;direction:ltr;text-align:left;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:24px 20px;">
     <tr>
-      <td align="center">
+      <td align="left">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader()}
           <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:22px;font-weight:600;">${subject}</h2>
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;white-space:pre-wrap;">${escaped}</p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${EMAIL_DARK.border};margin-top:24px;padding-top:24px;">
-                <tr>
-                  <td style="text-align:left;">
-                    <p style="margin:0 0 4px;color:${EMAIL_DARK.text};font-size:14px;font-weight:600;">SkyReach Visuals</p>
-                    <p style="margin:0 0 4px;color:${EMAIL_DARK.textMuted};font-size:13px;">${senderName} &mdash; Drone Aerial Photography &amp; Inspection</p>
-                    <p style="margin:0 0 2px;color:${EMAIL_DARK.textMuted};font-size:13px;">&#x1F4DE; +44 7877691861</p>
-                    <p style="margin:0 0 12px;color:${EMAIL_DARK.textMuted};font-size:13px;">&#x2709; ${fromAddr}</p>
-                    <img src="${logoUrl()}" alt="SkyReach Visuals" width="140" style="display:block;border-radius:12px;" />
-                  </td>
-                </tr>
-              </table>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:32px 40px;text-align:left;">
+              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:22px;font-weight:600;text-align:left;">${subject}</h2>
+              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;white-space:pre-wrap;text-align:left;">${escaped}</p>
+              <p style="margin:24px 0 0;padding-top:16px;border-top:1px solid ${EMAIL_DARK.border};color:${EMAIL_DARK.textMuted};font-size:13px;line-height:1.5;text-align:left;">
+                <strong style="color:${EMAIL_DARK.text};">SkyReach Visuals</strong><br/>
+                ${senderName} &mdash; Drone Aerial Photography &amp; Inspection &middot; +44 7877691861 &middot; ${fromAddr}
+              </p>
+              <p style="margin:12px 0 0;text-align:left;">
+                <img src="${logoUrl()}" alt="SkyReach Visuals" width="100" style="display:inline-block;border-radius:8px;filter:brightness(0) invert(1);opacity:0.9;" />
+              </p>
             </td>
           </tr>
           ${emailFooter()}

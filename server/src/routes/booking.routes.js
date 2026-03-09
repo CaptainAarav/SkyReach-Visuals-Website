@@ -5,6 +5,7 @@ import {
   listBookings,
   getBooking,
   getBookingByOrderNumber,
+  getBookingsByCustomer,
   getInvoice,
   verifyBooking,
   createReview,
@@ -15,6 +16,8 @@ import {
 const router = Router();
 
 router.get('/by-order/:orderNumber', getBookingByOrderNumber);
+router.get('/by-customer', getBookingsByCustomer);
+router.post('/by-customer', getBookingsByCustomer);
 router.post('/', requireAuth, createBooking);
 router.get('/', requireAuth, listBookings);
 router.get('/verify', requireAuth, verifyBooking);

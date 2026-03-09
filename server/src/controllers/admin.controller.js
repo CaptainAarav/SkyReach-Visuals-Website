@@ -247,7 +247,7 @@ export async function getAccountOrders(req, res, next) {
   try {
     const { id } = req.params;
     const orders = await prisma.booking.findMany({
-      where: { userId: id },
+      where: { userId: id, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     res.json({ success: true, data: orders, error: null });
@@ -309,8 +309,13 @@ export async function createExternalProject(req, res, next) {
 // ── Orders ──────────────────────────────────────────────────────────
 export async function listOrders(req, res, next) {
   try {
-    const { status, sort = 'shootDate', order = 'asc' } = req.query;
+    const { status, sort = 'shootDate', order = 'asc', deleted } = req.query;
     const where = {};
+    if (deleted === '1' || deleted === 'true') {
+      where.deletedAt = { not: null };
+    } else {
+      where.deletedAt = null;
+    }
     if (status === 'accepted') {
       where.status = { in: ['APPROVED', 'CONFIRMED', 'COMPLETED'] };
     } else if (status === 'declined') {
@@ -325,6 +330,22 @@ export async function listOrders(req, res, next) {
       include: { user: { select: { id: true, name: true, email: true } } },
     });
     res.json({ success: true, data: orders, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteOrder(req, res, next) {
+  try {
+    const { id } = req.params;
+    const booking = await prisma.booking.findUnique({ where: { id } });
+    if (!booking) throw new AppError('Order not found', 404);
+    await prisma.booking.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+    await logAdminAction(req.user.id, 'DELETE_ORDER', null, `Order ${id} (${booking.orderNumber}) moved to deleted`);
+    res.json({ success: true, data: { id }, error: null });
   } catch (err) {
     next(err);
   }

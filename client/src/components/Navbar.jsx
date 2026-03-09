@@ -122,11 +122,11 @@ export default function Navbar() {
                     Orders
                   </Link>
                   <Link
-                    to="/dashboard/profile"
+                    to="/dashboard/settings"
                     onClick={() => setDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-cream/80 hover:text-white hover:bg-white/5"
                   >
-                    Profile
+                    Settings
                   </Link>
                   {isStaff && (
                     <Link
@@ -219,11 +219,11 @@ export default function Navbar() {
                       Orders
                     </Link>
                     <Link
-                      to="/dashboard/profile"
+                      to="/dashboard/settings"
                       onClick={() => setMenuOpen(false)}
                       className="block py-3.5 text-lg text-cream/90 hover:text-white transition-colors"
                     >
-                      Profile
+                      Settings
                     </Link>
                     {isStaff && (
                       <Link

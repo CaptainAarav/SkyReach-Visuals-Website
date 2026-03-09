@@ -115,24 +115,19 @@ function ComposeModal({ onClose, onSent, replyTo }) {
               <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">Cancel</button>
             </div>
           </form>
-          <div className="hidden md:flex flex-col flex-1 min-w-0 bg-[#1a1a2e] p-4">
+          <div className="hidden md:flex flex-col flex-1 min-w-0 bg-bg p-4">
             <p className="text-xs text-cream/50 mb-2 font-medium">Preview (as recipient will see)</p>
-            <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-white/10">
-              <div className="bg-[#1a1a2e] p-4 min-h-full">
-                <div className="max-w-[520px] mx-auto bg-[#1E2D4A] rounded-xl overflow-hidden">
-                  <div className="p-6 text-center">
-                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-40 h-auto mx-auto mb-2 rounded-xl" />
-                  </div>
-                  <div className="px-6 pb-6 text-left">
-                    <h3 className="text-[#F5F3EE] font-semibold text-lg mb-3">{displaySubject}</h3>
-                    <p className="text-[#F5F3EE]/90 text-sm leading-relaxed whitespace-pre-wrap">{displayBody}</p>
-                    <div className="mt-6 pt-6 border-t border-white/10 text-left">
-                      <p className="text-[#F5F3EE] font-semibold text-sm">SkyReach Visuals</p>
-                      <p className="text-[#F5F3EE]/70 text-xs mt-0.5">{senderName} — Drone Aerial Photography & Inspection</p>
-                      <p className="text-[#F5F3EE]/70 text-xs">+44 7877691861</p>
-                      <p className="text-[#F5F3EE]/70 text-xs">support@skyreachvisuals.co.uk</p>
-                      <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-32 h-auto mt-3 rounded-xl" />
-                    </div>
+            <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-white/10 bg-bg-card">
+              <div className="p-4 min-h-full" style={{ backgroundColor: '#0f0f0f' }}>
+                <div className="max-w-[520px] rounded-xl overflow-hidden border border-red/20" style={{ backgroundColor: '#1E2D4A' }}>
+                  <div className="px-6 pt-6 pb-4 text-left">
+                    <h3 className="text-cream font-semibold text-lg mb-3">{displaySubject}</h3>
+                    <p className="text-cream/90 text-sm leading-relaxed whitespace-pre-wrap">{displayBody}</p>
+                    <p className="mt-6 pt-4 border-t border-white/10 text-cream/70 text-xs leading-relaxed">
+                      <strong className="text-cream">SkyReach Visuals</strong><br />
+                      {senderName} — Drone Aerial Photography &amp; Inspection · +44 7877691861 · support@skyreachvisuals.co.uk
+                    </p>
+                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-24 h-auto mt-3 rounded-lg opacity-90" style={{ filter: 'brightness(0) invert(1)' }} />
                   </div>
                 </div>
               </div>

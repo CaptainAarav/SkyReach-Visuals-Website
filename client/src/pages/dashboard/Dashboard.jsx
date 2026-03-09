@@ -15,11 +15,11 @@ export default function Dashboard() {
           <p className="mt-1 text-sm text-cream/60">View and track your bookings</p>
         </Link>
         <Link
-          to="/dashboard/profile"
+          to="/dashboard/settings"
           className="block p-6 bg-bg-card border border-white/10 rounded-2xl hover:border-white/20 transition-colors"
         >
-          <h2 className="text-lg font-semibold text-white">Profile</h2>
-          <p className="mt-1 text-sm text-cream/60">Update your name and email</p>
+          <h2 className="text-lg font-semibold text-white">Settings</h2>
+          <p className="mt-1 text-sm text-cream/60">Profile, appearance and preferences</p>
         </Link>
       </div>
     </div>

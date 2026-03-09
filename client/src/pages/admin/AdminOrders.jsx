@@ -208,6 +208,7 @@ const FILTERS = [
   { label: 'Pending', value: 'pending' },
   { label: 'Accepted', value: 'accepted' },
   { label: 'Declined', value: 'declined' },
+  { label: 'Deleted', value: 'deleted' },
 ];
 
 export default function AdminOrders() {
@@ -224,7 +225,10 @@ export default function AdminOrders() {
 
   useEffect(() => {
     const params = new URLSearchParams();
-    if (statusFilter) params.set('status', statusFilter);
+    if (statusFilter) {
+      if (statusFilter === 'deleted') params.set('deleted', '1');
+      else params.set('status', statusFilter);
+    }
     params.set('sort', 'shootDate');
     params.set('order', 'asc');
     api.get(`/api/admin/orders?${params}`)
@@ -311,12 +315,20 @@ export default function AdminOrders() {
                     {order.status}
                   </span>
                 </td>
-                <td className="py-4">
+                <td className="py-4 flex items-center gap-2">
                   <button
                     onClick={() => setViewOrder(order)}
                     className="text-xs font-medium bg-white/10 text-cream px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors"
                   >
                     View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingOrder(order)}
+                    className="text-xs text-cream/50 hover:text-cream/80 transition-colors"
+                    title="Edit (for testing)"
+                  >
+                    Edit
                   </button>
                 </td>
               </tr>
@@ -343,6 +355,14 @@ export default function AdminOrders() {
           onEdit={() => { setEditingOrder(viewOrder); setViewOrder(null); }}
           onAccept={() => { setApprovingOrder(viewOrder); setViewOrder(null); }}
           onDecline={async () => { await declineOrder(viewOrder.id); setViewOrder(null); }}
+          onDelete={async () => {
+            try {
+              await api.delete(`/api/admin/orders/${viewOrder.id}`);
+              setOrders((list) => list.filter((o) => o.id !== viewOrder.id));
+              setViewOrder(null);
+            } catch (err) { setError(err.message); }
+          }}
+          isDeleted={statusFilter === 'deleted'}
           onSave={handleEditSave}
         />
       )}
@@ -358,12 +378,12 @@ export default function AdminOrders() {
   );
 }
 
-function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline }) {
+function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline, onDelete, isDeleted }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <h2 className="text-lg font-bold text-white">Order {order.orderNumber != null ? formatOrderNumber(order.orderNumber) : ''}</h2>
+          <h2 className="text-lg font-bold text-white">Order {order.orderNumber != null ? formatOrderNumber(order.orderNumber) : ''}{isDeleted ? ' (Deleted)' : ''}</h2>
           <button onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
         </div>
         <div className="p-6 space-y-4">
@@ -406,13 +426,20 @@ function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline }) {
             </div>
           )}
           <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
-            {order.status === 'PENDING' && (
+            {!isDeleted && (
               <>
-                <button type="button" onClick={onAccept} className="text-sm font-medium bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">Accept</button>
-                <button type="button" onClick={onDecline} className="text-sm font-medium bg-red/80 text-white px-4 py-2 rounded-lg hover:bg-red">Decline</button>
+                {order.status === 'PENDING' && (
+                  <>
+                    <button type="button" onClick={onAccept} className="text-sm font-medium bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">Accept</button>
+                    <button type="button" onClick={onDecline} className="text-sm font-medium bg-red/80 text-white px-4 py-2 rounded-lg hover:bg-red">Decline</button>
+                  </>
+                )}
+                <button type="button" onClick={onEdit} className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20">Edit Booking</button>
+                {onDelete && (
+                  <button type="button" onClick={onDelete} className="text-sm font-medium bg-red/20 text-red px-4 py-2 rounded-lg hover:bg-red/30">Delete Order</button>
+                )}
               </>
             )}
-            <button type="button" onClick={onEdit} className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20">Edit Booking</button>
           </div>
         </div>
       </div>

@@ -191,3 +191,15 @@
     box-sizing: border-box;
   }
 }
+
+/* Light theme overrides (when .light is on html) */
+html.light {
+  --color-bg: #f0f0f0;
+  --color-bg-elevated: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-cream: #1a1a1a;
+  --color-cream-dark: #2a2a2a;
+  --color-black: #1a1a1a;
+  --color-white: #1a1a1a;
+  --color-black-muted: #666666;
+}

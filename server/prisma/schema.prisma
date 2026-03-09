@@ -96,10 +96,12 @@ model Booking {
   stripeSessionId String?       @unique
   paidAt          DateTime?
   status          BookingStatus @default(PENDING)
+  deletedAt      DateTime?
   createdAt       DateTime      @default(now())
   reviews         Review[]
 
   @@index([userId])
+  @@index([deletedAt])
 }
 
 enum BookingStatus {

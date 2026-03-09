@@ -67,58 +67,58 @@ export default function Profile() {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-24">
-      <Link to="/dashboard" className="text-sm text-navy/60 hover:text-navy transition-colors">
-        &larr; Back to bookings
+      <Link to="/dashboard/settings" className="text-sm text-cream/60 hover:text-cream transition-colors">
+        &larr; Back to Settings
       </Link>
 
-      <h1 className="mt-8 text-3xl font-bold">Profile</h1>
+      <h1 className="mt-8 text-3xl font-bold text-white">Profile</h1>
 
       {/* Update profile */}
       <form onSubmit={handleProfileSubmit} className="mt-10 space-y-6">
-        <h2 className="text-lg font-semibold">Your details</h2>
+        <h2 className="text-lg font-semibold text-white">Your details</h2>
 
         <div>
-          <label htmlFor="profileName" className="block text-sm font-medium mb-2">Name</label>
+          <label htmlFor="profileName" className="block text-sm font-medium mb-2 text-cream/80">Name</label>
           <input
             id="profileName"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-transparent border-b-2 border-navy/20 focus:border-navy outline-none py-2 transition-colors"
+            className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-cream focus:border-red outline-none transition-colors"
           />
         </div>
 
         <div>
-          <label htmlFor="profileEmail" className="block text-sm font-medium mb-2">Email</label>
+          <label htmlFor="profileEmail" className="block text-sm font-medium mb-2 text-cream/80">Email</label>
           <input
             id="profileEmail"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-transparent border-b-2 border-navy/20 focus:border-navy outline-none py-2 transition-colors"
+            className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-cream focus:border-red outline-none transition-colors"
           />
         </div>
 
         {profileError && <p className="text-sm text-red">{profileError}</p>}
-        {profileSuccess && <p className="text-sm text-emerald-700">Profile updated.</p>}
+        {profileSuccess && <p className="text-sm text-emerald-400">Profile updated.</p>}
 
         <button
           type="submit"
           disabled={profileSaving}
-          className="bg-navy text-cream text-sm font-medium px-6 py-3 hover:bg-navy-light transition-colors disabled:opacity-50"
+          className="bg-red text-white text-sm font-medium px-6 py-3 rounded-xl hover:bg-red-dark transition-colors disabled:opacity-50"
         >
           {profileSaving ? 'Saving...' : 'Update profile'}
         </button>
       </form>
 
-      <hr className="my-12 border-navy/10" />
+      <hr className="my-12 border-white/10" />
 
       {/* Change password */}
       <form onSubmit={handlePasswordSubmit} className="space-y-6">
-        <h2 className="text-lg font-semibold">Change password</h2>
+        <h2 className="text-lg font-semibold text-white">Change password</h2>
 
         <div>
-          <label htmlFor="currentPassword" className="block text-sm font-medium mb-2">
+          <label htmlFor="currentPassword" className="block text-sm font-medium mb-2 text-cream/80">
             Current password
           </label>
           <input
@@ -126,12 +126,12 @@ export default function Profile() {
             type="password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full bg-transparent border-b-2 border-navy/20 focus:border-navy outline-none py-2 transition-colors"
+            className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-cream focus:border-red outline-none transition-colors"
           />
         </div>
 
         <div>
-          <label htmlFor="newPassword" className="block text-sm font-medium mb-2">
+          <label htmlFor="newPassword" className="block text-sm font-medium mb-2 text-cream/80">
             New password
           </label>
           <input
@@ -139,12 +139,12 @@ export default function Profile() {
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full bg-transparent border-b-2 border-navy/20 focus:border-navy outline-none py-2 transition-colors"
+            className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-cream focus:border-red outline-none transition-colors"
           />
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2 text-cream/80">
             Confirm new password
           </label>
           <input
@@ -152,17 +152,17 @@ export default function Profile() {
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full bg-transparent border-b-2 border-navy/20 focus:border-navy outline-none py-2 transition-colors"
+            className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-cream focus:border-red outline-none transition-colors"
           />
         </div>
 
         {passwordError && <p className="text-sm text-red">{passwordError}</p>}
-        {passwordSuccess && <p className="text-sm text-emerald-700">Password changed.</p>}
+        {passwordSuccess && <p className="text-sm text-emerald-400">Password changed.</p>}
 
         <button
           type="submit"
           disabled={passwordSaving}
-          className="bg-navy text-cream text-sm font-medium px-6 py-3 hover:bg-navy-light transition-colors disabled:opacity-50"
+          className="bg-red text-white text-sm font-medium px-6 py-3 rounded-xl hover:bg-red-dark transition-colors disabled:opacity-50"
         >
           {passwordSaving ? 'Saving...' : 'Change password'}
         </button>

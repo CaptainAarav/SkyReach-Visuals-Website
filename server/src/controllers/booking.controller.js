@@ -48,6 +48,7 @@ export async function payBooking(req, res, next) {
 
     const booking = await prisma.booking.findUnique({ where: { id } });
     if (!booking) throw new AppError('Booking not found', 404);
+    if (booking.deletedAt) throw new AppError('Booking not found', 404);
     if (booking.userId !== req.user.id) throw new AppError('Not authorised', 403);
     if (booking.status !== 'APPROVED') {
       throw new AppError('This booking is not ready for payment', 400);
@@ -78,7 +79,7 @@ export async function payBooking(req, res, next) {
 export async function listBookings(req, res, next) {
   try {
     const bookings = await prisma.booking.findMany({
-      where: { userId: req.user.id },
+      where: { userId: req.user.id, deletedAt: null },
       orderBy: { createdAt: 'desc' },
       include: { reviews: true },
     });
@@ -96,7 +97,7 @@ export async function getBooking(req, res, next) {
       include: { reviews: true },
     });
 
-    if (!booking) {
+    if (!booking || booking.deletedAt) {
       throw new AppError('Booking not found', 404);
     }
     if (booking.userId !== req.user.id) {
@@ -138,7 +139,7 @@ export async function getBookingByOrderNumber(req, res, next) {
     }
 
     const booking = await prisma.booking.findFirst({
-      where: { orderNumber, status: 'APPROVED' },
+      where: { orderNumber, status: 'APPROVED', deletedAt: null },
       select: { id: true, packageName: true, packagePrice: true },
     });
 
@@ -155,6 +156,40 @@ export async function getBookingByOrderNumber(req, res, next) {
       },
       error: null,
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** Public: lookup approved unpaid bookings by customer email (and optional name). For quick-pay flow. */
+export async function getBookingsByCustomer(req, res, next) {
+  try {
+    const email = (req.query.email || req.body?.email || '').toString().trim().toLowerCase();
+    if (!email) {
+      throw new AppError('Email is required', 400);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+    if (!user) {
+      res.json({ success: true, data: [], error: null });
+      return;
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        userId: user.id,
+        status: 'APPROVED',
+        paidAt: null,
+        deletedAt: null,
+      },
+      orderBy: { shootDate: 'asc' },
+      select: { id: true, packageName: true, packagePrice: true, orderNumber: true, shootDate: true },
+    });
+
+    res.json({ success: true, data: bookings, error: null });
   } catch (err) {
     next(err);
   }

@@ -13,6 +13,7 @@ import {
   getAccountReviews,
   listOrders,
   updateOrder,
+  deleteOrder,
   listMessages,
   markMessageRead,
   markMessageArchived,
@@ -46,6 +47,7 @@ router.get('/accounts/:id/reviews', getAccountReviews);
 // Orders
 router.get('/orders', listOrders);
 router.patch('/orders/:id', updateOrder);
+router.delete('/orders/:id', deleteOrder);
 
 // Messages
 router.get('/messages', listMessages);

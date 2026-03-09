@@ -51,89 +51,105 @@ function ComposeModal({ onClose, onSent, defaults = {} }) {
     }
   };
 
+  const displaySubject = subject || '(No subject)';
+  const displayBody = body || '(Your message will appear here)';
+  const senderName = user?.name || 'SkyReach';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
+      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
           <h2 className="text-lg font-bold text-white">Compose Message</h2>
           <button onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
         </div>
-        <form onSubmit={handleSend} className="p-6 space-y-4">
-          {error && <p className="text-sm text-red">{error}</p>}
+        <div className="flex flex-1 min-h-0">
+          <form onSubmit={handleSend} className="flex flex-col w-full md:w-[420px] shrink-0 p-6 space-y-4 overflow-y-auto border-r border-white/10">
+            {error && <p className="text-sm text-red">{error}</p>}
 
-          <div className="relative">
-            <label className="block text-xs text-cream/50 mb-1">Recipient Email</label>
-            <input
-              type="text"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
-              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-              onFocus={() => { if (searchResults.length > 0) setShowDropdown(true); }}
-              placeholder="Search by name or email..."
-              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
-              required
-            />
-            {showDropdown && searchResults.length > 0 && (
-              <ul className="absolute left-0 right-0 top-full mt-1 py-1 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50 max-h-48 overflow-auto">
-                {searchResults.map((u) => (
-                  <li key={u.id}>
-                    <button
-                      type="button"
-                      onClick={() => selectRecipient(u.email)}
-                      className="w-full text-left px-4 py-2 text-sm text-cream/90 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <span className="font-medium">{u.name}</span>
-                      <span className="text-cream/50 ml-2">{u.email}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+            <div className="relative">
+              <label className="block text-xs text-cream/50 mb-1">Recipient Email</label>
+              <input
+                type="text"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                onFocus={() => { if (searchResults.length > 0) setShowDropdown(true); }}
+                placeholder="Search by name or email..."
+                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
+                required
+              />
+              {showDropdown && searchResults.length > 0 && (
+                <ul className="absolute left-0 right-0 top-full mt-1 py-1 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50 max-h-48 overflow-auto">
+                  {searchResults.map((u) => (
+                    <li key={u.id}>
+                      <button
+                        type="button"
+                        onClick={() => selectRecipient(u.email)}
+                        className="w-full text-left px-4 py-2 text-sm text-cream/90 hover:text-white hover:bg-white/10 transition-colors"
+                      >
+                        <span className="font-medium">{u.name}</span>
+                        <span className="text-cream/50 ml-2">{u.email}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
 
-          <div>
-            <label className="block text-xs text-cream/50 mb-1">Subject</label>
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">Subject</label>
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs text-cream/50 mb-1">Message</label>
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              rows={6}
-              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">Message</label>
+              <textarea
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={6}
+                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none"
+                required
+              />
+            </div>
 
-          <div className="bg-bg rounded-lg p-3 border border-white/10 text-xs text-cream/50">
-            <p className="font-semibold text-cream/70 mb-1">Email signature (auto-included):</p>
-            <p>SkyReach Visuals</p>
-            <p>{user?.name || 'SkyReach'} &mdash; Drone Aerial Photography &amp; Inspection</p>
-            <p>07877691861</p>
-            <p>support@skyreachvisuals.co.uk</p>
+            <div className="flex gap-2 pt-2">
+              <button
+                type="submit"
+                disabled={sending}
+                className="bg-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-red-dark disabled:opacity-50"
+              >
+                {sending ? 'Sending...' : 'Send Message'}
+              </button>
+              <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">
+                Cancel
+              </button>
+            </div>
+          </form>
+          <div className="hidden md:flex flex-col flex-1 min-w-0 bg-bg p-4">
+            <p className="text-xs text-cream/50 mb-2 font-medium">Preview (as recipient will see)</p>
+            <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-white/10 bg-bg-card">
+              <div className="p-4 min-h-full" style={{ backgroundColor: '#0f0f0f' }}>
+                <div className="max-w-[520px] rounded-xl overflow-hidden border border-red/20" style={{ backgroundColor: '#1E2D4A' }}>
+                  <div className="px-6 pt-6 pb-4 text-left">
+                    <h3 className="text-cream font-semibold text-lg mb-3">{displaySubject}</h3>
+                    <p className="text-cream/90 text-sm leading-relaxed whitespace-pre-wrap">{displayBody}</p>
+                    <p className="mt-6 pt-4 border-t border-white/10 text-cream/70 text-xs leading-relaxed">
+                      <strong className="text-cream">SkyReach Visuals</strong><br />
+                      {senderName} — Drone Aerial Photography &amp; Inspection · +44 7877691861 · support@skyreachvisuals.co.uk
+                    </p>
+                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-24 h-auto mt-3 rounded-lg opacity-90" style={{ filter: 'brightness(0) invert(1)' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <div className="flex gap-2 pt-2">
-            <button
-              type="submit"
-              disabled={sending}
-              className="bg-accent text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-accent/80 disabled:opacity-50 transition-colors"
-            >
-              {sending ? 'Sending...' : 'Send Message'}
-            </button>
-            <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">
-              Cancel
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -18,6 +18,7 @@ import Orders from './pages/Orders.jsx';
 import Dashboard from './pages/dashboard/Dashboard.jsx';
 import BookingDetail from './pages/dashboard/BookingDetail.jsx';
 import Profile from './pages/dashboard/Profile.jsx';
+import Settings from './pages/dashboard/Settings.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import AdminOrders from './pages/admin/AdminOrders.jsx';
 import AdminAccounts from './pages/admin/AdminAccounts.jsx';
@@ -62,6 +63,9 @@ export default function App() {
         } />
         <Route path="/dashboard/bookings/:id" element={
           <ProtectedRoute><BookingDetail /></ProtectedRoute>
+        } />
+        <Route path="/dashboard/settings" element={
+          <ProtectedRoute><Settings /></ProtectedRoute>
         } />
         <Route path="/dashboard/profile" element={
           <ProtectedRoute><Profile /></ProtectedRoute>
