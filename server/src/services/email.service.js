@@ -27,8 +27,7 @@ function mailHeaders() {
 }
 
 function logoUrl() {
-  const base = (env.clientUrl || 'http://localhost:3000').replace(/\/$/, '');
-  return `${base}/logo_with_text%20Background%20Removed.png`;
+  return 'https://skyreachvisuals.co.uk/logo_with_text.PNG';
 }
 
 function emailHeader(title) {
