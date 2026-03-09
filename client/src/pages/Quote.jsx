@@ -308,7 +308,7 @@ export default function Quote() {
             <img
               src="/skyreach_visuals_text_logo.png"
               alt="SkyReach Visuals"
-              className="w-full max-w-xl object-contain"
+              className="w-full max-w-xl object-contain rounded-xl"
               loading="lazy"
             />
           </div>

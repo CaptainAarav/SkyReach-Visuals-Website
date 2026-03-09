@@ -45,78 +45,100 @@ function ComposeModal({ onClose, onSent, replyTo }) {
     }
   };
 
+  const displaySubject = subject || '(No subject)';
+  const displayBody = body || '(Your message will appear here)';
+  const senderName = user?.name || 'SkyReach';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
           <h2 className="text-lg font-bold text-white">Compose Email</h2>
           <button type="button" onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
         </div>
-        <form onSubmit={handleSend} className="p-6 space-y-4 overflow-y-auto">
-          {error && <p className="text-sm text-red">{error}</p>}
-          <div className="relative">
-            <label className="block text-xs text-cream/50 mb-1">To</label>
-            <input
-              type="email"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
-              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-              onFocus={() => { if (searchResults.length > 0) setShowDropdown(true); }}
-              placeholder="Recipient email"
-              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
-              required
-            />
-            {showDropdown && searchResults.length > 0 && (
-              <ul className="absolute left-0 right-0 top-full mt-1 py-1 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50 max-h-48 overflow-auto">
-                {searchResults.map((u) => (
-                  <li key={u.id}>
-                    <button
-                      type="button"
-                      onClick={() => { setRecipientEmail(u.email); setShowDropdown(false); setSearchResults([]); }}
-                      className="w-full text-left px-4 py-2 text-sm text-cream/90 hover:text-white hover:bg-white/10"
-                    >
-                      {u.name} — {u.email}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+        <div className="flex flex-1 min-h-0">
+          <form onSubmit={handleSend} className="flex flex-col w-full md:w-[420px] shrink-0 p-6 space-y-4 overflow-y-auto border-r border-white/10">
+            {error && <p className="text-sm text-red">{error}</p>}
+            <div className="relative">
+              <label className="block text-xs text-cream/50 mb-1">To</label>
+              <input
+                type="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                onFocus={() => { if (searchResults.length > 0) setShowDropdown(true); }}
+                placeholder="Recipient email"
+                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
+                required
+              />
+              {showDropdown && searchResults.length > 0 && (
+                <ul className="absolute left-0 right-0 top-full mt-1 py-1 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50 max-h-48 overflow-auto">
+                  {searchResults.map((u) => (
+                    <li key={u.id}>
+                      <button
+                        type="button"
+                        onClick={() => { setRecipientEmail(u.email); setShowDropdown(false); setSearchResults([]); }}
+                        className="w-full text-left px-4 py-2 text-sm text-cream/90 hover:text-white hover:bg-white/10"
+                      >
+                        {u.name} — {u.email}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">Subject</label>
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">Message</label>
+              <textarea
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={8}
+                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none"
+                required
+              />
+            </div>
+            <p className="text-xs text-cream/50">Double-check the recipient address to avoid bounces.</p>
+            <div className="flex gap-2 pt-2">
+              <button type="submit" disabled={sending} className="bg-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-red-dark disabled:opacity-50">
+                {sending ? 'Sending…' : 'Send'}
+              </button>
+              <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">Cancel</button>
+            </div>
+          </form>
+          <div className="hidden md:flex flex-col flex-1 min-w-0 bg-[#1a1a2e] p-4">
+            <p className="text-xs text-cream/50 mb-2 font-medium">Preview (as recipient will see)</p>
+            <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-white/10">
+              <div className="bg-[#1a1a2e] p-4 min-h-full">
+                <div className="max-w-[520px] mx-auto bg-[#1E2D4A] rounded-xl overflow-hidden">
+                  <div className="p-6 text-center">
+                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-40 h-auto mx-auto mb-2 rounded-xl" />
+                  </div>
+                  <div className="px-6 pb-6 text-left">
+                    <h3 className="text-[#F5F3EE] font-semibold text-lg mb-3">{displaySubject}</h3>
+                    <p className="text-[#F5F3EE]/90 text-sm leading-relaxed whitespace-pre-wrap">{displayBody}</p>
+                    <div className="mt-6 pt-6 border-t border-white/10 text-left">
+                      <p className="text-[#F5F3EE] font-semibold text-sm">SkyReach Visuals</p>
+                      <p className="text-[#F5F3EE]/70 text-xs mt-0.5">{senderName} — Drone Aerial Photography & Inspection</p>
+                      <p className="text-[#F5F3EE]/70 text-xs">+44 7877691861</p>
+                      <p className="text-[#F5F3EE]/70 text-xs">support@skyreachvisuals.co.uk</p>
+                      <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-32 h-auto mt-3 rounded-xl" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs text-cream/50 mb-1">Subject</label>
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-cream/50 mb-1">Message</label>
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              rows={8}
-              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none"
-              required
-            />
-          </div>
-          <div className="bg-bg rounded-lg p-3 border border-white/10 text-xs text-cream/50">
-            <p className="font-semibold text-cream/70 mb-1">Email signature (added automatically):</p>
-            <p className="font-semibold text-white">SkyReach Visuals</p>
-            <p>{user?.name || 'SkyReach'} — Drone Aerial Photography &amp; Inspection</p>
-            <p>07877691861</p>
-            <p>support@skyreachvisuals.co.uk</p>
-          </div>
-          <p className="text-xs text-cream/50">Double-check the recipient address to avoid bounces (e.g. typos or invalid mailboxes).</p>
-          <div className="flex gap-2 pt-2">
-            <button type="submit" disabled={sending} className="bg-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-red-dark disabled:opacity-50">
-              {sending ? 'Sending…' : 'Send'}
-            </button>
-            <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">Cancel</button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
