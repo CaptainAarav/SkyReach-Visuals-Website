@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 
 const sectionLinks = [
@@ -17,6 +17,7 @@ function scrollToSection(hash) {
 export default function Navbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -74,19 +75,20 @@ export default function Navbar() {
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-4 lg:gap-8 shrink-0">
           {sectionLinks.map((link) => (
-            <Link
+            <button
               key={link.hash}
-              to={isHome ? '#' + link.hash.slice(1) : '/' + link.hash}
-              onClick={(e) => {
+              type="button"
+              onClick={() => {
                 if (isHome) {
-                  e.preventDefault();
                   scrollToSection(link.hash);
+                } else {
+                  navigate('/' + link.hash);
                 }
               }}
               className="text-sm tracking-wide transition-colors text-cream/80 hover:text-white"
             >
               {link.label}
-            </Link>
+            </button>
           ))}
 
           <Link
@@ -182,17 +184,21 @@ export default function Navbar() {
           <div className="md:hidden fixed left-4 right-4 top-[4.5rem] z-50 max-h-[calc(100vh-5.5rem)] overflow-y-auto rounded-2xl border border-white/10 bg-bg-card shadow-2xl">
             <nav className="flex flex-col py-4 px-6" aria-label="Mobile menu">
               {sectionLinks.map((link) => (
-                <Link
+                <button
                   key={link.hash}
-                  to={isHome ? '#' + link.hash.slice(1) : '/' + link.hash}
+                  type="button"
                   onClick={() => {
-                    if (isHome) scrollToSection(link.hash);
+                    if (isHome) {
+                      scrollToSection(link.hash);
+                    } else {
+                      navigate('/' + link.hash);
+                    }
                     setMenuOpen(false);
                   }}
-                  className="py-3.5 text-lg text-cream/90 hover:text-white transition-colors border-b border-white/5 last:border-0"
+                  className="py-3.5 text-lg text-cream/90 hover:text-white transition-colors border-b border-white/5 last:border-0 text-left"
                 >
                   {link.label}
-                </Link>
+                </button>
               ))}
               <Link
                 to="/get-started"

@@ -211,7 +211,7 @@ const FILTERS = [
 ];
 
 export default function AdminOrders() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const statusFilter = searchParams.get('status');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
