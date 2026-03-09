@@ -14,12 +14,12 @@ const SERVICES = [
 ];
 
 const PLACEHOLDER_REVIEWS = [
-  { id: 'p1', name: 'James H.', rating: 5, comment: 'Brilliant aerial shots of our property. The team was professional and the turnaround was incredibly quick.' },
-  { id: 'p2', name: 'Sarah M.', rating: 5, comment: 'Used SkyReach for our roof inspection. Saved us the cost of scaffolding and the photos were crystal clear.' },
-  { id: 'p3', name: 'Tom R.', rating: 4, comment: 'Great quality drone footage for our estate listing. Really helped the property stand out online.' },
-  { id: 'p4', name: 'Emily P.', rating: 5, comment: 'Fantastic experience from start to finish. The aerial photos made our Airbnb listing look amazing.' },
-  { id: 'p5', name: 'David L.', rating: 5, comment: 'Professional, reliable, and affordable. Would highly recommend for any property photography needs.' },
-  { id: 'p6', name: 'Rachel K.', rating: 4, comment: 'Quick turnaround on our construction site survey. The drone footage was exactly what we needed.' },
+  { id: 'p1', name: 'James H.', rating: 5, comment: 'Brilliant aerial shots of our property. The team was professional, turned up on time, and the turnaround was incredibly quick. We got the edited photos within a few days and they made our listing look fantastic. Couldn\'t ask for more — will definitely use SkyReach again for our next project.' },
+  { id: 'p2', name: 'Sarah M.', rating: 5, comment: 'We used SkyReach for our roof inspection and it was a game-changer. Saved us the cost of scaffolding and the photos were crystal clear. The report they provided helped our builder identify exactly what needed fixing. Highly professional and great value for money.' },
+  { id: 'p3', name: 'Tom R.', rating: 4, comment: 'Great quality drone footage for our estate listing. Really helped the property stand out online and we had a lot of interest from buyers. The only reason I\'m not giving five stars is we had to reschedule once due to weather, but they were very flexible and the final result was worth the wait.' },
+  { id: 'p4', name: 'Emily P.', rating: 5, comment: 'Fantastic experience from start to finish. The aerial photos made our Airbnb listing look amazing and we\'ve had so many compliments from guests. The team was friendly, efficient, and the quality was exactly what we wanted. Would recommend to anyone needing property or event photography.' },
+  { id: 'p5', name: 'David L.', rating: 5, comment: 'Professional, reliable, and affordable. We\'ve used SkyReach for several projects now — property shots, a construction progress film, and a few marketing clips. Every time they deliver on time and the quality is consistently high. Would highly recommend for any property or business photography needs.' },
+  { id: 'p6', name: 'Rachel K.', rating: 4, comment: 'Quick turnaround on our construction site survey. The drone footage was exactly what we needed for the client presentation and the team worked around our schedule. Clear communication and fair pricing. We\'ll be using them again for the next phase of the build.' },
 ];
 
 function StarRating({ rating }) {
@@ -142,7 +142,7 @@ export default function Home() {
 
       {/* About */}
       <AnimateInView as="section" id="about" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white">About SkyReach Visuals</h2>
+        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4">About SkyReach Visuals</h2>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="aspect-video rounded-2xl overflow-hidden bg-black/40">
             <img src="/skyreach_aboutme_image.png" alt="SkyReach Visuals" className="w-full h-full object-cover" loading="lazy" decoding="async" />
@@ -157,16 +157,16 @@ export default function Home() {
           </div>
         </div>
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div>
-            <h3 className="text-lg font-semibold text-white">Cinematic quality</h3>
+          <div className="p-4 rounded-xl border border-white/5 hover:border-accent/30 transition-colors">
+            <h3 className="text-lg font-semibold text-white text-accent-light">Cinematic quality</h3>
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">We shoot in 4K with professional-grade drones. Every clip is colour-graded and edited to a high standard.</p>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-white">Fast & Affordable</h3>
+          <div className="p-4 rounded-xl border border-white/5 hover:border-red/30 transition-colors">
+            <h3 className="text-lg font-semibold text-white text-red-light">Fast & Affordable</h3>
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">Quick turnaround and competitive pricing for inspections, property photography and business content.</p>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-white">Reliable delivery</h3>
+          <div className="p-4 rounded-xl border border-white/5 hover:border-emerald-500/30 transition-colors">
+            <h3 className="text-lg font-semibold text-white text-emerald-400">Reliable delivery</h3>
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">We give you a delivery date and we stick to it. Standard turnaround 3–7 working days.</p>
           </div>
         </div>
@@ -174,18 +174,18 @@ export default function Home() {
 
       {/* Services */}
       <AnimateInView as="section" id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
+        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-red pl-4 mb-2">Services</h2>
         <p className="text-lg text-red font-medium">
           <CountUp value={35} decimals={2} duration={1200} prefix="£" />
         </p>
-        <h2 className="mt-2 text-4xl md:text-5xl font-bold text-white">Services</h2>
         <p className="mt-4 text-cream/70 max-w-2xl">
           Every package includes a fully licensed, CAA-certified drone operator,
           professional editing, and delivery in broadcast-ready formats.
         </p>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
           {SERVICES.map((s) => (
-            <div key={s.title} className="bg-bg-card p-8 rounded-2xl border border-white/5">
-              <h3 className="text-xl font-semibold text-white">{s.title}</h3>
+            <div key={s.title} className="bg-bg-card p-8 rounded-2xl border border-white/5 hover:border-accent/30 transition-colors border-t-4 border-t-accent/50">
+              <h3 className="text-xl font-semibold text-white text-accent-light">{s.title}</h3>
               <p className="mt-3 text-cream/80 text-sm leading-relaxed">{s.description}</p>
             </div>
           ))}
@@ -200,19 +200,19 @@ export default function Home() {
 
       {/* Reviews carousel — big card, arrows below, hover interactive */}
       <AnimateInView as="section" id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white">What People Think About Us</h2>
+        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-amber-400 pl-4">What People Think About Us</h2>
         <p className="mt-3 text-cream/70 max-w-2xl">
           Real feedback from verified customers who have used our drone photography services.
         </p>
         <div className="mt-12">
-          <div className="min-w-0 overflow-hidden">
+          <div className="min-w-0 overflow-hidden py-6">
             <div
               className="flex transition-[transform] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
               style={{ transform: `translateX(-${reviewIndex * 100}%)` }}
             >
               {reviews.map((r) => (
-                <div key={r.id} className="w-full shrink-0 px-1">
-                  <div className="review-card group/card bg-bg-card p-8 md:p-12 rounded-2xl border border-white/10 flex flex-col gap-6 min-h-[280px] md:min-h-[320px] transition-all duration-300 hover:scale-[1.02] hover:border-white/20 hover:shadow-xl hover:shadow-black/30 cursor-default">
+                <div key={r.id} className="w-full shrink-0 px-3">
+                  <div className="review-card isolate bg-bg-card p-8 md:p-12 rounded-2xl border border-white/10 flex flex-col gap-6 min-h-[300px] md:min-h-[340px] cursor-default transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:rotate-1 hover:border-accent/50 hover:shadow-xl hover:shadow-accent/15 ">
                     <div className="flex items-center justify-between flex-wrap gap-3">
                       <div className="flex items-center gap-3">
                         <span className="text-base md:text-lg font-semibold text-white">{r.name}</span>
@@ -238,7 +238,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setReviewIndex((i) => (i <= 0 ? reviews.length - 1 : i - 1))}
-                className="w-12 h-12 rounded-full bg-black/30 backdrop-blur border border-white/15 text-white hover:bg-white/15 hover:border-white/25 transition-all duration-200 flex items-center justify-center shadow-lg"
+                className="w-12 h-12 rounded-full bg-black/30 backdrop-blur border border-white/15 text-white hover:bg-accent/30 hover:border-accent/50 transition-all duration-200 flex items-center justify-center shadow-lg"
                 aria-label="Previous review"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +251,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setReviewIndex((i) => (i >= reviews.length - 1 ? 0 : i + 1))}
-                className="w-12 h-12 rounded-full bg-black/30 backdrop-blur border border-white/15 text-white hover:bg-white/15 hover:border-white/25 transition-all duration-200 flex items-center justify-center shadow-lg"
+                className="w-12 h-12 rounded-full bg-black/30 backdrop-blur border border-white/15 text-white hover:bg-accent/30 hover:border-accent/50 transition-all duration-200 flex items-center justify-center shadow-lg"
                 aria-label="Next review"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,9 +264,9 @@ export default function Home() {
       </AnimateInView>
 
       {/* Portfolio */}
-      <AnimateInView as="section" id="portfolio" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
+      <AnimateInView as="section" id="portfolio" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20 border border-white/5" animation="animate-slide-in-left">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-semibold text-white">Portfolio</h2>
+          <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4">Portfolio</h2>
           <p className="mt-3 text-cream/70 max-w-2xl">
             A selection of aerial projects from across Bournemouth, Poole, and the Dorset coast.
           </p>
@@ -304,9 +304,9 @@ export default function Home() {
       </AnimateInView>
 
       {/* Contact */}
-      <AnimateInView as="section" id="contact" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
+      <AnimateInView as="section" id="contact" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20 border border-white/5" animation="animate-slide-in-right">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-white">Get in touch</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-white border-l-4 border-red pl-4">Get in touch</h2>
           <p className="mt-4 text-cream/70 max-w-2xl">
             Got a project in mind? Drop us a message and we&rsquo;ll get back to you within 24 hours.
           </p>
