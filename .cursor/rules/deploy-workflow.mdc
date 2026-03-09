@@ -5,16 +5,23 @@ alwaysApply: true
 
 # Deployment Workflow
 
-After implementing a feature or fix, follow this deployment workflow:
+After implementing a feature or fix, follow this full automated deployment:
 
-1. **Commit and push** to `main` — this triggers the GitHub Actions workflow that builds ARM64 Docker images and pushes them to `ghcr.io/captainaarav/skyreach-server` and `ghcr.io/captainaarav/skyreach-client`.
+1. **Commit and push** to `main` — triggers GitHub Actions to build ARM64 Docker images → `ghcr.io/captainaarav/skyreach-server` and `ghcr.io/captainaarav/skyreach-client`.
 
-2. **Wait for the build** — monitor with `gh run list --limit 1` and `gh run watch <run-id> --exit-status`. Tell the user once the build passes.
+2. **Wait for the build** — `gh run list --limit 1` then `gh run watch <run-id> --exit-status`.
 
-3. **Give the user the Pi commands** — once the build succeeds, tell them to run on the Pi:
+3. **SCP compose file** (if changed) — `scp docker-compose.prod.yml aarav@PISERVER:~/skyreach-visuals/docker-compose.prod.yml`
+
+4. **Pull and restart on Pi via SSH**:
    ```
-   docker compose -f docker-compose.prod.yml pull
-   docker compose -f docker-compose.prod.yml up -d
+   ssh aarav@PISERVER "cd ~/skyreach-visuals && docker compose -f docker-compose.prod.yml pull && docker compose -f docker-compose.prod.yml up -d"
    ```
 
-The production compose file is `docker-compose.prod.yml` (pulls pre-built images). The local dev compose is `docker-compose.yml` (builds locally). The Pi is accessed via SSH as `aarav@PISERVER`.
+5. **Verify server started cleanly**:
+   ```
+   ssh aarav@PISERVER "docker logs skyreach-visuals-server-1 2>&1 | head -15"
+   ```
+   Confirm `Prisma db push OK` and `Server running on port 5000` appear.
+
+The user does NOT need to run anything on the Pi — handle it all via SSH. The Pi is `aarav@PISERVER`. Production compose: `docker-compose.prod.yml`. Media files live in `~/skyreach-visuals/media/` on the Pi (mounted as a volume).
