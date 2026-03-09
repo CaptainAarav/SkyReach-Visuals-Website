@@ -24,8 +24,6 @@ export default function Quote() {
   const [budgetDigits, setBudgetDigits] = useState('');
   const postcodeDropdownRef = useRef(null);
 
-  const selectedQuoteService = QUOTE_SERVICES.find((s) => s.slug === values.serviceType);
-
   const { values, errors, submitting, submitError, handleChange, handleSubmit, reset } = useForm({
     initialValues: {
       name: user?.name || '',
@@ -63,6 +61,8 @@ export default function Quote() {
       reset();
     },
   });
+
+  const selectedQuoteService = QUOTE_SERVICES.find((s) => s.slug === values.serviceType);
 
   const fetchPostcodeSuggestions = useCallback(async (rawInput) => {
     const query = rawInput.replace(/\s+/g, '').toUpperCase();

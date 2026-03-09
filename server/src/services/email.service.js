@@ -434,8 +434,9 @@ export async function sendAdminMessage({ to, subject, body, senderName }) {
                   <td style="text-align:center;">
                     <p style="margin:0 0 4px;color:${EMAIL_DARK.text};font-size:14px;font-weight:600;">SkyReach Visuals</p>
                     <p style="margin:0 0 4px;color:${EMAIL_DARK.textMuted};font-size:13px;">${senderName} &mdash; Drone Aerial Photography &amp; Inspection</p>
-                    <p style="margin:0 0 2px;color:${EMAIL_DARK.textMuted};font-size:13px;">&#x1F4DE; 07877691861</p>
-                    <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:13px;">&#x2709; support@skyreachvisuals.co.uk</p>
+                    <p style="margin:0 0 2px;color:${EMAIL_DARK.textMuted};font-size:13px;">&#x1F4DE; +44 7877691861</p>
+                    <p style="margin:0 0 12px;color:${EMAIL_DARK.textMuted};font-size:13px;">&#x2709; ${env.emailFrom || 'support@skyreachvisuals.co.uk'}</p>
+                    <img src="${logoUrl()}" alt="SkyReach Visuals" width="120" style="display:block;margin:0 auto;" />
                   </td>
                 </tr>
               </table>

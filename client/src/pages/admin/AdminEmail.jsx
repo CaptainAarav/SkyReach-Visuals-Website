@@ -102,7 +102,14 @@ function ComposeModal({ onClose, onSent, replyTo }) {
               required
             />
           </div>
-          <p className="text-xs text-cream/50">Sent via your IONOS mailbox. Signature will be added automatically.</p>
+          <div className="bg-bg rounded-lg p-3 border border-white/10 text-xs text-cream/50">
+            <p className="font-semibold text-cream/70 mb-1">Email signature (added automatically):</p>
+            <p className="font-semibold text-white">SkyReach Visuals</p>
+            <p>{user?.name || 'SkyReach'} — Drone Aerial Photography &amp; Inspection</p>
+            <p>07877691861</p>
+            <p>support@skyreachvisuals.co.uk</p>
+          </div>
+          <p className="text-xs text-cream/50">Double-check the recipient address to avoid bounces (e.g. typos or invalid mailboxes).</p>
           <div className="flex gap-2 pt-2">
             <button type="submit" disabled={sending} className="bg-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-red-dark disabled:opacity-50">
               {sending ? 'Sending…' : 'Send'}
