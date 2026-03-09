@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 
@@ -59,10 +60,10 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard label="Total Quotes" value={stats.totalQuotes} color="text-blue-400" />
-            <StatCard label="Total Bookings" value={stats.totalBookings} color="text-amber-400" />
-            <StatCard label="Total Accepted" value={stats.totalAccepted} color="text-emerald-400" />
-            <StatCard label="Total Declined" value={stats.totalDeclined} color="text-red-400" />
+            <Link to="/admin/messages"><StatCard label="Total Quotes" value={stats.totalQuotes} color="text-blue-400" /></Link>
+            <Link to="/admin/orders"><StatCard label="Total Bookings" value={stats.totalBookings} color="text-amber-400" /></Link>
+            <Link to="/admin/orders?status=accepted"><StatCard label="Total Accepted" value={stats.totalAccepted} color="text-emerald-400" /></Link>
+            <Link to="/admin/orders?status=declined"><StatCard label="Total Declined" value={stats.totalDeclined} color="text-red-400" /></Link>
           </div>
         </>
       )}

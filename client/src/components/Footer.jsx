@@ -47,8 +47,8 @@ export default function Footer() {
               Get in Touch
             </h4>
             <ul className="space-y-2 text-sm text-white/70">
-              <li>support@skyreachvisuals.co.uk</li>
-              <li>07877 691861</li>
+              <li><a href="mailto:support@skyreachvisuals.co.uk" className="hover:text-red transition-colors">support@skyreachvisuals.co.uk</a></li>
+              <li><a href="tel:+4407877691861" className="hover:text-red transition-colors">07877 691861</a></li>
               <li>Bournemouth, Dorset, UK</li>
             </ul>
             <div className="flex gap-4 mt-6">
@@ -76,7 +76,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-white/40">
-            &copy; {new Date().getFullYear()} SkyReach Visuals. All rights reserved.
+            &copy; {new Date().getFullYear()} SkyReach Visuals. All rights reserved. &middot; v1.5
           </p>
           <p className="text-xs text-white/40">
             CAA certified drone operators

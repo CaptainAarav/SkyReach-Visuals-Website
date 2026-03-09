@@ -458,7 +458,7 @@ export default function AdminAccounts() {
             {accounts.map((account) => (
               <tr key={account.id} className="border-b border-white/10">
                 <td className="py-4 pr-4 font-medium text-white">{account.name}</td>
-                <td className="py-4 pr-4 text-cream/80">{account.email}</td>
+                <td className="py-4 pr-4"><a href={`mailto:${account.email}`} className="text-cream/80 hover:text-accent transition-colors">{account.email}</a></td>
                 <td className="py-4 pr-4">
                   <span className={`text-xs font-medium px-2 py-1 rounded-lg ${roleBadge[account.role] || 'bg-white/10 text-cream'}`}>
                     {account.role}

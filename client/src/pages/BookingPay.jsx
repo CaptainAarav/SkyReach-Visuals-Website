@@ -3,6 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 
+const TIME_WINDOWS = [
+  { value: 'Morning (8am–12pm)', label: 'Morning (8am–12pm)' },
+  { value: 'Afternoon (12pm–5pm)', label: 'Afternoon (12pm–5pm)' },
+  { value: 'Evening (5pm–8pm)', label: 'Evening (5pm–8pm)' },
+  { value: 'Custom', label: 'Custom' },
+];
+
 export default function BookingPay() {
   const { bookingId } = useParams();
   const [booking, setBooking] = useState(null);
@@ -10,6 +17,10 @@ export default function BookingPay() {
   const [error, setError] = useState(null);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState(null);
+  const [editingTime, setEditingTime] = useState(false);
+  const [newTime, setNewTime] = useState('');
+  const [customTime, setCustomTime] = useState('');
+  const [savingTime, setSavingTime] = useState(false);
 
   useEffect(() => {
     api.get(`/api/bookings/${bookingId}`)
@@ -17,6 +28,23 @@ export default function BookingPay() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [bookingId]);
+
+  const handleSaveTime = async () => {
+    const timeValue = newTime === 'Custom' ? customTime : newTime;
+    if (!timeValue) return;
+    setSavingTime(true);
+    try {
+      const data = await api.patch(`/api/bookings/${bookingId}/time`, { shootTime: timeValue });
+      setBooking(data);
+      setEditingTime(false);
+      setNewTime('');
+      setCustomTime('');
+    } catch (err) {
+      setPayError(err.message);
+    } finally {
+      setSavingTime(false);
+    }
+  };
 
   const handlePay = async () => {
     setPaying(true);
@@ -80,6 +108,12 @@ export default function BookingPay() {
       </div>
 
       <div className="bg-bg-card border border-white/10 rounded-2xl p-8 space-y-5">
+        {booking.orderNumber && (
+          <div className="flex justify-between">
+            <span className="text-sm text-cream/60">Order No</span>
+            <span className="text-sm font-semibold text-white">{booking.orderNumber}</span>
+          </div>
+        )}
         <div className="flex justify-between">
           <span className="text-sm text-cream/60">Service</span>
           <span className="text-sm font-medium text-white">{booking.packageName}</span>
@@ -92,12 +126,59 @@ export default function BookingPay() {
             })}
           </span>
         </div>
-        {booking.shootTime && (
-          <div className="flex justify-between">
+        <div>
+          <div className="flex justify-between items-center">
             <span className="text-sm text-cream/60">Time</span>
-            <span className="text-sm font-medium text-white">{booking.shootTime}</span>
+            {!editingTime ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-white">{booking.shootTime || 'Not set'}</span>
+                <button
+                  type="button"
+                  onClick={() => { setEditingTime(true); setNewTime(booking.shootTime || ''); }}
+                  className="text-xs text-accent hover:text-accent-light transition-colors"
+                >
+                  Change
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <select
+                  value={TIME_WINDOWS.some((tw) => tw.value === newTime) ? newTime : (newTime ? 'Custom' : '')}
+                  onChange={(e) => { setNewTime(e.target.value); if (e.target.value !== 'Custom') setCustomTime(''); }}
+                  className="bg-bg border border-white/20 rounded-lg py-1 px-2 text-sm text-cream"
+                >
+                  <option value="">Select...</option>
+                  {TIME_WINDOWS.map((tw) => (
+                    <option key={tw.value} value={tw.value}>{tw.label}</option>
+                  ))}
+                </select>
+                {newTime === 'Custom' && (
+                  <input
+                    type="time"
+                    value={customTime}
+                    onChange={(e) => setCustomTime(e.target.value)}
+                    className="bg-bg border border-white/20 rounded-lg py-1 px-2 text-sm text-cream"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={handleSaveTime}
+                  disabled={savingTime || (!newTime || (newTime === 'Custom' && !customTime))}
+                  className="text-xs font-medium text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
+                >
+                  {savingTime ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setEditingTime(false); setNewTime(''); setCustomTime(''); }}
+                  className="text-xs text-cream/50 hover:text-cream"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
         <div className="flex justify-between">
           <span className="text-sm text-cream/60">Location</span>
           <span className="text-sm font-medium text-white">{booking.location}</span>

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useForm } from '../hooks/useForm.js';
+import { useAuth } from '../hooks/useAuth.js';
 import { api } from '../api/client.js';
 
 export default function Contact() {
+  const { user } = useAuth();
   const [success, setSuccess] = useState(false);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit, reset } = useForm({
-    initialValues: { name: '', email: '', phone: '', message: '' },
+    initialValues: { name: user?.name || '', email: user?.email || '', phone: '', message: '' },
     validate: (vals) => {
       const errs = {};
       if (!vals.name.trim()) errs.name = 'Name is required';
@@ -126,11 +128,11 @@ export default function Contact() {
         <div className="space-y-8">
           <div>
             <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Email</h3>
-            <p className="text-cream">support@skyreachvisuals.co.uk</p>
+            <a href="mailto:support@skyreachvisuals.co.uk" className="text-cream hover:text-red transition-colors">support@skyreachvisuals.co.uk</a>
           </div>
           <div>
             <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Phone</h3>
-            <p className="text-cream">07877 691861</p>
+            <a href="tel:+4407877691861" className="text-cream hover:text-red transition-colors">07877 691861</a>
           </div>
           <div>
             <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Location</h3>

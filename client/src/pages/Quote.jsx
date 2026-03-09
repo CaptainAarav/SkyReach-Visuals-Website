@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from '../hooks/useForm.js';
+import { useAuth } from '../hooks/useAuth.js';
 import { api } from '../api/client.js';
 
 const POSTCODE_AUTOCOMPLETE_URL = 'https://api.postcodes.io/postcodes';
 const POSTCODE_DEBOUNCE_MS = 300;
 
 const PROJECT_TYPE_OPTIONS = [
-  'Roof Inspection Photos',
-  'Chimney / Gutter Inspection',
+  'Property Roof Inspection',
+  'Property Aerial Photos',
   'Business / Commercial Aerial Photos',
   'Promotional Drone Video',
   'Construction Progress Photos/Video',
@@ -23,18 +24,21 @@ const TIME_OPTIONS = [
   { value: 'Afternoon (12pm–5pm)', label: 'Afternoon (12pm–5pm)' },
   { value: 'Evening (5pm–8pm)', label: 'Evening (5pm–8pm)' },
   { value: 'Flexible', label: 'Flexible' },
+  { value: 'Custom', label: 'Custom' },
 ];
 
 export default function Quote() {
+  const { user } = useAuth();
   const [success, setSuccess] = useState(false);
   const [postcodeSuggestions, setPostcodeSuggestions] = useState([]);
   const [showPostcodeDropdown, setShowPostcodeDropdown] = useState(false);
+  const [customTime, setCustomTime] = useState('');
   const postcodeDropdownRef = useRef(null);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit, reset } = useForm({
     initialValues: {
-      name: '',
-      email: '',
+      name: user?.name || '',
+      email: user?.email || '',
       phone: '',
       businessName: '',
       location: '',
@@ -56,14 +60,16 @@ export default function Quote() {
       return errs;
     },
     onSubmit: async (vals) => {
+      const timeValue = vals.preferredTime === 'Custom' ? customTime : vals.preferredTime;
       await api.post('/api/contact', {
         ...vals,
         preferredDate: vals.preferredDate || null,
-        preferredTime: vals.preferredTime || null,
+        preferredTime: timeValue || null,
         businessName: vals.businessName || null,
         budget: vals.budget || null,
       });
       setSuccess(true);
+      setCustomTime('');
       reset();
     },
   });
@@ -244,12 +250,19 @@ export default function Quote() {
               <label htmlFor="budget" className="block text-sm font-medium mb-2">
                 Budget <span className="text-cream/40">(optional)</span>
               </label>
-              <input
-                id="budget" name="budget" type="text"
-                value={values.budget} onChange={handleChange}
-                placeholder="e.g. £200–£500"
-                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
-              />
+              <div className="flex items-center border-b-2 border-white/20 focus-within:border-accent transition-colors">
+                <span className="text-cream/60 text-sm pr-1">&pound;</span>
+                <input
+                  id="budget" name="budget" type="text" inputMode="numeric"
+                  value={values.budget}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    handleChange({ target: { name: 'budget', value: digits } });
+                  }}
+                  placeholder="e.g. 200"
+                  className="w-full bg-transparent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -278,6 +291,14 @@ export default function Quote() {
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
+                {values.preferredTime === 'Custom' && (
+                  <input
+                    type="time"
+                    value={customTime}
+                    onChange={(e) => setCustomTime(e.target.value)}
+                    className="mt-3 w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
+                  />
+                )}
               </div>
             </div>
 

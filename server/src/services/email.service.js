@@ -76,6 +76,12 @@ export async function sendBookingConfirmation({ to, booking }) {
                     <strong style="color:#1E2D4A;font-size:15px;">${shootDate}</strong>
                   </td>
                 </tr>
+                ${booking.shootTime ? `<tr>
+                  <td style="padding:12px 0;border-bottom:1px solid #E8E4DB;">
+                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Shoot time</span><br/>
+                    <strong style="color:#1E2D4A;font-size:15px;">${booking.shootTime}</strong>
+                  </td>
+                </tr>` : ''}
                 <tr>
                   <td style="padding:12px 0;border-bottom:1px solid #E8E4DB;">
                     <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Location</span><br/>
@@ -90,8 +96,8 @@ export async function sendBookingConfirmation({ to, booking }) {
                 </tr>
                 <tr>
                   <td style="padding:12px 0;">
-                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Reference</span><br/>
-                    <span style="color:#1E2D4A;font-size:13px;font-family:monospace;">${booking.id}</span>
+                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Order No</span><br/>
+                    <span style="color:#1E2D4A;font-size:15px;font-weight:600;">${booking.orderNumber}</span>
                   </td>
                 </tr>
               </table>
@@ -297,6 +303,12 @@ export async function sendBookingApproved({ to, booking, payUrl }) {
                     <strong style="color:#1E2D4A;font-size:15px;">${shootDate}</strong>
                   </td>
                 </tr>
+                ${booking.shootTime ? `<tr>
+                  <td style="padding:12px 0;border-bottom:1px solid #E8E4DB;">
+                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Time</span><br/>
+                    <strong style="color:#1E2D4A;font-size:15px;">${booking.shootTime}</strong>
+                  </td>
+                </tr>` : ''}
                 <tr>
                   <td style="padding:12px 0;border-bottom:1px solid #E8E4DB;">
                     <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Location</span><br/>
@@ -304,9 +316,15 @@ export async function sendBookingApproved({ to, booking, payUrl }) {
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:12px 0;">
+                  <td style="padding:12px 0;border-bottom:1px solid #E8E4DB;">
                     <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Amount to pay</span><br/>
                     <strong style="color:#1E2D4A;font-size:15px;">&pound;${(booking.packagePrice / 100).toFixed(2)}</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0;">
+                    <span style="color:#1E2D4A;font-size:13px;opacity:0.5;">Order No</span><br/>
+                    <span style="color:#1E2D4A;font-size:15px;font-weight:600;">${booking.orderNumber}</span>
                   </td>
                 </tr>
               </table>
@@ -393,6 +411,69 @@ export async function sendBookingDeclined({ to, booking }) {
     from: `"SkyReach Visuals" <${env.emailFrom}>`,
     to,
     subject: `Booking Update — ${booking.packageName} | SkyReach Visuals`,
+    headers: mailHeaders(),
+    html,
+  });
+}
+
+export async function sendAdminMessage({ to, subject, body, senderName }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.log('SMTP not configured — skipping admin message email');
+    console.log('Would send to:', to, 'Subject:', subject);
+    return;
+  }
+
+  const escapedBody = body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background-color:#F5F3EE;font-family:'Inter',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F3EE;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          <tr>
+            <td style="background-color:#1E2D4A;padding:32px 40px;">
+              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">SkyReach Visuals</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#ffffff;padding:40px;">
+              <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">${subject}</h2>
+              <p style="margin:0 0 24px;color:#1E2D4A;font-size:15px;line-height:1.6;white-space:pre-wrap;">${escapedBody}</p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #E8E4DB;margin-top:24px;padding-top:24px;">
+                <tr>
+                  <td>
+                    <p style="margin:0 0 4px;color:#1E2D4A;font-size:14px;font-weight:600;">SkyReach Visuals</p>
+                    <p style="margin:0 0 4px;color:#1E2D4A;font-size:13px;">${senderName} &mdash; Drone Aerial Photography &amp; Inspection</p>
+                    <p style="margin:0 0 2px;color:#1E2D4A;font-size:13px;">&#x1F4DE; 07877691861</p>
+                    <p style="margin:0;color:#1E2D4A;font-size:13px;">&#x2709; support@skyreachvisuals.co.uk</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px;text-align:center;">
+              <p style="margin:0;color:#1E2D4A;font-size:12px;opacity:0.4;">
+                SkyReach Visuals &middot; Bournemouth, Dorset, UK
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  await transport.sendMail({
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
+    to,
+    subject: `${subject} | SkyReach Visuals`,
     headers: mailHeaders(),
     html,
   });

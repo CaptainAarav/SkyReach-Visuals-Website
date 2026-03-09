@@ -23,10 +23,10 @@ export default function GetStarted() {
           </div>
           <h2 className="text-2xl font-bold text-white">Book Now</h2>
           <p className="mt-3 text-cream/70 text-sm leading-relaxed">
-            Standard drone services with fixed pricing. Gutter inspections, chimney inspections, roof inspections and property aerial photos.
+            Standard drone services with fixed pricing. Property roof inspections and property aerial photos.
           </p>
           <span className="mt-6 text-sm font-medium text-red group-hover:text-red-dark transition-colors">
-            Starting from &pound;25.00 &rarr;
+            &pound;35.00 &rarr;
           </span>
         </Link>
 

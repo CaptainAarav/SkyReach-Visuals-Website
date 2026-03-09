@@ -116,8 +116,8 @@ export default function BookingDetail() {
         )}
 
         <div>
-          <span className="text-xs font-semibold tracking-widest uppercase text-cream/50">Booking reference</span>
-          <p className="mt-1 font-mono text-sm text-cream/60">{booking.id}</p>
+          <span className="text-xs font-semibold tracking-widest uppercase text-cream/50">Order No</span>
+          <p className="mt-1 font-semibold text-cream">{booking.orderNumber}</p>
         </div>
 
         <div>

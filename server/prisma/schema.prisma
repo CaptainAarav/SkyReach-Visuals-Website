@@ -37,6 +37,8 @@ model User {
   adminLoginTokens  AdminLoginToken[]
   adminLogs         AdminLog[] @relation("AdminLogAdmin")
   adminLogsTarget   AdminLog[] @relation("AdminLogTarget")
+  sentMessages      AdminMessage[] @relation("AdminMessageSender")
+  receivedMessages  AdminMessage[] @relation("AdminMessageRecipient")
 }
 
 model EmailVerificationToken {
@@ -80,6 +82,7 @@ model AdminLog {
 
 model Booking {
   id              String        @id @default(cuid())
+  orderNumber     Int           @unique @default(autoincrement())
   userId          String
   user            User          @relation(fields: [userId], references: [id])
   packageName     String
@@ -91,6 +94,7 @@ model Booking {
   notes           String?
   adminNotes      String?
   stripeSessionId String?       @unique
+  paidAt          DateTime?
   status          BookingStatus @default(PENDING)
   createdAt       DateTime      @default(now())
   reviews         Review[]
@@ -135,4 +139,19 @@ model Review {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model AdminMessage {
+  id             String   @id @default(cuid())
+  senderId       String
+  sender         User     @relation("AdminMessageSender", fields: [senderId], references: [id])
+  recipientId    String?
+  recipient      User?    @relation("AdminMessageRecipient", fields: [recipientId], references: [id])
+  recipientEmail String
+  subject        String
+  body           String
+  createdAt      DateTime @default(now())
+
+  @@index([senderId])
+  @@index([recipientId])
 }

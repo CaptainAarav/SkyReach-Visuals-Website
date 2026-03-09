@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 
@@ -188,7 +189,14 @@ function EditOrderModal({ order, onClose, onSave }) {
   );
 }
 
+const STATUS_FILTER_MAP = {
+  accepted: ['APPROVED', 'CONFIRMED', 'COMPLETED'],
+  declined: ['DECLINED'],
+};
+
 export default function AdminOrders() {
+  const [searchParams] = useSearchParams();
+  const statusFilter = searchParams.get('status');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -202,6 +210,11 @@ export default function AdminOrders() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const allowedStatuses = statusFilter ? STATUS_FILTER_MAP[statusFilter] : null;
+  const filteredOrders = allowedStatuses
+    ? orders.filter((o) => allowedStatuses.includes(o.status))
+    : orders;
 
   const declineOrder = async (id) => {
     setUpdating(id);
@@ -228,6 +241,7 @@ export default function AdminOrders() {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-white/20">
+              <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Order</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Client</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Service</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Date</th>
@@ -238,11 +252,14 @@ export default function AdminOrders() {
             </tr>
           </thead>
           <tbody className="text-cream/90">
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <tr key={order.id} className="border-b border-white/10">
+                <td className="py-4 pr-4 text-sm font-semibold text-white">
+                  {order.orderNumber ?? '—'}
+                </td>
                 <td className="py-4 pr-4">
                   <p className="font-medium text-white">{order.user?.name}</p>
-                  <p className="text-sm text-cream/60">{order.user?.email}</p>
+                  <a href={`mailto:${order.user?.email}`} className="text-sm text-cream/60 hover:text-accent transition-colors">{order.user?.email}</a>
                 </td>
                 <td className="py-4 pr-4">{order.packageName}</td>
                 <td className="py-4 pr-4">
@@ -296,8 +313,8 @@ export default function AdminOrders() {
           </tbody>
         </table>
       </div>
-      {orders.length === 0 && !loading && (
-        <p className="text-cream/60 py-8">No orders yet.</p>
+      {filteredOrders.length === 0 && !loading && (
+        <p className="text-cream/60 py-8">{statusFilter ? 'No matching orders.' : 'No orders yet.'}</p>
       )}
 
       {approvingOrder && (

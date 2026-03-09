@@ -10,12 +10,14 @@ const TIME_WINDOWS = [
   { value: 'Morning (8am–12pm)', label: 'Morning (8am–12pm)' },
   { value: 'Afternoon (12pm–5pm)', label: 'Afternoon (12pm–5pm)' },
   { value: 'Evening (5pm–8pm)', label: 'Evening (5pm–8pm)' },
+  { value: 'Custom', label: 'Custom' },
 ];
 
 export default function BookNow() {
   const [success, setSuccess] = useState(false);
   const [postcodeSuggestions, setPostcodeSuggestions] = useState([]);
   const [showPostcodeDropdown, setShowPostcodeDropdown] = useState(false);
+  const [customTime, setCustomTime] = useState('');
   const postcodeDropdownRef = useRef(null);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit, reset } = useForm({
@@ -33,12 +35,16 @@ export default function BookNow() {
       if (!vals.propertyAddress.trim()) errs.propertyAddress = 'Property address is required';
       if (!vals.preferredDate) errs.preferredDate = 'Preferred date is required';
       if (!vals.timeWindow) errs.timeWindow = 'Please select a time window';
+      if (vals.timeWindow === 'Custom' && !customTime) errs.timeWindow = 'Please enter a custom time';
       if (!vals.phone.trim()) errs.phone = 'Phone number is required';
       return errs;
     },
     onSubmit: async (vals) => {
-      await api.post('/api/bookings', vals);
+      const payload = { ...vals };
+      if (vals.timeWindow === 'Custom') payload.timeWindow = customTime;
+      await api.post('/api/bookings', payload);
       setSuccess(true);
+      setCustomTime('');
       reset();
     },
   });
@@ -141,13 +147,13 @@ export default function BookNow() {
             <option value="">Select a service...</option>
             {SERVICES.map((s) => (
               <option key={s.slug} value={s.slug}>
-                {s.name} — from £{s.displayPrice}
+                {s.name} — £{s.displayPrice}
               </option>
             ))}
           </select>
           {selectedService && (
             <p className="mt-2 text-sm text-red">
-              Starting at £{selectedService.displayPrice}
+              £{selectedService.displayPrice}
             </p>
           )}
           {errors.serviceSlug && <p className="mt-1 text-xs text-red">{errors.serviceSlug}</p>}
@@ -220,6 +226,14 @@ export default function BookNow() {
               </option>
             ))}
           </select>
+          {values.timeWindow === 'Custom' && (
+            <input
+              type="time"
+              value={customTime}
+              onChange={(e) => setCustomTime(e.target.value)}
+              className="mt-3 w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream"
+            />
+          )}
           {errors.timeWindow && <p className="mt-1 text-xs text-red">{errors.timeWindow}</p>}
         </div>
 

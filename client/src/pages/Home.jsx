@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useForm } from '../hooks/useForm.js';
+import { useAuth } from '../hooks/useAuth.js';
 import { api } from '../api/client.js';
 
 const HERO_VIDEO = '/SkyReach Visuals Website Preview background.mp4';
 
 const SERVICES = [
-  { title: 'Roof & Chimney Inspections', description: 'Aerial photos to safely inspect roofs, chimneys and gutters without ladders.' },
+  { title: 'Property Roof Inspections', description: 'Comprehensive aerial photos to safely inspect roofs without ladders or scaffolding.' },
   { title: 'Property Aerial Photos', description: 'High-quality aerial photos for homes, property listings and estate marketing.' },
-  { title: 'Gutter Inspections', description: 'Safe, fast drone inspections of gutters and hard-to-reach areas.' },
 ];
 
 const GALLERY_VIDEO = '/videos/paul-srv.mp4';
@@ -37,12 +37,13 @@ function scrollToSection(id) {
 
 export default function Home() {
   const location = useLocation();
+  const { user } = useAuth();
   const [galleryCategory, setGalleryCategory] = useState('All');
   const [contactSuccess, setContactSuccess] = useState(false);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
 
   const contactForm = useForm({
-    initialValues: { name: '', email: '', phone: '', message: '' },
+    initialValues: { name: user?.name || '', email: user?.email || '', phone: '', message: '' },
     validate: (vals) => {
       const errs = {};
       if (!vals.name.trim()) errs.name = 'Name is required';
@@ -142,7 +143,7 @@ export default function Home() {
 
       {/* Services */}
       <section id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
-        <p className="text-lg text-red font-medium">Starting from £24.99</p>
+        <p className="text-lg text-red font-medium">£35.00</p>
         <h2 className="mt-2 text-4xl md:text-5xl font-bold text-white">Services</h2>
         <p className="mt-4 text-cream/70 max-w-2xl">
           Every package includes a fully licensed, CAA-certified drone operator,
@@ -252,11 +253,11 @@ export default function Home() {
             <div className="space-y-8">
               <div>
                 <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Email</h3>
-                <p className="text-cream">support@skyreachvisuals.co.uk</p>
+                <a href="mailto:support@skyreachvisuals.co.uk" className="text-cream hover:text-red transition-colors">support@skyreachvisuals.co.uk</a>
               </div>
               <div>
                 <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Phone</h3>
-                <p className="text-cream">07877 691861</p>
+                <a href="tel:+4407877691861" className="text-cream hover:text-red transition-colors">07877 691861</a>
               </div>
               <div>
                 <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Location</h3>

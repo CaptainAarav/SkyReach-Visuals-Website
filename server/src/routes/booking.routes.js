@@ -7,6 +7,7 @@ import {
   verifyBooking,
   createReview,
   payBooking,
+  updateBookingTime,
 } from '../controllers/booking.controller.js';
 
 const router = Router();
@@ -16,6 +17,7 @@ router.get('/', requireAuth, listBookings);
 router.get('/verify', requireAuth, verifyBooking);
 router.get('/:id', requireAuth, getBooking);
 router.post('/:id/pay', requireAuth, payBooking);
+router.patch('/:id/time', requireAuth, updateBookingTime);
 router.post('/:id/review', requireAuth, createReview);
 
 export default router;

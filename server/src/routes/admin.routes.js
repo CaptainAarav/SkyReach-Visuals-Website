@@ -14,6 +14,8 @@ import {
   updateOrder,
   listMessages,
   markMessageRead,
+  sendMessageToClient,
+  listSentMessages,
   listReviews,
   listAdminLogs,
 } from '../controllers/admin.controller.js';
@@ -42,6 +44,8 @@ router.patch('/orders/:id', updateOrder);
 // Messages
 router.get('/messages', listMessages);
 router.patch('/messages/:id', markMessageRead);
+router.post('/messages/send', sendMessageToClient);
+router.get('/messages/sent', listSentMessages);
 
 // Reviews
 router.get('/reviews', listReviews);

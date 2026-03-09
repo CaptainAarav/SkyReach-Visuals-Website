@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import prisma from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword } from '../services/auth.service.js';
-import { sendBookingApproved, sendBookingDeclined } from '../services/email.service.js';
+import { sendBookingApproved, sendBookingDeclined, sendAdminMessage } from '../services/email.service.js';
 import { env } from '../config/env.js';
 
 // ── Admin Audit Log helper ──────────────────────────────────────────
@@ -25,8 +25,11 @@ export async function getStats(req, res, next) {
       dateFilter = { createdAt: { gte: new Date(now.getFullYear(), 0, 1) } };
     }
 
-    const paidStatuses = ['CONFIRMED', 'COMPLETED'];
     const acceptedStatuses = ['APPROVED', 'CONFIRMED', 'COMPLETED'];
+
+    const paidDateFilter = dateFilter.createdAt
+      ? { paidAt: { not: null, ...dateFilter.createdAt } }
+      : { paidAt: { not: null } };
 
     const [
       total, admins, customerSupport, active, suspended, banned,
@@ -45,7 +48,7 @@ export async function getStats(req, res, next) {
       prisma.booking.count({ where: { ...dateFilter, status: 'DECLINED' } }),
       prisma.booking.aggregate({
         _sum: { packagePrice: true },
-        where: { ...dateFilter, status: { in: paidStatuses } },
+        where: paidDateFilter,
       }),
     ]);
 
@@ -372,6 +375,65 @@ export async function markMessageRead(req, res, next) {
       data: { read: true },
     });
     res.json({ success: true, data: updated, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── Admin Messaging ──────────────────────────────────────────────────
+export async function sendMessageToClient(req, res, next) {
+  try {
+    const { recipientEmail, subject, body } = req.body;
+
+    if (!recipientEmail || !subject || !body) {
+      throw new AppError('Recipient email, subject, and body are required');
+    }
+
+    const recipient = await prisma.user.findUnique({
+      where: { email: recipientEmail },
+      select: { id: true },
+    });
+
+    const message = await prisma.adminMessage.create({
+      data: {
+        senderId: req.user.id,
+        recipientId: recipient?.id || null,
+        recipientEmail,
+        subject,
+        body,
+      },
+    });
+
+    const senderUser = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { name: true },
+    });
+
+    await sendAdminMessage({
+      to: recipientEmail,
+      subject,
+      body,
+      senderName: senderUser?.name || 'Admin',
+    });
+
+    await logAdminAction(req.user.id, 'SEND_MESSAGE', recipient?.id || null, `Sent message to ${recipientEmail}: ${subject}`);
+
+    res.status(201).json({ success: true, data: message, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function listSentMessages(req, res, next) {
+  try {
+    const messages = await prisma.adminMessage.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sender: { select: { id: true, name: true, email: true } },
+        recipient: { select: { id: true, name: true, email: true } },
+      },
+    });
+    res.json({ success: true, data: messages, error: null });
   } catch (err) {
     next(err);
   }

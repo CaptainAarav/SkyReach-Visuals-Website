@@ -150,6 +150,31 @@ export async function createReview(req, res, next) {
   }
 }
 
+export async function updateBookingTime(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { shootTime } = req.body;
+
+    if (!shootTime) throw new AppError('Shoot time is required');
+
+    const booking = await prisma.booking.findUnique({ where: { id } });
+    if (!booking) throw new AppError('Booking not found', 404);
+    if (booking.userId !== req.user.id) throw new AppError('Not authorised', 403);
+    if (booking.status !== 'APPROVED') {
+      throw new AppError('Time can only be adjusted before payment', 400);
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id },
+      data: { shootTime },
+    });
+
+    res.json({ success: true, data: updated, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function verifyBooking(req, res, next) {
   try {
     const { session_id } = req.query;
@@ -176,7 +201,7 @@ export async function verifyBooking(req, res, next) {
     if (booking.status === 'APPROVED') {
       await prisma.booking.update({
         where: { id: booking.id },
-        data: { status: 'CONFIRMED' },
+        data: { status: 'CONFIRMED', paidAt: new Date() },
       });
 
       await sendBookingConfirmation({
