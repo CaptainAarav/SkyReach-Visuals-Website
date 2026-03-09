@@ -203,6 +203,13 @@ const STATUS_FILTER_MAP = {
   declined: ['DECLINED'],
 };
 
+const FILTERS = [
+  { label: 'All', value: '' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Accepted', value: 'accepted' },
+  { label: 'Declined', value: 'declined' },
+];
+
 export default function AdminOrders() {
   const [searchParams] = useSearchParams();
   const statusFilter = searchParams.get('status');

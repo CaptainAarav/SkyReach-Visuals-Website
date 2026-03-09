@@ -136,7 +136,7 @@ export default function Home() {
           </p>
           <a
             href="#services"
-            onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
+            onClick={(e) => { e.preventDefault(); scrollToSection('#services'); }}
             className="mt-10 inline-block bg-gradient-to-r from-red to-red-dark text-white text-base font-medium px-10 py-4 rounded-full hover:opacity-95 transition-opacity shadow-lg shadow-red/25"
           >
             View Services

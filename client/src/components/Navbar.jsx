@@ -76,7 +76,7 @@ export default function Navbar() {
           {sectionLinks.map((link) => (
             <Link
               key={link.hash}
-              to={{ pathname: '/', hash: link.hash.slice(1) }}
+              to={isHome ? '#' + link.hash.slice(1) : '/' + link.hash}
               onClick={(e) => {
                 if (isHome) {
                   e.preventDefault();
@@ -184,7 +184,7 @@ export default function Navbar() {
               {sectionLinks.map((link) => (
                 <Link
                   key={link.hash}
-                  to={{ pathname: '/', hash: link.hash.slice(1) }}
+                  to={isHome ? '#' + link.hash.slice(1) : '/' + link.hash}
                   onClick={() => {
                     if (isHome) scrollToSection(link.hash);
                     setMenuOpen(false);

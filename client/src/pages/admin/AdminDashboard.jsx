@@ -22,7 +22,6 @@ export default function AdminDashboard() {
   const [externalLabel, setExternalLabel] = useState('');
   const [externalSubmitting, setExternalSubmitting] = useState(false);
   const [externalError, setExternalError] = useState(null);
-  const [revealStats, setRevealStats] = useState(false);
 
   const loadStats = () => {
     setLoading(true);
@@ -92,20 +91,11 @@ export default function AdminDashboard() {
       {stats && (
         <>
           <div className="bg-bg-card border border-white/10 rounded-2xl p-8 mb-8">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-cream/50">
-                Revenue ({PERIODS.find((p) => p.value === period)?.label})
-              </p>
-              <button
-                type="button"
-                onClick={() => setRevealStats((v) => !v)}
-                className="text-xs font-medium text-cream/60 hover:text-white transition-colors"
-              >
-                {revealStats ? 'Hide' : 'Reveal'}
-              </button>
-            </div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">
+              Revenue ({PERIODS.find((p) => p.value === period)?.label})
+            </p>
             <p className="text-4xl md:text-5xl font-bold text-white">
-              {revealStats ? <CountUp value={stats.revenue / 100} decimals={2} prefix="£" duration={1200} /> : '••••••'}
+              <CountUp value={stats.revenue / 100} decimals={2} prefix="£" duration={1200} />
             </p>
             <p className="mt-2 text-sm text-cream/50">
               From confirmed and completed bookings and external projects
@@ -113,10 +103,10 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link to="/admin/messages"><StatCard label="Total Quotes" value={stats.totalQuotes} color="text-blue-400" reveal={revealStats} /></Link>
-            <Link to="/admin/orders"><StatCard label="Total Bookings" value={stats.totalBookings} color="text-amber-400" reveal={revealStats} /></Link>
-            <Link to="/admin/orders?status=accepted"><StatCard label="Total Accepted" value={stats.totalAccepted} color="text-emerald-400" reveal={revealStats} /></Link>
-            <Link to="/admin/orders?status=declined"><StatCard label="Total Declined" value={stats.totalDeclined} color="text-red-400" reveal={revealStats} /></Link>
+            <Link to="/admin/messages"><StatCard label="Total Quotes" value={stats.totalQuotes} color="text-blue-400" /></Link>
+            <Link to="/admin/orders"><StatCard label="Total Bookings" value={stats.totalBookings} color="text-amber-400" /></Link>
+            <Link to="/admin/orders?status=accepted"><StatCard label="Total Accepted" value={stats.totalAccepted} color="text-emerald-400" /></Link>
+            <Link to="/admin/orders?status=declined"><StatCard label="Total Declined" value={stats.totalDeclined} color="text-red-400" /></Link>
           </div>
         </>
       )}
@@ -168,12 +158,12 @@ export default function AdminDashboard() {
   );
 }
 
-function StatCard({ label, value, color, reveal }) {
+function StatCard({ label, value, color }) {
   return (
     <div className="bg-bg-card border border-white/10 rounded-2xl p-6">
       <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">{label}</p>
       <p className={`text-3xl font-bold ${color}`}>
-        {reveal ? <CountUp value={value} duration={1000} /> : '••••'}
+        <CountUp value={value} duration={1000} />
       </p>
     </div>
   );
