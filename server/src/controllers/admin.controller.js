@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import prisma from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword } from '../services/auth.service.js';
-import { sendBookingApproved, sendBookingDeclined, sendAdminMessage } from '../services/email.service.js';
+import { sendBookingApproved, sendBookingDeclined, sendAdminMessage, sendReviewRequestEmail } from '../services/email.service.js';
 import { env } from '../config/env.js';
 
 // ── Admin Audit Log helper ──────────────────────────────────────────
@@ -341,6 +341,18 @@ export async function updateOrder(req, res, next) {
     if (status === 'DECLINED' && booking.status !== 'DECLINED' && updated.user?.email) {
       await sendBookingDeclined({ to: updated.user.email, booking: updated }).catch((err) => {
         console.error('Failed to send decline email:', err.message);
+      });
+    }
+
+    if (status === 'COMPLETED' && booking.status !== 'COMPLETED' && updated.user?.email) {
+      const reviewUrl = `${env.clientUrl}/dashboard/bookings/${booking.id}`;
+      await sendReviewRequestEmail({
+        to: updated.user.email,
+        name: updated.user.name,
+        booking: updated,
+        reviewUrl,
+      }).catch((err) => {
+        console.error('Failed to send review request email:', err.message);
       });
     }
 

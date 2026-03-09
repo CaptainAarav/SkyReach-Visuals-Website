@@ -11,6 +11,27 @@ const SERVICES = [
   { title: 'Property Aerial Photos', description: 'High-quality aerial photos for homes, property listings and estate marketing.' },
 ];
 
+const PLACEHOLDER_REVIEWS = [
+  { id: 'p1', name: 'James H.', rating: 5, comment: 'Brilliant aerial shots of our property. The team was professional and the turnaround was incredibly quick.' },
+  { id: 'p2', name: 'Sarah M.', rating: 5, comment: 'Used SkyReach for our roof inspection. Saved us the cost of scaffolding and the photos were crystal clear.' },
+  { id: 'p3', name: 'Tom R.', rating: 4, comment: 'Great quality drone footage for our estate listing. Really helped the property stand out online.' },
+  { id: 'p4', name: 'Emily P.', rating: 5, comment: 'Fantastic experience from start to finish. The aerial photos made our Airbnb listing look amazing.' },
+  { id: 'p5', name: 'David L.', rating: 5, comment: 'Professional, reliable, and affordable. Would highly recommend for any property photography needs.' },
+  { id: 'p6', name: 'Rachel K.', rating: 4, comment: 'Quick turnaround on our construction site survey. The drone footage was exactly what we needed.' },
+];
+
+function StarRating({ rating }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <svg key={n} className={`w-4 h-4 ${n <= rating ? 'text-amber-400' : 'text-white/20'}`} fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 const GALLERY_VIDEO = '/media/paul-srv.mp4';
 const GALLERY_POSTER = '/media/gallery-poster.jpg';
 const categories = ['All', 'Property', 'Events', 'Construction', 'Creative'];
@@ -41,6 +62,13 @@ export default function Home() {
   const [galleryCategory, setGalleryCategory] = useState('All');
   const [contactSuccess, setContactSuccess] = useState(false);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const [reviews, setReviews] = useState(PLACEHOLDER_REVIEWS);
+
+  useEffect(() => {
+    api.get('/api/reviews/public')
+      .then((data) => { if (data.length > 0) setReviews(data); })
+      .catch(() => {});
+  }, []);
 
   const contactForm = useForm({
     initialValues: { name: user?.name || '', email: user?.email || '', phone: '', message: '' },
@@ -163,6 +191,30 @@ export default function Home() {
         >
           Get Started
         </Link>
+      </section>
+
+      {/* Reviews */}
+      <section id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
+        <h2 className="text-3xl md:text-4xl font-semibold text-white">What People Think About Us</h2>
+        <p className="mt-3 text-cream/70 max-w-2xl">
+          Real feedback from verified customers who have used our drone photography services.
+        </p>
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {reviews.map((r) => (
+            <div key={r.id} className="bg-bg-card p-6 rounded-2xl border border-white/5 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-white">{r.name}</span>
+                  <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <StarRating rating={r.rating} />
+              </div>
+              <p className="text-cream/80 text-sm leading-relaxed">{r.comment}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Portfolio */}

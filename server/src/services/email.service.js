@@ -530,3 +530,61 @@ export async function sendAdminLoginEmail({ to, name, verifyUrl }) {
     throw err;
   }
 }
+
+export async function sendReviewRequestEmail({ to, name, booking, reviewUrl }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.log('SMTP not configured — skipping review request email');
+    console.log('Would send to:', to, 'Booking:', booking.id);
+    return;
+  }
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background-color:#F5F3EE;font-family:'Inter',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F3EE;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          ${emailHeader()}
+          <tr>
+            <td style="background-color:#ffffff;padding:40px;">
+              <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">How was your experience?</h2>
+              <p style="margin:0 0 24px;color:#1E2D4A;font-size:15px;line-height:1.6;">
+                Hi ${name}, your <strong>${booking.packageName}</strong> order is now complete. We hope you&rsquo;re happy with the results!
+              </p>
+              <p style="margin:0 0 24px;color:#1E2D4A;font-size:15px;line-height:1.6;">
+                We&rsquo;d really appreciate it if you could take a moment to leave a review. Your feedback helps us improve and helps other customers make informed decisions.
+              </p>
+              <p style="margin:0 0 24px;">
+                <a href="${reviewUrl}" style="display:inline-block;background-color:#C41E3A;color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;padding:14px 28px;border-radius:8px;">Leave a Review</a>
+              </p>
+              <p style="margin:0;color:#1E2D4A;font-size:14px;line-height:1.6;opacity:0.7;">
+                Thank you for choosing SkyReach Visuals. If you have any questions, reply to this email or call us on 07877 691861.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px;text-align:center;">
+              <p style="margin:0;color:#1E2D4A;font-size:12px;opacity:0.4;">
+                SkyReach Visuals &middot; Bournemouth, Dorset, UK
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  await transport.sendMail({
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
+    to,
+    subject: `How was your experience? — ${booking.packageName} | SkyReach Visuals`,
+    headers: mailHeaders(),
+    html,
+  });
+}
