@@ -34,7 +34,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 bg-black/20 backdrop-blur-lg border-b border-white/10 rounded-b-2xl supports-[backdrop-filter]:bg-black/20">
+    <nav className="sticky top-0 z-50 bg-black/30 backdrop-blur-2xl border-b border-white/[0.06] supports-[backdrop-filter]:bg-black/30">
       <div className="w-full pl-4 pr-4 md:pr-6 min-h-[4rem] py-2 flex items-center justify-between md:justify-start md:gap-2">
         <Link
           to="/"
@@ -83,7 +83,7 @@ export default function Navbar() {
                   scrollToSection(link.hash);
                 }
               }}
-              className="text-sm tracking-wide transition-colors text-cream/80 hover:text-white"
+              className="text-sm tracking-wide transition-all duration-200 text-cream/60 hover:text-white hover:drop-shadow-[0_0_8px_rgba(167,139,250,0.4)]"
             >
               {link.label}
             </Link>
@@ -91,7 +91,7 @@ export default function Navbar() {
 
           <Link
             to="/get-started"
-            className="text-sm bg-red px-4 py-2 rounded-xl text-white hover:bg-red-dark transition-colors"
+            className="text-sm bg-gradient-to-r from-red via-red-light to-red px-5 py-2.5 rounded-xl text-white font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:scale-[1.03] animate-gradient-x"
           >
             Get Started
           </Link>
@@ -111,7 +111,7 @@ export default function Navbar() {
                 </svg>
               </button>
               {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 py-2 w-48 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50">
+                <div className="absolute right-0 top-full mt-2 py-2 w-48 glass rounded-xl shadow-2xl z-50">
                   <Link
                     to="/orders"
                     onClick={() => setDropdownOpen(false)}
@@ -148,7 +148,7 @@ export default function Navbar() {
           ) : (
             <Link
               to="/login"
-              className="text-sm bg-red px-4 py-2 rounded-xl text-white hover:bg-red-dark transition-colors"
+              className="text-sm bg-white/10 border border-white/10 px-5 py-2.5 rounded-xl text-white font-medium transition-all duration-300 hover:bg-white/15 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.08)]"
             >
               Log in
             </Link>
@@ -179,7 +179,7 @@ export default function Navbar() {
             onClick={() => setMenuOpen(false)}
             aria-hidden
           />
-          <div className="md:hidden fixed left-4 right-4 top-[4.5rem] z-50 max-h-[calc(100vh-5.5rem)] overflow-y-auto rounded-2xl border border-white/10 bg-bg-card shadow-2xl">
+          <div className="md:hidden fixed left-4 right-4 top-[4.5rem] z-50 max-h-[calc(100vh-5.5rem)] overflow-y-auto rounded-2xl glass shadow-2xl shadow-black/50">
             <nav className="flex flex-col py-4 px-6" aria-label="Mobile menu">
               {sectionLinks.map((link) => (
                 <Link

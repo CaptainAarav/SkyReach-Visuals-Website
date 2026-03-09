@@ -107,12 +107,11 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero — video fills whole screen from top, no gap above */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black rounded-b-3xl -mt-20">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black -mt-20">
         <video
           src={HERO_VIDEO}
           poster="/media/hero-poster.jpg"
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-700 transform-gpu ${heroVideoReady ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-1000 transform-gpu ${heroVideoReady ? 'opacity-100' : 'opacity-0'}`}
           muted
           playsInline
           loop
@@ -122,89 +121,110 @@ export default function Home() {
           aria-hidden
           onCanPlay={() => setHeroVideoReady(true)}
         />
-        <div className="absolute inset-0 bg-black/30 pointer-events-none" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70 pointer-events-none" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-red/10 pointer-events-none" aria-hidden />
+
+        {/* Floating orbs */}
+        <div className="absolute top-1/4 left-[10%] w-64 h-64 bg-accent/20 rounded-full blur-[100px] animate-float-slow pointer-events-none" aria-hidden />
+        <div className="absolute bottom-1/4 right-[10%] w-48 h-48 bg-red/15 rounded-full blur-[80px] animate-pulse-glow pointer-events-none" style={{ animationDelay: '2s' }} aria-hidden />
+
         <div className={`relative z-10 max-w-5xl mx-auto px-6 py-24 text-center flex flex-col items-center justify-center ${heroVideoReady ? 'animate-fade-in' : 'opacity-0'}`}>
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold leading-tight text-white" style={{ letterSpacing: '0.2em' }}>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold leading-tight text-gradient drop-shadow-2xl" style={{ letterSpacing: '0.2em' }}>
             SkyReach Visuals
           </h1>
-          <p className="subtitle mt-5 text-2xl sm:text-3xl md:text-4xl text-white/90">
+          <p className="subtitle mt-5 text-2xl sm:text-3xl md:text-4xl text-white/90 animate-fade-in-up animate-delay-2">
             Drone Photography in Bournemouth
           </p>
-          <p className="mt-6 text-xl md:text-2xl text-white/85 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-6 text-xl md:text-2xl text-white/70 max-w-2xl mx-auto leading-relaxed animate-fade-in-up animate-delay-3">
             Affordable aerial photos and videos for property, roof inspections and businesses.
           </p>
           <a
             href="#services"
             onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
-            className="mt-10 inline-block bg-gradient-to-r from-red to-red-dark text-white text-base font-medium px-10 py-4 rounded-full hover:opacity-95 transition-opacity shadow-lg shadow-red/25"
+            className="group mt-10 inline-flex items-center gap-2 bg-gradient-to-r from-red via-red-light to-red text-white text-base font-semibold px-10 py-4 rounded-full transition-all duration-300 shadow-lg shadow-red/30 hover:shadow-[0_0_40px_rgba(220,38,38,0.5)] hover:scale-[1.04] animate-gradient-x animate-fade-in-up animate-delay-4"
           >
             View Services
+            <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
           </a>
         </div>
+
+        {/* Bottom fade into page */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-bg to-transparent pointer-events-none" aria-hidden />
       </section>
 
-      {/* About */}
-      <AnimateInView as="section" id="about" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4 shadow-[0_0_20px_rgba(107,91,173,0.15)]">About SkyReach Visuals</h2>
+      <AnimateInView as="section" id="about" className="relative max-w-7xl mx-auto px-6 py-28 scroll-mt-20" animation="animate-slide-in-right">
+        <div className="absolute -top-20 -left-20 w-80 h-80 bg-accent/5 rounded-full blur-[120px] pointer-events-none" aria-hidden />
+        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4">About SkyReach Visuals</h2>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="aspect-video rounded-2xl overflow-hidden bg-black/40">
-            <img src="/skyreach_aboutme_image.png" alt="SkyReach Visuals" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+          <div className="aspect-video rounded-2xl overflow-hidden bg-black/40 group">
+            <img src="/skyreach_aboutme_image.png" alt="SkyReach Visuals" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
           </div>
           <div>
-            <p className="text-cream/80 leading-relaxed">
+            <p className="text-cream/75 leading-relaxed">
               SkyReach Visuals is a Bournemouth-based drone photography service providing high-quality aerial photos and video for businesses, property owners and construction projects. Using professional DJI drone technology, we capture unique perspectives that help showcase properties, inspect hard-to-reach areas and create engaging visual content.
             </p>
-            <p className="mt-4 text-cream/80 leading-relaxed">
+            <p className="mt-4 text-cream/75 leading-relaxed">
               We hold a current CAA Operational Authorisation and carry full public liability insurance. Every shoot is planned, risk-assessed, and delivered to a broadcast-ready standard.
             </p>
           </div>
         </div>
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div className="p-5 rounded-2xl border border-white/10 bg-bg-card/50 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
-            <h3 className="text-lg font-semibold text-white text-accent-light">Cinematic quality</h3>
-            <p className="mt-3 text-cream/70 leading-relaxed text-sm">We shoot in 4K with professional-grade drones. Every clip is colour-graded and edited to a high standard.</p>
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="group p-6 rounded-2xl border border-white/[0.06] bg-bg-card/60 backdrop-blur-sm hover:border-accent/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgba(124,58,237,0.12)]">
+            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+              <svg className="w-5 h-5 text-accent-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+            </div>
+            <h3 className="text-lg font-semibold text-accent-light">Cinematic quality</h3>
+            <p className="mt-3 text-cream/60 leading-relaxed text-sm">We shoot in 4K with professional-grade drones. Every clip is colour-graded and edited to a high standard.</p>
           </div>
-          <div className="p-5 rounded-2xl border border-white/10 bg-bg-card/50 hover:border-red/40 hover:shadow-lg hover:shadow-red/10 transition-all duration-300">
-            <h3 className="text-lg font-semibold text-white text-red-light">Fast & Affordable</h3>
-            <p className="mt-3 text-cream/70 leading-relaxed text-sm">Quick turnaround and competitive pricing for inspections, property photography and business content.</p>
+          <div className="group p-6 rounded-2xl border border-white/[0.06] bg-bg-card/60 backdrop-blur-sm hover:border-red/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgba(220,38,38,0.12)]">
+            <div className="w-10 h-10 rounded-xl bg-red/10 flex items-center justify-center mb-4 group-hover:bg-red/20 transition-colors">
+              <svg className="w-5 h-5 text-red-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <h3 className="text-lg font-semibold text-red-light">Fast & Affordable</h3>
+            <p className="mt-3 text-cream/60 leading-relaxed text-sm">Quick turnaround and competitive pricing for inspections, property photography and business content.</p>
           </div>
-          <div className="p-5 rounded-2xl border border-white/10 bg-bg-card/50 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300">
-            <h3 className="text-lg font-semibold text-white text-emerald-400">Reliable delivery</h3>
-            <p className="mt-3 text-cream/70 leading-relaxed text-sm">We give you a delivery date and we stick to it. Standard turnaround 3–7 working days.</p>
+          <div className="group p-6 rounded-2xl border border-white/[0.06] bg-bg-card/60 backdrop-blur-sm hover:border-emerald-500/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgba(16,185,129,0.12)]">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
+              <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <h3 className="text-lg font-semibold text-emerald-400">Reliable delivery</h3>
+            <p className="mt-3 text-cream/60 leading-relaxed text-sm">We give you a delivery date and we stick to it. Standard turnaround 3–7 working days.</p>
           </div>
         </div>
       </AnimateInView>
 
-      {/* Services */}
-      <AnimateInView as="section" id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-red pl-4 mb-2 shadow-[0_0_20px_rgba(192,57,43,0.12)]">Services</h2>
-        <p className="text-lg text-red font-medium">
+      <AnimateInView as="section" id="services" className="relative max-w-7xl mx-auto px-6 py-28 scroll-mt-20" animation="animate-slide-in-left">
+        <div className="absolute -top-10 -right-20 w-72 h-72 bg-red/5 rounded-full blur-[120px] pointer-events-none" aria-hidden />
+        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-red pl-4 mb-2">Services</h2>
+        <p className="text-lg text-red-light font-semibold">
           <CountUp value={35} decimals={2} duration={1200} prefix="£" />
         </p>
-        <p className="mt-4 text-cream/70 max-w-2xl">
+        <p className="mt-4 text-cream/60 max-w-2xl">
           Every package includes a fully licensed, CAA-certified drone operator,
           professional editing, and delivery in broadcast-ready formats.
         </p>
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           {SERVICES.map((s) => (
-            <div key={s.title} className="bg-bg-card p-8 rounded-2xl border border-white/10 hover:border-accent/40 transition-all duration-300 border-t-4 border-t-accent/30 hover:border-t-accent hover:shadow-xl hover:shadow-accent/10">
-              <h3 className="text-xl font-semibold text-white text-accent-light">{s.title}</h3>
-              <p className="mt-3 text-cream/80 text-sm leading-relaxed">{s.description}</p>
+            <div key={s.title} className="group relative bg-bg-card/80 p-8 rounded-2xl border border-white/[0.06] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_12px_48px_rgba(124,58,237,0.15)] overflow-hidden">
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-accent via-accent-light to-accent opacity-40 group-hover:opacity-100 transition-opacity duration-500" />
+              <h3 className="text-xl font-semibold text-accent-light">{s.title}</h3>
+              <p className="mt-3 text-cream/60 text-sm leading-relaxed">{s.description}</p>
             </div>
           ))}
         </div>
         <Link
           to="/get-started"
-          className="mt-10 inline-block bg-gradient-to-r from-red to-red-dark text-white text-sm font-medium px-10 py-4 rounded-full hover:opacity-95 transition-opacity shadow-lg shadow-red/20"
+          className="group mt-10 inline-flex items-center gap-2 bg-gradient-to-r from-red via-red-light to-red text-white text-sm font-semibold px-10 py-4 rounded-full transition-all duration-300 shadow-lg shadow-red/25 hover:shadow-[0_0_40px_rgba(220,38,38,0.4)] hover:scale-[1.03] animate-gradient-x"
         >
           Get Started
+          <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
         </Link>
       </AnimateInView>
 
-      {/* Reviews carousel — big card, arrows below, hover interactive */}
-      <AnimateInView as="section" id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-amber-400 pl-4 shadow-[0_0_20px_rgba(251,191,36,0.12)]">What People Think About Us</h2>
-        <p className="mt-3 text-cream/70 max-w-2xl">
+      <AnimateInView as="section" id="reviews" className="relative max-w-7xl mx-auto px-6 py-28 scroll-mt-20" animation="animate-slide-in-right">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-400/[0.03] rounded-full blur-[150px] pointer-events-none" aria-hidden />
+        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-amber-400 pl-4">What People Think About Us</h2>
+        <p className="mt-3 text-cream/60 max-w-2xl">
           Real feedback from verified customers who have used our drone photography services.
         </p>
         <div className="mt-12">
@@ -215,7 +235,7 @@ export default function Home() {
             >
               {reviews.map((r, i) => (
                 <div key={r.id} className="w-full shrink-0 px-3">
-                  <div className={`review-card isolate bg-bg-card p-8 md:p-12 rounded-2xl border border-white/10 flex flex-col gap-6 min-h-[300px] md:min-h-[340px] cursor-default transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 ${REVIEW_HOVER_ROTATIONS[i % REVIEW_HOVER_ROTATIONS.length]} hover:border-accent/50 hover:shadow-xl hover:shadow-accent/15`}>
+                  <div className={`review-card isolate bg-bg-card/70 backdrop-blur-sm p-8 md:p-12 rounded-2xl border border-white/[0.06] flex flex-col gap-6 min-h-[300px] md:min-h-[340px] cursor-default transition-all duration-500 ease-out hover:-translate-y-2 ${REVIEW_HOVER_ROTATIONS[i % REVIEW_HOVER_ROTATIONS.length]} hover:border-amber-400/20 hover:shadow-[0_12px_48px_rgba(251,191,36,0.1)]`}>
                     <div className="flex items-center justify-between flex-wrap gap-3">
                       <div className="flex items-center gap-3">
                         <span className="text-base md:text-lg font-semibold text-white">{r.name}</span>
@@ -241,7 +261,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setReviewIndex((i) => (i <= 0 ? reviews.length - 1 : i - 1))}
-                className="w-12 h-12 rounded-full bg-bg-card border border-white/15 text-white hover:bg-accent hover:border-accent hover:shadow-lg hover:shadow-accent/30 transition-all duration-200 flex items-center justify-center"
+                className="w-12 h-12 rounded-full bg-bg-card/80 border border-white/10 text-white hover:bg-accent/20 hover:border-accent/40 hover:shadow-[0_0_20px_rgba(124,58,237,0.2)] transition-all duration-300 flex items-center justify-center"
                 aria-label="Previous review"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,7 +274,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setReviewIndex((i) => (i >= reviews.length - 1 ? 0 : i + 1))}
-                className="w-12 h-12 rounded-full bg-bg-card border border-white/15 text-white hover:bg-accent hover:border-accent hover:shadow-lg hover:shadow-accent/30 transition-all duration-200 flex items-center justify-center"
+                className="w-12 h-12 rounded-full bg-bg-card/80 border border-white/10 text-white hover:bg-accent/20 hover:border-accent/40 hover:shadow-[0_0_20px_rgba(124,58,237,0.2)] transition-all duration-300 flex items-center justify-center"
                 aria-label="Next review"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,11 +286,11 @@ export default function Home() {
         </div>
       </AnimateInView>
 
-      {/* Portfolio */}
-      <AnimateInView as="section" id="portfolio" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
+      <AnimateInView as="section" id="portfolio" className="relative max-w-7xl mx-auto px-6 py-28 scroll-mt-20" animation="animate-slide-in-left">
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-accent/5 rounded-full blur-[120px] pointer-events-none" aria-hidden />
         <div>
-          <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4 shadow-[0_0_20px_rgba(107,91,173,0.15)]">Portfolio</h2>
-          <p className="mt-3 text-cream/70 max-w-2xl">
+          <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4">Portfolio</h2>
+          <p className="mt-3 text-cream/60 max-w-2xl">
             A selection of aerial projects from across Bournemouth, Poole, and the Dorset coast.
           </p>
           <div className="mt-10 flex flex-wrap gap-2">
@@ -278,10 +298,10 @@ export default function Home() {
               <button
                 key={cat}
                 onClick={() => setGalleryCategory(cat)}
-                className={`text-sm px-4 py-2 transition-all duration-200 rounded-xl ${
+                className={`text-sm px-5 py-2.5 transition-all duration-300 rounded-full font-medium ${
                   galleryCategory === cat
-                    ? 'bg-gradient-to-r from-accent to-accent-light text-white shadow-lg shadow-accent/25'
-                    : 'bg-bg-card text-cream/80 hover:text-white hover:border-accent/40 border border-white/10'
+                    ? 'bg-gradient-to-r from-accent to-accent-light text-white shadow-[0_0_20px_rgba(124,58,237,0.3)]'
+                    : 'bg-white/[0.04] text-cream/60 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]'
                 }`}
               >
                 {cat}
@@ -292,85 +312,88 @@ export default function Home() {
             {filteredGallery.map((item) => (
               <div
                 key={item.id}
-                className="group relative aspect-video bg-black/40 overflow-hidden rounded-2xl bg-cover bg-center"
+                className="group relative aspect-video bg-black/40 overflow-hidden rounded-2xl bg-cover bg-center transition-transform duration-500 hover:scale-[1.02]"
                 style={{ backgroundImage: `url(${GALLERY_POSTER})` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-accent/30 group-hover:via-black/40 group-hover:to-transparent transition-all duration-300 flex items-end p-5">
-                  <div className="translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <span className="text-xs font-medium text-accent-light uppercase tracking-wider">{item.category}</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-accent/20 group-hover:via-black/50 group-hover:to-transparent transition-all duration-500 flex items-end p-5">
+                  <div className="translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    <span className="text-xs font-semibold text-accent-light uppercase tracking-wider">{item.category}</span>
                     <h3 className="text-white font-medium mt-1">{item.label}</h3>
                   </div>
                 </div>
-                <span className="absolute bottom-4 left-5 text-xs text-white/60 uppercase tracking-wider group-hover:opacity-0 transition-opacity">{item.label}</span>
+                <span className="absolute bottom-4 left-5 text-xs text-white/50 uppercase tracking-wider group-hover:opacity-0 transition-opacity duration-300">{item.label}</span>
               </div>
             ))}
           </div>
         </div>
       </AnimateInView>
 
-      {/* Contact */}
-      <AnimateInView as="section" id="contact" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
+      <AnimateInView as="section" id="contact" className="relative max-w-7xl mx-auto px-6 py-28 scroll-mt-20" animation="animate-slide-in-right">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-red/[0.04] rounded-full blur-[150px] pointer-events-none" aria-hidden />
         <div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white border-l-4 border-red pl-4 shadow-[0_0_20px_rgba(192,57,43,0.12)]">Get in touch</h2>
-          <p className="mt-4 text-cream/70 max-w-2xl">
+          <h2 className="text-4xl md:text-5xl font-bold text-white border-l-4 border-red pl-4">Get in touch</h2>
+          <p className="mt-4 text-cream/60 max-w-2xl">
             Got a project in mind? Drop us a message and we&rsquo;ll get back to you within 24 hours.
           </p>
           <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-16">
             <div>
               {contactSuccess ? (
-                <div className="bg-bg-card p-8 rounded-2xl border border-white/10">
+                <div className="glass p-8 rounded-2xl glow-accent">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  </div>
                   <h3 className="text-xl font-semibold text-white">Message sent</h3>
-                  <p className="mt-2 text-cream/70">Thanks for getting in touch. We&rsquo;ll come back to you shortly.</p>
-                  <button type="button" onClick={() => setContactSuccess(false)} className="mt-4 text-sm font-medium text-accent border-b-2 border-accent pb-1 hover:border-red hover:text-red transition-colors">
-                    Send another message
+                  <p className="mt-2 text-cream/60">Thanks for getting in touch. We&rsquo;ll come back to you shortly.</p>
+                  <button type="button" onClick={() => setContactSuccess(false)} className="mt-6 text-sm font-medium text-accent-light hover:text-white transition-colors">
+                    Send another message &rarr;
                   </button>
                 </div>
               ) : (
                 <form onSubmit={contactForm.handleSubmit} className="space-y-6">
                   <div>
-                    <label htmlFor="contact-name" className="block text-sm font-medium mb-2">Name</label>
-                    <input id="contact-name" name="name" type="text" value={contactForm.values.name} onChange={contactForm.handleChange} className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40 rounded-t-xl" />
+                    <label htmlFor="contact-name" className="block text-sm font-medium mb-2 text-cream/70">Name</label>
+                    <input id="contact-name" name="name" type="text" value={contactForm.values.name} onChange={contactForm.handleChange} className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]" />
                     {contactForm.errors.name && <p className="mt-1 text-xs text-red">{contactForm.errors.name}</p>}
                   </div>
                   <div>
-                    <label htmlFor="contact-email" className="block text-sm font-medium mb-2">Email</label>
-                    <input id="contact-email" name="email" type="email" value={contactForm.values.email} onChange={contactForm.handleChange} className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40 rounded-t-xl" />
+                    <label htmlFor="contact-email" className="block text-sm font-medium mb-2 text-cream/70">Email</label>
+                    <input id="contact-email" name="email" type="email" value={contactForm.values.email} onChange={contactForm.handleChange} className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]" />
                     {contactForm.errors.email && <p className="mt-1 text-xs text-red">{contactForm.errors.email}</p>}
                   </div>
                   <div>
-                    <label htmlFor="contact-phone" className="block text-sm font-medium mb-2">Phone <span className="text-cream/50">(optional)</span></label>
-                    <input id="contact-phone" name="phone" type="tel" value={contactForm.values.phone} onChange={contactForm.handleChange} className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40 rounded-t-xl" />
+                    <label htmlFor="contact-phone" className="block text-sm font-medium mb-2 text-cream/70">Phone <span className="text-cream/40">(optional)</span></label>
+                    <input id="contact-phone" name="phone" type="tel" value={contactForm.values.phone} onChange={contactForm.handleChange} className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]" />
                   </div>
                   <div>
-                    <label htmlFor="contact-message" className="block text-sm font-medium mb-2">Message</label>
-                    <textarea id="contact-message" name="message" rows={5} value={contactForm.values.message} onChange={contactForm.handleChange} className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors resize-none text-cream placeholder:text-cream/40 rounded-t-xl" />
+                    <label htmlFor="contact-message" className="block text-sm font-medium mb-2 text-cream/70">Message</label>
+                    <textarea id="contact-message" name="message" rows={5} value={contactForm.values.message} onChange={contactForm.handleChange} className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-accent/50 focus:bg-white/[0.05] outline-none py-3 px-4 transition-all duration-300 resize-none text-cream placeholder:text-cream/30 rounded-xl focus:shadow-[0_0_20px_rgba(124,58,237,0.1)]" />
                     {contactForm.errors.message && <p className="mt-1 text-xs text-red">{contactForm.errors.message}</p>}
                   </div>
                   {contactForm.submitError && <p className="text-sm text-red">{contactForm.submitError}</p>}
-                  <button type="submit" disabled={contactForm.submitting} className="bg-gradient-to-r from-red to-red-dark text-white text-sm font-medium px-8 py-3 rounded-xl hover:opacity-95 transition-opacity shadow-lg shadow-red/20 disabled:opacity-50">
+                  <button type="submit" disabled={contactForm.submitting} className="group bg-gradient-to-r from-red via-red-light to-red text-white text-sm font-semibold px-8 py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-red/20 hover:shadow-[0_0_30px_rgba(220,38,38,0.4)] hover:scale-[1.02] animate-gradient-x disabled:opacity-50">
                     {contactForm.submitting ? 'Sending...' : 'Send message'}
                   </button>
                 </form>
               )}
             </div>
             <div className="space-y-8">
-              <div>
-                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/80 mb-3">Email</h3>
-                <a href="mailto:support@skyreachvisuals.co.uk" className="text-cream hover:text-accent-light transition-colors">support@skyreachvisuals.co.uk</a>
+              <div className="group">
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/60 mb-3">Email</h3>
+                <a href="mailto:support@skyreachvisuals.co.uk" className="text-cream/80 hover:text-accent-light transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(167,139,250,0.4)]">support@skyreachvisuals.co.uk</a>
+              </div>
+              <div className="group">
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/60 mb-3">Phone</h3>
+                <a href="tel:+4407877691861" className="text-cream/80 hover:text-accent-light transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(167,139,250,0.4)]">07877 691861</a>
               </div>
               <div>
-                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/80 mb-3">Phone</h3>
-                <a href="tel:+4407877691861" className="text-cream hover:text-accent-light transition-colors">07877 691861</a>
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/60 mb-3">Location</h3>
+                <p className="text-cream/80">Bournemouth, Dorset, UK</p>
+                <p className="mt-1 text-sm text-cream/50">We cover Dorset, Hampshire, and Wiltshire. Further afield by arrangement.</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/80 mb-3">Location</h3>
-                <p className="text-cream">Bournemouth, Dorset, UK</p>
-                <p className="mt-1 text-sm text-cream/70">We cover Dorset, Hampshire, and Wiltshire. Further afield by arrangement.</p>
-              </div>
-              <div>
-                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/80 mb-3">Hours</h3>
-                <p className="text-cream">Monday to Friday, 9am – 5pm</p>
-                <p className="mt-1 text-sm text-cream/70">Weekend shoots available by prior arrangement.</p>
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/60 mb-3">Hours</h3>
+                <p className="text-cream/80">Monday to Friday, 9am – 5pm</p>
+                <p className="mt-1 text-sm text-cream/50">Weekend shoots available by prior arrangement.</p>
               </div>
             </div>
           </div>
