@@ -155,10 +155,10 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile hamburger — solid for clear tap target */}
+        {/* Mobile hamburger — fully solid, no transparency */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-cream p-2.5 rounded-xl bg-white/15 hover:bg-white/25 transition-colors"
+          className="md:hidden text-cream p-2.5 rounded-xl bg-bg-card hover:bg-bg-elevated border border-white/10 transition-colors"
           aria-label="Toggle menu"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -171,7 +171,7 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu — rounded, transparent like top bar */}
+      {/* Mobile menu — solid panel, no transparency */}
       {menuOpen && (
         <>
           <div
@@ -179,7 +179,7 @@ export default function Navbar() {
             onClick={() => setMenuOpen(false)}
             aria-hidden
           />
-          <div className="md:hidden fixed left-4 right-4 top-[4.5rem] z-50 max-h-[calc(100vh-5.5rem)] overflow-y-auto rounded-2xl border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl">
+          <div className="md:hidden fixed left-4 right-4 top-[4.5rem] z-50 max-h-[calc(100vh-5.5rem)] overflow-y-auto rounded-2xl border border-white/10 bg-bg-card shadow-2xl">
             <nav className="flex flex-col py-4 px-6" aria-label="Mobile menu">
               {sectionLinks.map((link) => (
                 <Link

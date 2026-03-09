@@ -136,7 +136,7 @@ export default function Home() {
           <a
             href="#services"
             onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
-            className="mt-10 inline-block bg-red text-white text-base font-medium px-10 py-4 rounded-full hover:bg-red-dark transition-colors"
+            className="mt-10 inline-block bg-gradient-to-r from-red to-red-dark text-white text-base font-medium px-10 py-4 rounded-full hover:opacity-95 transition-opacity shadow-lg shadow-red/25"
           >
             View Services
           </a>
@@ -145,7 +145,7 @@ export default function Home() {
 
       {/* About */}
       <AnimateInView as="section" id="about" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4">About SkyReach Visuals</h2>
+        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4 shadow-[0_0_20px_rgba(107,91,173,0.15)]">About SkyReach Visuals</h2>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="aspect-video rounded-2xl overflow-hidden bg-black/40">
             <img src="/skyreach_aboutme_image.png" alt="SkyReach Visuals" className="w-full h-full object-cover" loading="lazy" decoding="async" />
@@ -160,15 +160,15 @@ export default function Home() {
           </div>
         </div>
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div className="p-4 rounded-xl border border-white/5 hover:border-accent/30 transition-colors">
+          <div className="p-5 rounded-2xl border border-white/10 bg-bg-card/50 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
             <h3 className="text-lg font-semibold text-white text-accent-light">Cinematic quality</h3>
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">We shoot in 4K with professional-grade drones. Every clip is colour-graded and edited to a high standard.</p>
           </div>
-          <div className="p-4 rounded-xl border border-white/5 hover:border-red/30 transition-colors">
+          <div className="p-5 rounded-2xl border border-white/10 bg-bg-card/50 hover:border-red/40 hover:shadow-lg hover:shadow-red/10 transition-all duration-300">
             <h3 className="text-lg font-semibold text-white text-red-light">Fast & Affordable</h3>
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">Quick turnaround and competitive pricing for inspections, property photography and business content.</p>
           </div>
-          <div className="p-4 rounded-xl border border-white/5 hover:border-emerald-500/30 transition-colors">
+          <div className="p-5 rounded-2xl border border-white/10 bg-bg-card/50 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300">
             <h3 className="text-lg font-semibold text-white text-emerald-400">Reliable delivery</h3>
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">We give you a delivery date and we stick to it. Standard turnaround 3–7 working days.</p>
           </div>
@@ -177,7 +177,7 @@ export default function Home() {
 
       {/* Services */}
       <AnimateInView as="section" id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-red pl-4 mb-2">Services</h2>
+        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-red pl-4 mb-2 shadow-[0_0_20px_rgba(192,57,43,0.12)]">Services</h2>
         <p className="text-lg text-red font-medium">
           <CountUp value={35} decimals={2} duration={1200} prefix="£" />
         </p>
@@ -187,7 +187,7 @@ export default function Home() {
         </p>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
           {SERVICES.map((s) => (
-            <div key={s.title} className="bg-bg-card p-8 rounded-2xl border border-white/5 hover:border-accent/30 transition-colors border-t-4 border-t-accent/50">
+            <div key={s.title} className="bg-bg-card p-8 rounded-2xl border border-white/10 hover:border-accent/40 transition-all duration-300 border-t-4 border-t-accent/30 hover:border-t-accent hover:shadow-xl hover:shadow-accent/10">
               <h3 className="text-xl font-semibold text-white text-accent-light">{s.title}</h3>
               <p className="mt-3 text-cream/80 text-sm leading-relaxed">{s.description}</p>
             </div>
@@ -195,7 +195,7 @@ export default function Home() {
         </div>
         <Link
           to="/get-started"
-          className="mt-10 inline-block bg-red text-white text-sm font-medium px-10 py-4 rounded-full hover:bg-red-dark transition-colors"
+          className="mt-10 inline-block bg-gradient-to-r from-red to-red-dark text-white text-sm font-medium px-10 py-4 rounded-full hover:opacity-95 transition-opacity shadow-lg shadow-red/20"
         >
           Get Started
         </Link>
@@ -203,7 +203,7 @@ export default function Home() {
 
       {/* Reviews carousel — big card, arrows below, hover interactive */}
       <AnimateInView as="section" id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-amber-400 pl-4">What People Think About Us</h2>
+        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-amber-400 pl-4 shadow-[0_0_20px_rgba(251,191,36,0.12)]">What People Think About Us</h2>
         <p className="mt-3 text-cream/70 max-w-2xl">
           Real feedback from verified customers who have used our drone photography services.
         </p>
@@ -241,7 +241,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setReviewIndex((i) => (i <= 0 ? reviews.length - 1 : i - 1))}
-                className="w-12 h-12 rounded-full bg-black/30 backdrop-blur border border-white/15 text-white hover:bg-accent/30 hover:border-accent/50 transition-all duration-200 flex items-center justify-center shadow-lg"
+                className="w-12 h-12 rounded-full bg-bg-card border border-white/15 text-white hover:bg-accent hover:border-accent hover:shadow-lg hover:shadow-accent/30 transition-all duration-200 flex items-center justify-center"
                 aria-label="Previous review"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,7 +254,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setReviewIndex((i) => (i >= reviews.length - 1 ? 0 : i + 1))}
-                className="w-12 h-12 rounded-full bg-black/30 backdrop-blur border border-white/15 text-white hover:bg-accent/30 hover:border-accent/50 transition-all duration-200 flex items-center justify-center shadow-lg"
+                className="w-12 h-12 rounded-full bg-bg-card border border-white/15 text-white hover:bg-accent hover:border-accent hover:shadow-lg hover:shadow-accent/30 transition-all duration-200 flex items-center justify-center"
                 aria-label="Next review"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +269,7 @@ export default function Home() {
       {/* Portfolio */}
       <AnimateInView as="section" id="portfolio" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
         <div>
-          <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4">Portfolio</h2>
+          <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4 shadow-[0_0_20px_rgba(107,91,173,0.15)]">Portfolio</h2>
           <p className="mt-3 text-cream/70 max-w-2xl">
             A selection of aerial projects from across Bournemouth, Poole, and the Dorset coast.
           </p>
@@ -278,8 +278,10 @@ export default function Home() {
               <button
                 key={cat}
                 onClick={() => setGalleryCategory(cat)}
-                className={`text-sm px-4 py-2 transition-colors rounded-xl ${
-                  galleryCategory === cat ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 hover:text-white border border-white/10'
+                className={`text-sm px-4 py-2 transition-all duration-200 rounded-xl ${
+                  galleryCategory === cat
+                    ? 'bg-gradient-to-r from-accent to-accent-light text-white shadow-lg shadow-accent/25'
+                    : 'bg-bg-card text-cream/80 hover:text-white hover:border-accent/40 border border-white/10'
                 }`}
               >
                 {cat}
@@ -293,9 +295,9 @@ export default function Home() {
                 className="group relative aspect-video bg-black/40 overflow-hidden rounded-2xl bg-cover bg-center"
                 style={{ backgroundImage: `url(${GALLERY_POSTER})` }}
               >
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-end p-5">
-                  <div className="translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
-                    <span className="text-xs font-medium text-white/80 uppercase tracking-wider">{item.category}</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-accent/30 group-hover:via-black/40 group-hover:to-transparent transition-all duration-300 flex items-end p-5">
+                  <div className="translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <span className="text-xs font-medium text-accent-light uppercase tracking-wider">{item.category}</span>
                     <h3 className="text-white font-medium mt-1">{item.label}</h3>
                   </div>
                 </div>
@@ -309,7 +311,7 @@ export default function Home() {
       {/* Contact */}
       <AnimateInView as="section" id="contact" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
         <div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white border-l-4 border-red pl-4">Get in touch</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-white border-l-4 border-red pl-4 shadow-[0_0_20px_rgba(192,57,43,0.12)]">Get in touch</h2>
           <p className="mt-4 text-cream/70 max-w-2xl">
             Got a project in mind? Drop us a message and we&rsquo;ll get back to you within 24 hours.
           </p>
@@ -345,7 +347,7 @@ export default function Home() {
                     {contactForm.errors.message && <p className="mt-1 text-xs text-red">{contactForm.errors.message}</p>}
                   </div>
                   {contactForm.submitError && <p className="text-sm text-red">{contactForm.submitError}</p>}
-                  <button type="submit" disabled={contactForm.submitting} className="bg-red text-white text-sm font-medium px-8 py-3 rounded-xl hover:bg-red-dark transition-colors disabled:opacity-50">
+                  <button type="submit" disabled={contactForm.submitting} className="bg-gradient-to-r from-red to-red-dark text-white text-sm font-medium px-8 py-3 rounded-xl hover:opacity-95 transition-opacity shadow-lg shadow-red/20 disabled:opacity-50">
                     {contactForm.submitting ? 'Sending...' : 'Send message'}
                   </button>
                 </form>
@@ -353,20 +355,20 @@ export default function Home() {
             </div>
             <div className="space-y-8">
               <div>
-                <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Email</h3>
-                <a href="mailto:support@skyreachvisuals.co.uk" className="text-cream hover:text-red transition-colors">support@skyreachvisuals.co.uk</a>
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/80 mb-3">Email</h3>
+                <a href="mailto:support@skyreachvisuals.co.uk" className="text-cream hover:text-accent-light transition-colors">support@skyreachvisuals.co.uk</a>
               </div>
               <div>
-                <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Phone</h3>
-                <a href="tel:+4407877691861" className="text-cream hover:text-red transition-colors">07877 691861</a>
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/80 mb-3">Phone</h3>
+                <a href="tel:+4407877691861" className="text-cream hover:text-accent-light transition-colors">07877 691861</a>
               </div>
               <div>
-                <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Location</h3>
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/80 mb-3">Location</h3>
                 <p className="text-cream">Bournemouth, Dorset, UK</p>
                 <p className="mt-1 text-sm text-cream/70">We cover Dorset, Hampshire, and Wiltshire. Further afield by arrangement.</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold tracking-widest uppercase text-cream/50 mb-3">Hours</h3>
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/80 mb-3">Hours</h3>
                 <p className="text-cream">Monday to Friday, 9am – 5pm</p>
                 <p className="mt-1 text-sm text-cream/70">Weekend shoots available by prior arrangement.</p>
               </div>
