@@ -145,7 +145,7 @@ export default function Home() {
 
       {/* About */}
       <AnimateInView as="section" id="about" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4 shadow-[0_0_20px_rgba(107,91,173,0.15)]">About SkyReach Visuals</h2>
+        <h2 className="text-3xl md:text-4xl font-semibold text-white">About SkyReach Visuals</h2>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="aspect-video rounded-2xl overflow-hidden bg-black/40">
             <img src="/skyreach_aboutme_image.png" alt="SkyReach Visuals" className="w-full h-full object-cover" loading="lazy" decoding="async" />
@@ -177,7 +177,7 @@ export default function Home() {
 
       {/* Services */}
       <AnimateInView as="section" id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-red pl-4 mb-2 shadow-[0_0_20px_rgba(192,57,43,0.12)]">Services</h2>
+        <h2 className="text-3xl md:text-4xl font-semibold text-white mb-2">Services</h2>
         <p className="text-lg text-red font-medium">
           <CountUp value={35} decimals={2} duration={1200} prefix="£" />
         </p>
@@ -203,7 +203,7 @@ export default function Home() {
 
       {/* Reviews carousel — big card, arrows below, hover interactive */}
       <AnimateInView as="section" id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-amber-400 pl-4 shadow-[0_0_20px_rgba(251,191,36,0.12)]">What People Think About Us</h2>
+        <h2 className="text-3xl md:text-4xl font-semibold text-white">What People Think About Us</h2>
         <p className="mt-3 text-cream/70 max-w-2xl">
           Real feedback from verified customers who have used our drone photography services.
         </p>
@@ -269,7 +269,7 @@ export default function Home() {
       {/* Portfolio */}
       <AnimateInView as="section" id="portfolio" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-left">
         <div>
-          <h2 className="text-3xl md:text-4xl font-semibold text-white border-l-4 border-accent pl-4 shadow-[0_0_20px_rgba(107,91,173,0.15)]">Portfolio</h2>
+          <h2 className="text-3xl md:text-4xl font-semibold text-white">Portfolio</h2>
           <p className="mt-3 text-cream/70 max-w-2xl">
             A selection of aerial projects from across Bournemouth, Poole, and the Dorset coast.
           </p>
@@ -311,7 +311,7 @@ export default function Home() {
       {/* Contact */}
       <AnimateInView as="section" id="contact" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
         <div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white border-l-4 border-red pl-4 shadow-[0_0_20px_rgba(192,57,43,0.12)]">Get in touch</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-white">Get in touch</h2>
           <p className="mt-4 text-cream/70 max-w-2xl">
             Got a project in mind? Drop us a message and we&rsquo;ll get back to you within 24 hours.
           </p>
