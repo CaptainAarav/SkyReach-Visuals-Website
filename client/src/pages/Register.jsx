@@ -30,21 +30,23 @@ function RegisterSuccessScreen({ email, resendVerification }) {
       <p className="mt-6 text-sm text-navy/60">
         Didn&rsquo;t get the email? Check your spam folder.
       </p>
-      <button
-        type="button"
-        onClick={handleResend}
-        disabled={resending}
-        className="mt-4 text-sm font-medium text-red hover:underline disabled:opacity-50"
-      >
-        {resendSent ? 'Verification email sent — check your inbox' : 'Resend verification email'}
-      </button>
-      {resendError && <p className="mt-2 text-sm text-red">{resendError}</p>}
-      <Link
-        to="/login"
-        className="mt-8 inline-block bg-red text-white text-sm font-medium py-3 px-6 hover:bg-red-dark transition-colors"
-      >
-        Go to log in
-      </Link>
+      <div className="mt-6 flex flex-col gap-3 items-start">
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={resending}
+          className="text-sm font-medium text-red hover:underline disabled:opacity-50"
+        >
+          {resendSent ? 'Verification email sent — check your inbox' : 'Resend verification email'}
+        </button>
+        {resendError && <p className="text-sm text-red">{resendError}</p>}
+        <Link
+          to="/login"
+          className="inline-block bg-red text-white text-sm font-medium py-3 px-6 rounded-xl hover:bg-red-dark transition-colors"
+        >
+          Go to log in
+        </Link>
+      </div>
     </div>
   );
 }

@@ -2,10 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 
-function ComposeModal({ onClose, onSent }) {
-  const [recipientEmail, setRecipientEmail] = useState('');
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
+function ComposeModal({ onClose, onSent, defaults = {} }) {
+  const [recipientEmail, setRecipientEmail] = useState(defaults.recipientEmail || '');
+  const [subject, setSubject] = useState(defaults.subject || '');
+  const [body, setBody] = useState(defaults.body || '');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
@@ -144,6 +144,7 @@ export default function AdminMessages() {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
   const [showCompose, setShowCompose] = useState(false);
+  const [composeDefaults, setComposeDefaults] = useState({});
   const [tab, setTab] = useState('inbox');
 
   const loadInbox = useCallback(() => {
@@ -199,7 +200,7 @@ export default function AdminMessages() {
         </div>
         <button
           type="button"
-          onClick={() => setShowCompose(true)}
+          onClick={() => { setComposeDefaults({}); setShowCompose(true); }}
           className="bg-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-red-dark transition-colors"
         >
           Compose Message
@@ -241,15 +242,27 @@ export default function AdminMessages() {
                       {msg.read && ' · Read'}
                     </p>
                   </div>
-                  {!msg.read && (
+                  <div className="flex flex-col gap-2 shrink-0">
                     <button
                       type="button"
-                      onClick={() => markRead(msg.id)}
-                      className="text-sm font-medium text-accent hover:text-accent-light shrink-0"
+                      onClick={() => {
+                        setComposeDefaults({ recipientEmail: msg.email, subject: `Re: ${msg.name}'s enquiry` });
+                        setShowCompose(true);
+                      }}
+                      className="text-sm font-medium text-red hover:text-red-dark"
                     >
-                      Mark read
+                      Reply
                     </button>
-                  )}
+                    {!msg.read && (
+                      <button
+                        type="button"
+                        onClick={() => markRead(msg.id)}
+                        className="text-sm font-medium text-accent hover:text-accent-light"
+                      >
+                        Mark read
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -286,6 +299,7 @@ export default function AdminMessages() {
         <ComposeModal
           onClose={() => setShowCompose(false)}
           onSent={() => { if (tab === 'sent') loadSent(); }}
+          defaults={composeDefaults}
         />
       )}
     </div>

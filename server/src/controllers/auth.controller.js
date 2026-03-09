@@ -10,6 +10,7 @@ import {
   clearCookieToken,
 } from '../services/auth.service.js';
 import { sendVerificationEmail, sendAdminLoginEmail } from '../services/email.service.js';
+import { logAdminAction } from './admin.controller.js';
 
 const VERIFICATION_EXPIRY_HOURS = 24;
 
@@ -48,6 +49,8 @@ export async function register(req, res, next) {
       console.error('Register: could not send verification email', err.message);
       throw new AppError('We could not send the verification email. Please try again or contact support.', 500);
     }
+
+    await logAdminAction(user.id, 'REGISTER', null, `New account created: ${user.name} (${user.email})`).catch(() => {});
 
     res.status(201).json({
       success: true,
@@ -119,6 +122,8 @@ export async function login(req, res, next) {
     const token = signToken(user.id);
     setCookieToken(res, token);
 
+    await logAdminAction(user.id, 'LOGIN', null, `User logged in: ${user.name} (${user.email}) from ${ip}`).catch(() => {});
+
     res.json({
       success: true,
       data: { id: user.id, name: user.name, email: user.email, role: user.role, status: user.status, createdAt: user.createdAt },
@@ -162,6 +167,8 @@ export async function verifyEmail(req, res, next) {
     });
     const jwt = signToken(user.id);
     setCookieToken(res, jwt);
+
+    await logAdminAction(user.id, 'EMAIL_VERIFIED', null, `Email verified: ${user.name} (${user.email})`).catch(() => {});
 
     res.json({
       success: true,
@@ -244,6 +251,8 @@ export async function adminLoginVerify(req, res, next) {
     const jwt = signToken(user.id);
     setCookieToken(res, jwt);
 
+    await logAdminAction(user.id, 'ADMIN_LOGIN', null, `Admin login verified: ${user.name} (${user.email}) from ${ip}`).catch(() => {});
+
     res.json({
       success: true,
       data: { message: 'Admin login verified.', user: { id: user.id, name: user.name, email: user.email, role: user.role, status: user.status, createdAt: user.createdAt } },
@@ -312,6 +321,8 @@ export async function changePassword(req, res, next) {
       where: { id: req.user.id },
       data: { passwordHash },
     });
+
+    await logAdminAction(req.user.id, 'PASSWORD_CHANGED', null, `Password changed: ${req.user.name} (${req.user.email})`).catch(() => {});
 
     res.json({ success: true, data: null, error: null });
   } catch (err) {

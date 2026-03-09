@@ -8,7 +8,7 @@ export default function Footer() {
             <img
               src="/logo_with_text Background Removed.png"
               alt="SkyReach Visuals"
-              className="h-10 mb-4"
+              className="h-16 mb-4"
               loading="lazy"
             />
             <p className="text-white/70 text-sm leading-relaxed max-w-xs">

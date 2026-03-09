@@ -26,6 +26,20 @@ function mailHeaders() {
   };
 }
 
+function logoUrl() {
+  const base = (env.clientUrl || 'http://localhost:3000').replace(/\/$/, '');
+  return `${base}/logo_with_text%20Background%20Removed.png`;
+}
+
+function emailHeader(title) {
+  return `<tr>
+  <td style="background-color:#1E2D4A;padding:32px 40px;text-align:center;">
+    <img src="${logoUrl()}" alt="SkyReach Visuals" width="180" style="display:block;margin:0 auto 12px;" />
+    ${title ? `<h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">${title}</h1>` : ''}
+  </td>
+</tr>`;
+}
+
 export async function sendBookingConfirmation({ to, booking }) {
   const transport = getTransporter();
   if (!transport) {
@@ -50,13 +64,7 @@ export async function sendBookingConfirmation({ to, booking }) {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          <!-- Header -->
-          <tr>
-            <td style="background-color:#1E2D4A;padding:32px 40px;">
-              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">SkyReach Visuals</h1>
-            </td>
-          </tr>
-          <!-- Body -->
+          ${emailHeader()}
           <tr>
             <td style="background-color:#ffffff;padding:40px;">
               <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">Booking confirmed</h2>
@@ -153,11 +161,7 @@ export async function sendContactNotification({ name, email, phone, location, se
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          <tr>
-            <td style="background-color:#1E2D4A;padding:32px 40px;">
-              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">New Enquiry</h1>
-            </td>
-          </tr>
+          ${emailHeader('New Enquiry')}
           <tr>
             <td style="background-color:#ffffff;padding:40px;">
               <p style="margin:0 0 8px;color:#1E2D4A;font-size:14px;"><strong>Name:</strong> ${name}</p>
@@ -179,7 +183,7 @@ export async function sendContactNotification({ name, email, phone, location, se
 
   await transport.sendMail({
     from: `"SkyReach Visuals" <${env.emailFrom}>`,
-    to: env.emailFrom,
+    to: 'support@skyreachvisuals.co.uk',
     replyTo: email,
     subject: `New enquiry from ${name} | SkyReach Visuals`,
     headers: mailHeaders(),
@@ -205,11 +209,7 @@ export async function sendVerificationEmail({ to, name, verifyUrl }) {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          <tr>
-            <td style="background-color:#1E2D4A;padding:32px 40px;">
-              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">SkyReach Visuals</h1>
-            </td>
-          </tr>
+          ${emailHeader()}
           <tr>
             <td style="background-color:#ffffff;padding:40px;">
               <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">Verify your email</h2>
@@ -279,11 +279,7 @@ export async function sendBookingApproved({ to, booking, payUrl }) {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          <tr>
-            <td style="background-color:#1E2D4A;padding:32px 40px;">
-              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">SkyReach Visuals</h1>
-            </td>
-          </tr>
+          ${emailHeader()}
           <tr>
             <td style="background-color:#ffffff;padding:40px;">
               <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">Booking Approved</h2>
@@ -376,11 +372,7 @@ export async function sendBookingDeclined({ to, booking }) {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          <tr>
-            <td style="background-color:#1E2D4A;padding:32px 40px;">
-              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">SkyReach Visuals</h1>
-            </td>
-          </tr>
+          ${emailHeader()}
           <tr>
             <td style="background-color:#ffffff;padding:40px;">
               <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">Booking Update</h2>
@@ -435,11 +427,7 @@ export async function sendAdminMessage({ to, subject, body, senderName }) {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          <tr>
-            <td style="background-color:#1E2D4A;padding:32px 40px;">
-              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">SkyReach Visuals</h1>
-            </td>
-          </tr>
+          ${emailHeader()}
           <tr>
             <td style="background-color:#ffffff;padding:40px;">
               <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">${subject}</h2>
@@ -497,11 +485,7 @@ export async function sendAdminLoginEmail({ to, name, verifyUrl }) {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          <tr>
-            <td style="background-color:#1E2D4A;padding:32px 40px;">
-              <h1 style="margin:0;color:#F5F3EE;font-size:20px;font-weight:600;">SkyReach Visuals</h1>
-            </td>
-          </tr>
+          ${emailHeader()}
           <tr>
             <td style="background-color:#ffffff;padding:40px;">
               <h2 style="margin:0 0 16px;color:#1E2D4A;font-size:24px;font-weight:600;">Confirm your admin login</h2>

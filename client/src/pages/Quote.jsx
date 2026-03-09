@@ -40,11 +40,9 @@ export default function Quote() {
       name: user?.name || '',
       email: user?.email || '',
       phone: '',
-      businessName: '',
       location: '',
       serviceType: '',
       message: '',
-      budget: '',
       preferredDate: '',
       preferredTime: '',
     },
@@ -65,8 +63,6 @@ export default function Quote() {
         ...vals,
         preferredDate: vals.preferredDate || null,
         preferredTime: timeValue || null,
-        businessName: vals.businessName || null,
-        budget: vals.budget || null,
       });
       setSuccess(true);
       setCustomTime('');
@@ -180,17 +176,6 @@ export default function Quote() {
               {errors.phone && <p className="mt-1 text-xs text-red">{errors.phone}</p>}
             </div>
 
-            <div>
-              <label htmlFor="businessName" className="block text-sm font-medium mb-2">
-                Business Name <span className="text-cream/40">(optional)</span>
-              </label>
-              <input
-                id="businessName" name="businessName" type="text"
-                value={values.businessName} onChange={handleChange}
-                className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
-              />
-            </div>
-
             <div ref={postcodeDropdownRef} className="relative">
               <label htmlFor="location" className="block text-sm font-medium mb-2">Location</label>
               <input
@@ -244,25 +229,6 @@ export default function Quote() {
                 className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors resize-none text-cream placeholder:text-cream/40"
               />
               {errors.message && <p className="mt-1 text-xs text-red">{errors.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="budget" className="block text-sm font-medium mb-2">
-                Budget <span className="text-cream/40">(optional)</span>
-              </label>
-              <div className="flex items-center border-b-2 border-white/20 focus-within:border-accent transition-colors">
-                <span className="text-cream/60 text-sm pr-1">&pound;</span>
-                <input
-                  id="budget" name="budget" type="text" inputMode="numeric"
-                  value={values.budget}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    handleChange({ target: { name: 'budget', value: digits } });
-                  }}
-                  placeholder="e.g. 200"
-                  className="w-full bg-transparent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
-                />
-              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -322,7 +288,7 @@ export default function Quote() {
             <img
               src="/logo_with_text Background Removed.png"
               alt="SkyReach Visuals"
-              className="w-full max-w-sm object-contain"
+              className="w-full max-w-md object-contain"
               loading="lazy"
             />
           </div>

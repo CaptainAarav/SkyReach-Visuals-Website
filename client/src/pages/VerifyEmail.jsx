@@ -59,7 +59,7 @@ export default function VerifyEmail() {
       </p>
       <Link
         to="/login"
-        className="mt-8 inline-block bg-red text-white text-sm font-medium py-3 px-6 hover:bg-red-dark transition-colors"
+        className="mt-8 inline-block bg-red text-white text-sm font-medium py-3 px-6 rounded-xl hover:bg-red-dark transition-colors"
       >
         Log in
       </Link>
