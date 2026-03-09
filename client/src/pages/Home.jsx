@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useForm } from '../hooks/useForm.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { api } from '../api/client.js';
+import AnimateInView from '../components/AnimateInView.jsx';
+import CountUp from '../components/CountUp.jsx';
 
 const HERO_VIDEO = '/media/hero-bg.mp4';
 
@@ -118,7 +120,7 @@ export default function Home() {
           onCanPlay={() => setHeroVideoReady(true)}
         />
         <div className="absolute inset-0 bg-black/30 pointer-events-none" aria-hidden />
-        <div className="relative z-10 max-w-5xl mx-auto px-6 py-24 text-center flex flex-col items-center justify-center">
+        <div className={`relative z-10 max-w-5xl mx-auto px-6 py-24 text-center flex flex-col items-center justify-center ${heroVideoReady ? 'animate-fade-in' : 'opacity-0'}`}>
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold leading-tight text-white" style={{ letterSpacing: '0.2em' }}>
             SkyReach Visuals
           </h1>
@@ -139,7 +141,7 @@ export default function Home() {
       </section>
 
       {/* About */}
-      <section id="about" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
+      <AnimateInView as="section" id="about" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
         <h2 className="text-3xl md:text-4xl font-semibold text-white">About SkyReach Visuals</h2>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="aspect-video rounded-2xl overflow-hidden bg-black/40">
@@ -168,11 +170,13 @@ export default function Home() {
             <p className="mt-3 text-cream/70 leading-relaxed text-sm">We give you a delivery date and we stick to it. Standard turnaround 3–7 working days.</p>
           </div>
         </div>
-      </section>
+      </AnimateInView>
 
       {/* Services */}
-      <section id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
-        <p className="text-lg text-red font-medium">£35.00</p>
+      <AnimateInView as="section" id="services" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
+        <p className="text-lg text-red font-medium">
+          <CountUp value={35} decimals={2} duration={1200} prefix="£" />
+        </p>
         <h2 className="mt-2 text-4xl md:text-5xl font-bold text-white">Services</h2>
         <p className="mt-4 text-cream/70 max-w-2xl">
           Every package includes a fully licensed, CAA-certified drone operator,
@@ -192,10 +196,10 @@ export default function Home() {
         >
           Get Started
         </Link>
-      </section>
+      </AnimateInView>
 
       {/* Reviews carousel */}
-      <section id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
+      <AnimateInView as="section" id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
         <h2 className="text-3xl md:text-4xl font-semibold text-white">What People Think About Us</h2>
         <p className="mt-3 text-cream/70 max-w-2xl">
           Real feedback from verified customers who have used our drone photography services.
@@ -213,7 +217,7 @@ export default function Home() {
           </button>
           <div className="flex-1 min-w-0 overflow-hidden">
             <div
-              className="flex transition-transform duration-300 ease-out"
+              className="flex transition-[transform] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
               style={{ transform: `translateX(-${reviewIndex * 100}%)` }}
             >
               {reviews.map((r) => (
@@ -252,13 +256,13 @@ export default function Home() {
         </div>
         {reviews.length > 1 && (
           <p className="mt-4 text-center text-sm text-cream/50">
-            {reviewIndex + 1} of {reviews.length}
+            <CountUp key={`cur-${reviewIndex}`} value={reviewIndex + 1} duration={600} /> of <CountUp value={reviews.length} duration={800} />
           </p>
         )}
-      </section>
+      </AnimateInView>
 
       {/* Portfolio */}
-      <section id="portfolio" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20">
+      <AnimateInView as="section" id="portfolio" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-semibold text-white">Portfolio</h2>
           <p className="mt-3 text-cream/70 max-w-2xl">
@@ -295,10 +299,10 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </AnimateInView>
 
       {/* Contact */}
-      <section id="contact" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20">
+      <AnimateInView as="section" id="contact" className="bg-bg-elevated rounded-3xl mx-4 md:mx-6 py-24 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold text-white">Get in touch</h2>
           <p className="mt-4 text-cream/70 max-w-2xl">
@@ -364,7 +368,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </AnimateInView>
     </>
   );
 }

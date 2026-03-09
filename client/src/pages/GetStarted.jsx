@@ -1,19 +1,24 @@
 import { Link } from 'react-router-dom';
+import AnimateInView from '../components/AnimateInView.jsx';
+import CountUp from '../components/CountUp.jsx';
 
 export default function GetStarted() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-24">
-      <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
-        How can we help?
-      </h1>
-      <p className="mt-4 text-cream/70 text-center max-w-xl mx-auto">
-        Choose the option that best fits your project.
-      </p>
+      <AnimateInView className="text-center">
+        <h1 className="text-4xl md:text-5xl font-bold text-white">
+          How can we help?
+        </h1>
+        <p className="mt-4 text-cream/70 max-w-xl mx-auto">
+          Choose the option that best fits your project.
+        </p>
+      </AnimateInView>
 
       <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <AnimateInView animation="animate-scale-in" className="animate-delay-1">
         <Link
           to="/book"
-          className="group bg-bg-card border border-white/10 rounded-2xl p-10 flex flex-col items-center text-center hover:border-red/40 transition-colors"
+          className="group block bg-bg-card border border-white/10 rounded-2xl p-10 flex flex-col items-center text-center hover:border-red/40 transition-colors"
         >
           <div className="w-16 h-16 rounded-full bg-red/10 flex items-center justify-center mb-6 group-hover:bg-red/20 transition-colors">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red">
@@ -26,13 +31,15 @@ export default function GetStarted() {
             Standard drone services with fixed pricing. Property roof inspections and property aerial photos.
           </p>
           <span className="mt-6 text-sm font-medium text-red group-hover:text-red-dark transition-colors">
-            &pound;35.00 &rarr;
+            <CountUp value={35} decimals={2} prefix="£" duration={1000} /> &rarr;
           </span>
         </Link>
+        </AnimateInView>
 
+        <AnimateInView animation="animate-scale-in" className="animate-delay-2">
         <Link
           to="/quote"
-          className="group bg-bg-card border border-white/10 rounded-2xl p-10 flex flex-col items-center text-center hover:border-accent/40 transition-colors"
+          className="group block bg-bg-card border border-white/10 rounded-2xl p-10 flex flex-col items-center text-center hover:border-accent/40 transition-colors"
         >
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-6 group-hover:bg-accent/20 transition-colors">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent">
@@ -50,6 +57,7 @@ export default function GetStarted() {
             Request a quote &rarr;
           </span>
         </Link>
+        </AnimateInView>
       </div>
     </div>
   );

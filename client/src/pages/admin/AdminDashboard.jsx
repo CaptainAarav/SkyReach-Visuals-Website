@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
+import CountUp from '../../components/CountUp.jsx';
 
 const PERIODS = [
   { value: 'overall', label: 'Overall' },
@@ -52,7 +53,7 @@ export default function AdminDashboard() {
               Revenue ({PERIODS.find((p) => p.value === period)?.label})
             </p>
             <p className="text-4xl md:text-5xl font-bold text-white">
-              &pound;{(stats.revenue / 100).toFixed(2)}
+              <CountUp value={stats.revenue / 100} decimals={2} prefix="£" duration={1200} />
             </p>
             <p className="mt-2 text-sm text-cream/50">
               From confirmed and completed bookings
@@ -75,7 +76,9 @@ function StatCard({ label, value, color }) {
   return (
     <div className="bg-bg-card border border-white/10 rounded-2xl p-6">
       <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">{label}</p>
-      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+      <p className={`text-3xl font-bold ${color}`}>
+        <CountUp value={value} duration={1000} />
+      </p>
     </div>
   );
 }

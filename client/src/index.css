@@ -32,6 +32,71 @@
   --radius-lg: 1.25rem;
   --radius-xl: 1.5rem;
   --radius-2xl: 2rem;
+
+  /* Entrance and count-up animations */
+  --keyframes-fade-in-up: fade-in-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  --keyframes-fade-in: fade-in 0.5s ease-out forwards;
+  --keyframes-scale-in: scale-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: var(--keyframes-fade-in-up);
+}
+
+.animate-fade-in {
+  opacity: 0;
+  animation: var(--keyframes-fade-in);
+}
+
+.animate-scale-in {
+  opacity: 0;
+  animation: var(--keyframes-scale-in);
+}
+
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+.animate-delay-4 { animation-delay: 0.4s; }
+.animate-delay-5 { animation-delay: 0.5s; }
+.animate-delay-6 { animation-delay: 0.6s; }
+
+/* Hidden until animated in view */
+.reveal {
+  opacity: 0;
+}
+
+.reveal.animate-fade-in-up,
+.reveal.animate-fade-in,
+.reveal.animate-scale-in {
+  opacity: 0;
 }
 
 @layer base {
