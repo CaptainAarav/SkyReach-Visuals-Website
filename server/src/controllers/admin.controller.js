@@ -31,10 +31,6 @@ export async function getStats(req, res, next) {
       ? { paidAt: { not: null, ...dateFilter.createdAt } }
       : { paidAt: { not: null } };
 
-    // #region agent log
-    fetch('http://127.0.0.1:7298/ingest/84d36a48-c059-450f-bcf1-32d935b76100',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'5a833e'},body:JSON.stringify({sessionId:'5a833e',location:'admin.controller.js:getStats',message:'getStats called',data:{period,dateFilter,paidDateFilter},timestamp:Date.now(),hypothesisId:'H1-H2'})}).catch(()=>{});
-    // #endregion
-
     const [
       total, admins, customerSupport, active, suspended, banned,
       totalQuotes, totalBookings, totalAccepted, totalDeclined,
@@ -68,9 +64,6 @@ export async function getStats(req, res, next) {
       error: null,
     });
   } catch (err) {
-    // #region agent log
-    fetch('http://127.0.0.1:7298/ingest/84d36a48-c059-450f-bcf1-32d935b76100',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'5a833e'},body:JSON.stringify({sessionId:'5a833e',location:'admin.controller.js:getStats:catch',message:'getStats ERROR',data:{error:err.message,stack:err.stack?.slice(0,500)},timestamp:Date.now(),hypothesisId:'H1-H2-H3'})}).catch(()=>{});
-    // #endregion
     next(err);
   }
 }
@@ -293,9 +286,6 @@ export async function listOrders(req, res, next) {
     });
     res.json({ success: true, data: orders, error: null });
   } catch (err) {
-    // #region agent log
-    fetch('http://127.0.0.1:7298/ingest/84d36a48-c059-450f-bcf1-32d935b76100',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'5a833e'},body:JSON.stringify({sessionId:'5a833e',location:'admin.controller.js:listOrders:catch',message:'listOrders ERROR',data:{error:err.message,stack:err.stack?.slice(0,500)},timestamp:Date.now(),hypothesisId:'H1-H3-H4'})}).catch(()=>{});
-    // #endregion
     next(err);
   }
 }
