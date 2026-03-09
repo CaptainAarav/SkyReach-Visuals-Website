@@ -63,6 +63,7 @@ export default function Home() {
   const [contactSuccess, setContactSuccess] = useState(false);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
   const [reviews, setReviews] = useState(PLACEHOLDER_REVIEWS);
+  const [reviewIndex, setReviewIndex] = useState(0);
 
   useEffect(() => {
     api.get('/api/reviews/public')
@@ -193,33 +194,67 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* Reviews */}
+      {/* Reviews carousel */}
       <section id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
         <h2 className="text-3xl md:text-4xl font-semibold text-white">What People Think About Us</h2>
         <p className="mt-3 text-cream/70 max-w-2xl">
           Real feedback from verified customers who have used our drone photography services.
         </p>
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reviews.map((r) => (
-            <div key={r.id} className="bg-bg-card p-6 rounded-2xl border border-white/5 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-white">{r.name}</span>
-                  <span className="verified-badge group/verified relative inline-flex shrink-0 cursor-help" title="Verified Purchase">
-                    <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-                    </svg>
-                    <span className="verified-tooltip pointer-events-none absolute left-1/2 bottom-full -translate-x-1/2 mb-1.5 px-2 py-1 text-xs font-medium text-white bg-neutral-800 rounded shadow-lg whitespace-nowrap opacity-0 invisible group-hover/verified:opacity-100 group-hover/verified:visible transition-all duration-150 z-10">
-                      Verified Purchase
-                    </span>
-                  </span>
+        <div className="mt-12 relative flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setReviewIndex((i) => (i <= 0 ? reviews.length - 1 : i - 1))}
+            className="shrink-0 w-12 h-12 rounded-full bg-black/20 backdrop-blur border border-white/10 text-white hover:bg-white/10 transition-colors flex items-center justify-center"
+            aria-label="Previous review"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <div
+              className="flex transition-transform duration-300 ease-out"
+              style={{ transform: `translateX(-${reviewIndex * 100}%)` }}
+            >
+              {reviews.map((r) => (
+                <div key={r.id} className="w-full shrink-0 px-2">
+                  <div className="bg-bg-card p-6 md:p-8 rounded-2xl border border-white/5 flex flex-col gap-4">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-white">{r.name}</span>
+                        <span className="verified-badge group/verified relative inline-flex shrink-0 cursor-help" title="Verified Purchase">
+                          <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                          </svg>
+                          <span className="verified-tooltip pointer-events-none absolute left-1/2 bottom-full -translate-x-1/2 mb-1.5 px-2 py-1 text-xs font-medium text-white bg-neutral-800 rounded shadow-lg whitespace-nowrap opacity-0 invisible group-hover/verified:opacity-100 group-hover/verified:visible transition-all duration-150 z-10">
+                            Verified Purchase
+                          </span>
+                        </span>
+                      </div>
+                      <StarRating rating={r.rating} />
+                    </div>
+                    <p className="text-cream/80 text-sm md:text-base leading-relaxed">{r.comment}</p>
+                  </div>
                 </div>
-                <StarRating rating={r.rating} />
-              </div>
-              <p className="text-cream/80 text-sm leading-relaxed">{r.comment}</p>
+              ))}
             </div>
-          ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setReviewIndex((i) => (i >= reviews.length - 1 ? 0 : i + 1))}
+            className="shrink-0 w-12 h-12 rounded-full bg-black/20 backdrop-blur border border-white/10 text-white hover:bg-white/10 transition-colors flex items-center justify-center"
+            aria-label="Next review"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
+        {reviews.length > 1 && (
+          <p className="mt-4 text-center text-sm text-cream/50">
+            {reviewIndex + 1} of {reviews.length}
+          </p>
+        )}
       </section>
 
       {/* Portfolio */}
