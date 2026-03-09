@@ -28,7 +28,7 @@ services:
     environment:
       DATABASE_URL: postgresql://skyreach:skyreach_pass@db:5432/skyreach
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-3650d}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
       CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}

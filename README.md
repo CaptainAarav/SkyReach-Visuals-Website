@@ -131,7 +131,7 @@ Open `http://localhost:5173` in your browser.
 |---|---|---|
 | `DATABASE_URL` | PostgreSQL connection string | Yes |
 | `JWT_SECRET` | Secret for signing JWT tokens | Yes |
-| `JWT_EXPIRES_IN` | Token expiry (e.g. `7d`) | Yes |
+| `JWT_EXPIRES_IN` | Token expiry (default `3650d` ~10 years; stay logged in until logout) | Yes |
 | `STRIPE_SECRET_KEY` | Stripe secret key | For payments |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | For payments |
 | `CLIENT_URL` | Frontend URL (for CORS) | Yes |
