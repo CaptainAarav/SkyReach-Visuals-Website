@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-const GALLERY_VIDEO = '/videos/paul-srv.mp4';
-const GALLERY_POSTER = '/gallery-poster.jpg';
+const GALLERY_VIDEO = '/media/paul-srv.mp4';
+const GALLERY_POSTER = '/media/gallery-poster.jpg';
 
 const categories = ['All', 'Property', 'Events', 'Construction', 'Creative'];
 

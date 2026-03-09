@@ -4,15 +4,15 @@ import { useForm } from '../hooks/useForm.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { api } from '../api/client.js';
 
-const HERO_VIDEO = '/SkyReach Visuals Website Preview background.mp4';
+const HERO_VIDEO = '/media/hero-bg.mp4';
 
 const SERVICES = [
   { title: 'Property Roof Inspections', description: 'Comprehensive aerial photos to safely inspect roofs without ladders or scaffolding.' },
   { title: 'Property Aerial Photos', description: 'High-quality aerial photos for homes, property listings and estate marketing.' },
 ];
 
-const GALLERY_VIDEO = '/videos/paul-srv.mp4';
-const GALLERY_POSTER = '/gallery-poster.jpg';
+const GALLERY_VIDEO = '/media/paul-srv.mp4';
+const GALLERY_POSTER = '/media/gallery-poster.jpg';
 const categories = ['All', 'Property', 'Events', 'Construction', 'Creative'];
 const galleryItems = [
   { id: 1, label: 'Sandbanks Development', category: 'Property' },
@@ -29,7 +29,7 @@ const galleryItems = [
   { id: 12, label: 'Durdle Door Sunset', category: 'Creative' },
 ];
 
-const ABOUT_VIDEO = '/videos/paul-srv.mp4';
+const ABOUT_VIDEO = '/media/paul-srv.mp4';
 
 function scrollToSection(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -77,7 +77,7 @@ export default function Home() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black rounded-b-3xl -mt-20">
         <video
           src={HERO_VIDEO}
-          poster="/hero-poster.jpg"
+          poster="/media/hero-poster.jpg"
           className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-700 transform-gpu ${heroVideoReady ? 'opacity-100' : 'opacity-0'}`}
           muted
           playsInline

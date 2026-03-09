@@ -1,0 +1,20 @@
+---
+description: Deployment workflow for pushing code and deploying to the Raspberry Pi
+alwaysApply: true
+---
+
+# Deployment Workflow
+
+After implementing a feature or fix, follow this deployment workflow:
+
+1. **Commit and push** to `main` — this triggers the GitHub Actions workflow that builds ARM64 Docker images and pushes them to `ghcr.io/captainaarav/skyreach-server` and `ghcr.io/captainaarav/skyreach-client`.
+
+2. **Wait for the build** — monitor with `gh run list --limit 1` and `gh run watch <run-id> --exit-status`. Tell the user once the build passes.
+
+3. **Give the user the Pi commands** — once the build succeeds, tell them to run on the Pi:
+   ```
+   docker compose -f docker-compose.prod.yml pull
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+
+The production compose file is `docker-compose.prod.yml` (pulls pre-built images). The local dev compose is `docker-compose.yml` (builds locally). The Pi is accessed via SSH as `aarav@PISERVER`.

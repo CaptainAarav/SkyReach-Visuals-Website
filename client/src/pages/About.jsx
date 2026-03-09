@@ -1,5 +1,5 @@
-const ABOUT_VIDEO = '/videos/paul-srv.mp4';
-const ABOUT_POSTER = '/gallery-poster.jpg';
+const ABOUT_VIDEO = '/media/paul-srv.mp4';
+const ABOUT_POSTER = '/media/gallery-poster.jpg';
 
 export default function About() {
   return (
