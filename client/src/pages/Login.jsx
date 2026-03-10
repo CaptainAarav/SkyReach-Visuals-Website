@@ -9,6 +9,7 @@ export default function Login() {
   const [resendSent, setResendSent] = useState(false);
   const [resending, setResending] = useState(false);
   const [adminVerify, setAdminVerify] = useState(false);
+  const [adminVerifyUrl, setAdminVerifyUrl] = useState(null);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit } = useForm({
     initialValues: { email: '', password: '' },
@@ -22,6 +23,7 @@ export default function Login() {
       const data = await login(vals.email, vals.password);
       if (data?.requiresAdminVerification) {
         setAdminVerify(true);
+        setAdminVerifyUrl(data?.adminVerifyUrl || null);
         return;
       }
       navigate('/orders');
@@ -50,10 +52,18 @@ export default function Login() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold">Check your email</h1>
-        <p className="mt-3 text-navy/60 text-sm leading-relaxed">
+        <h1 className="text-2xl font-bold text-white">Check your email</h1>
+        <p className="mt-3 text-cream/70 text-sm leading-relaxed">
           We sent a login verification link to your email. Click the link to complete sign-in. The link expires in 15 minutes.
         </p>
+        {adminVerifyUrl && (
+          <p className="mt-6 text-cream/60 text-sm">
+            Email is not configured on this server.{' '}
+            <a href={adminVerifyUrl} className="text-red font-medium hover:underline">
+              Click here to complete sign-in
+            </a>
+          </p>
+        )}
       </div>
     );
   }
