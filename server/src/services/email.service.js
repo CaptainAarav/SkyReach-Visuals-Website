@@ -443,9 +443,6 @@ function adminMessageHtml(body, subject, senderName) {
                 <strong style="color:${EMAIL_DARK.text};">SkyReach Visuals</strong><br/>
                 ${senderName} &mdash; Drone Aerial Photography &amp; Inspection &middot; +44 7877691861 &middot; ${fromAddr}
               </p>
-              <p style="margin:12px 0 0;text-align:left;">
-                <img src="${logoUrl()}" alt="SkyReach Visuals" width="100" style="display:inline-block;border-radius:8px;filter:brightness(0) invert(1);opacity:0.9;" />
-              </p>
             </td>
           </tr>
           ${emailFooter()}
