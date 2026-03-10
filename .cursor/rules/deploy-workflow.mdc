@@ -13,12 +13,18 @@ After implementing a feature or fix, follow this full automated deployment:
 
 3. **SCP compose file** (if changed) — `scp docker-compose.prod.yml aarav@PISERVER:~/skyreach-visuals/docker-compose.prod.yml`
 
-4. **Pull and restart on Pi via SSH**:
+4. **Sync production env to Pi** (every deploy) — merge `deploy/env.production` into the Pi's `.env` so `CLIENT_URL`, `SMTP_*`, `EMAIL_FROM`, and Stripe URLs never drift from the repo:
+   ```
+   ./deploy/sync-env-to-pi.sh
+   ```
+   (Or: `bash deploy/sync-env-to-pi.sh` from repo root.) Secrets (e.g. `JWT_SECRET`, `SMTP_PASS`, `STRIPE_SECRET_KEY`) stay only in the Pi's `.env`; they are not in `deploy/env.production`.
+
+5. **Pull and restart on Pi via SSH**:
    ```
    ssh aarav@PISERVER "cd ~/skyreach-visuals && docker compose -f docker-compose.prod.yml pull && docker compose -f docker-compose.prod.yml up -d"
    ```
 
-5. **Verify server started cleanly**:
+6. **Verify server started cleanly**:
    ```
    ssh aarav@PISERVER "docker logs skyreach-visuals-server-1 2>&1 | head -15"
    ```

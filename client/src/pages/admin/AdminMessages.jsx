@@ -51,7 +51,7 @@ function ComposeModal({ onClose, onSent, defaults = {} }) {
     }
   };
 
-  const displaySubject = subject || '(No subject)';
+  const displaySubject = (subject || '').replace(/^Re:\s*/i, '').trim() || '(No subject)';
   const displayBody = body || '(Your message will appear here)';
   const senderName = user?.name || 'SkyReach';
 
@@ -143,7 +143,7 @@ function ComposeModal({ onClose, onSent, defaults = {} }) {
                       <strong className="text-cream">SkyReach Visuals</strong><br />
                       {senderName} — Drone Aerial Photography &amp; Inspection · +44 7877691861 · support@skyreachvisuals.co.uk
                     </p>
-                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-24 h-auto mt-3 rounded-lg opacity-90" style={{ filter: 'brightness(0) invert(1)' }} />
+                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-24 h-auto mt-3 rounded-lg opacity-90" />
                   </div>
                 </div>
               </div>
