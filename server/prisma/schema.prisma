@@ -35,10 +35,26 @@ model User {
   reviews           Review[]
   emailVerificationTokens EmailVerificationToken[]
   adminLoginTokens  AdminLoginToken[]
+  passkeyCredentials PasskeyCredential[]
   adminLogs         AdminLog[] @relation("AdminLogAdmin")
   adminLogsTarget   AdminLog[] @relation("AdminLogTarget")
   sentMessages      AdminMessage[] @relation("AdminMessageSender")
   receivedMessages  AdminMessage[] @relation("AdminMessageRecipient")
+}
+
+model PasskeyCredential {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialId      String   @unique  // base64url
+  publicKey         Bytes    // COSE key
+  counter           Int      @default(0)
+  deviceType        String?  // platform / cross-platform
+  transports        String?  // JSON array of transport names
+  createdAt         DateTime @default(now())
+
+  @@index([userId])
+  @@index([credentialId])
 }
 
 model EmailVerificationToken {

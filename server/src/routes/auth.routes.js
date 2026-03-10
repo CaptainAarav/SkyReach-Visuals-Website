@@ -11,6 +11,12 @@ import {
   updateProfile,
   changePassword,
 } from '../controllers/auth.controller.js';
+import {
+  passkeyAuthOptions,
+  passkeyAuth,
+  passkeyRegisterOptions,
+  passkeyRegister,
+} from '../controllers/passkey.controller.js';
 
 const router = Router();
 
@@ -23,5 +29,10 @@ router.get('/admin-login-verify', adminLoginVerify);
 router.get('/me', requireAuth, me);
 router.put('/profile', requireAuth, updateProfile);
 router.put('/password', requireAuth, changePassword);
+
+router.post('/passkey/auth/options', passkeyAuthOptions);
+router.post('/passkey/auth', passkeyAuth);
+router.post('/passkey/register/options', requireAuth, passkeyRegisterOptions);
+router.post('/passkey/register', requireAuth, passkeyRegister);
 
 export default router;

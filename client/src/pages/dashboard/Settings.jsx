@@ -1,9 +1,29 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../hooks/useTheme.js';
+import { api } from '../../api/client.js';
+import { startRegistration } from '@simplewebauthn/browser';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
+  const [passkeyAdding, setPasskeyAdding] = useState(false);
+  const [passkeyMessage, setPasskeyMessage] = useState(null);
+
+  const handleAddPasskey = async () => {
+    setPasskeyMessage(null);
+    setPasskeyAdding(true);
+    try {
+      const options = await api.post('/api/auth/passkey/register/options');
+      const response = await startRegistration({ optionsJSON: options });
+      await api.post('/api/auth/passkey/register', response);
+      setPasskeyMessage('Passkey added. You can now sign in with “Use passkey” on the login page.');
+    } catch (err) {
+      setPasskeyMessage(err.message || 'Could not add passkey');
+    } finally {
+      setPasskeyAdding(false);
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-24">
@@ -24,6 +44,24 @@ export default function Settings() {
           >
             Open Profile &rarr;
           </Link>
+        </section>
+
+        <section className="bg-bg-card border border-white/10 rounded-2xl p-6">
+          <h2 className="text-lg font-semibold text-white mb-1">Passkey</h2>
+          <p className="text-sm text-cream/60 mb-4">Sign in without a password using your device or security key.</p>
+          {passkeyMessage && (
+            <p className={`text-sm mb-4 ${passkeyMessage.startsWith('Passkey added') ? 'text-green-400' : 'text-red'}`}>
+              {passkeyMessage}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={handleAddPasskey}
+            disabled={passkeyAdding}
+            className="px-4 py-2 rounded-xl bg-bg border border-white/20 text-cream hover:bg-white/5 transition-colors disabled:opacity-50"
+          >
+            {passkeyAdding ? 'Adding passkey...' : 'Add passkey'}
+          </button>
         </section>
 
         <section className="bg-bg-card border border-white/10 rounded-2xl p-6">

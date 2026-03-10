@@ -64,7 +64,7 @@ export async function register(req, res, next) {
 
 export async function login(req, res, next) {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     if (!email || !password) {
       throw new AppError('Email and password are required');
@@ -142,7 +142,7 @@ export async function login(req, res, next) {
     });
 
     const token = signToken(user.id);
-    setCookieToken(res, token);
+    setCookieToken(res, token, { rememberMe: rememberMe !== false });
 
     await logAdminAction(user.id, 'LOGIN', null, `User logged in: ${user.name} (${user.email}) from ${ip}`).catch(() => {});
 

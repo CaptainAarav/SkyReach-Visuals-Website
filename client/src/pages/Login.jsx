@@ -1,18 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useForm } from '../hooks/useForm.js';
+import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
 
 export default function Login() {
-  const { login, resendVerification } = useAuth();
+  const { login, loginWithPasskey, resendVerification } = useAuth();
   const navigate = useNavigate();
   const [resendSent, setResendSent] = useState(false);
   const [resending, setResending] = useState(false);
   const [adminVerify, setAdminVerify] = useState(false);
   const [adminVerifyUrl, setAdminVerifyUrl] = useState(null);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const [passkeyError, setPasskeyError] = useState(null);
+  const [passkeySupported, setPasskeySupported] = useState(false);
+  useEffect(() => {
+    setPasskeySupported(browserSupportsWebAuthn());
+  }, []);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit } = useForm({
-    initialValues: { email: '', password: '' },
+    initialValues: { email: '', password: '', rememberMe: true },
     validate: (vals) => {
       const errs = {};
       if (!vals.email.trim()) errs.email = 'Email is required';
@@ -20,7 +27,7 @@ export default function Login() {
       return errs;
     },
     onSubmit: async (vals) => {
-      const data = await login(vals.email, vals.password);
+      const data = await login(vals.email, vals.password, vals.rememberMe);
       if (data?.requiresAdminVerification) {
         setAdminVerify(true);
         setAdminVerifyUrl(data?.adminVerifyUrl || null);
@@ -29,6 +36,24 @@ export default function Login() {
       navigate('/orders');
     },
   });
+
+  const handlePasskey = async () => {
+    const email = values.email?.trim();
+    if (!email) {
+      setPasskeyError('Enter your email above first.');
+      return;
+    }
+    setPasskeyError(null);
+    setPasskeyLoading(true);
+    try {
+      await loginWithPasskey(email, values.rememberMe);
+      navigate('/orders');
+    } catch (err) {
+      setPasskeyError(err.message || 'Passkey sign-in failed');
+    } finally {
+      setPasskeyLoading(false);
+    }
+  };
 
   const needsVerification = submitError && (submitError.includes('verify') || submitError.includes('verification'));
   const handleResend = async () => {
@@ -106,6 +131,20 @@ export default function Login() {
           {errors.password && <p className="mt-1 text-xs text-red">{errors.password}</p>}
         </div>
 
+        <div className="flex items-center gap-2">
+          <input
+            id="rememberMe"
+            name="rememberMe"
+            type="checkbox"
+            checked={values.rememberMe}
+            onChange={(e) => handleChange({ target: { name: 'rememberMe', value: e.target.checked } })}
+            className="rounded border-navy/30 text-red focus:ring-red"
+          />
+          <label htmlFor="rememberMe" className="text-sm text-navy/80">
+            Remember me
+          </label>
+        </div>
+
         {submitError && (
           <p className="text-sm text-red">{submitError}</p>
         )}
@@ -120,6 +159,10 @@ export default function Login() {
           </button>
         )}
 
+        {passkeyError && (
+          <p className="text-sm text-red">{passkeyError}</p>
+        )}
+
         <button
           type="submit"
           disabled={submitting}
@@ -127,6 +170,22 @@ export default function Login() {
         >
           {submitting ? 'Logging in...' : 'Log in'}
         </button>
+
+        {passkeySupported && (
+          <>
+            <div className="relative my-4 text-center">
+              <span className="bg-[var(--bg)] px-2 text-xs text-navy/50">or</span>
+            </div>
+            <button
+              type="button"
+              onClick={handlePasskey}
+              disabled={passkeyLoading || submitting}
+              className="w-full border-2 border-navy/30 text-navy py-3 text-sm font-medium hover:border-navy hover:bg-navy/5 transition-colors disabled:opacity-50"
+            >
+              {passkeyLoading ? 'Signing in with passkey...' : 'Use passkey'}
+            </button>
+          </>
+        )}
       </form>
 
       <p className="mt-8 text-sm text-navy/60 text-center">
