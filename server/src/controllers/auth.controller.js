@@ -102,8 +102,19 @@ export async function login(req, res, next) {
       try {
         await sendAdminLoginEmail({ to: user.email, name: user.name, verifyUrl });
       } catch (err) {
-        console.error('Admin login: could not send verification email', err.message);
+        console.error('[VERIFY_EMAIL] Admin login email failed', { code: err?.code, message: err?.message });
         if (err?.code === 'SMTP_NOT_CONFIGURED') {
+          return res.json({
+            success: true,
+            data: {
+              message: 'Check your email to complete sign-in',
+              requiresAdminVerification: true,
+              adminVerifyUrl: verifyUrl,
+            },
+            error: null,
+          });
+        }
+        if (err?.code === 'EAUTH' || err?.code === 'ESOCKET' || err?.responseCode) {
           return res.json({
             success: true,
             data: {

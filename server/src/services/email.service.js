@@ -5,7 +5,7 @@ import { appendToSent } from './imap.service.js';
 let transporter = null;
 
 function getTransporter() {
-  if (!transporter && env.smtp.host && env.smtp.user) {
+  if (!transporter && env.smtp.host && env.smtp.user && env.smtp.pass) {
     transporter = nodemailer.createTransport({
       host: env.smtp.host,
       port: env.smtp.port,
@@ -566,7 +566,7 @@ export async function sendAdminLoginEmail({ to, name, verifyUrl }) {
     });
     console.log('Admin login verification email sent to', to);
   } catch (err) {
-    console.error('Failed to send admin login email to', to, err.message);
+    console.error('[VERIFY_EMAIL] sendMail failed', { to, code: err?.code, message: err?.message });
     throw err;
   }
 }
