@@ -71,6 +71,25 @@ docker compose exec db psql -U skyreach -d skyreach -c "UPDATE \"User\" SET \"em
 
 **Admin live mailbox (Admin → Email):** View your IONOS inbox and sent folder and send emails from the app. Defaults use `imap.ionos.co.uk:993` and the same credentials as SMTP; set `IMAP_HOST`/`IMAP_PORT`/`IMAP_USER`/`IMAP_PASS` if needed.
 
+### "Not Secure" in Safari (or Chrome) when opening links from emails
+
+The app and Docker stack serve **HTTP** internally. The public site (e.g. `https://www.skyreachvisuals.co.uk`) must be fronted by something that provides **HTTPS** (SSL/TLS). If Safari shows "Not Secure", the page is being loaded over HTTP. Fix it at the **hosting** layer:
+
+- **Option A — Reverse proxy on the Pi:** Run Caddy or Nginx on the host (not in Docker) with a certificate for `www.skyreachvisuals.co.uk` (e.g. Let's Encrypt). Point it at the client container (e.g. port 3003). Ensure the proxy listens on 443 and redirects HTTP → HTTPS.
+- **Option B — Cloudflare (or similar):** Put the site behind Cloudflare with "SSL/TLS" set to Full or Full (strict). Cloudflare terminates HTTPS; your Pi can still serve HTTP to Cloudflare if it’s the only client.
+
+Also ensure `CLIENT_URL` in production is `https://www.skyreachvisuals.co.uk` so links in emails use HTTPS (see `deploy/env.production`).
+
+### Emails going to Junk (e.g. Apple Mail)
+
+Apple Mail and others often treat mail as junk when the **sending domain** isn’t authenticated. Configure these for `skyreachvisuals.co.uk` (where your `EMAIL_FROM` lives):
+
+1. **SPF** — DNS TXT record for the domain authorising your mail server. For IONOS, add the SPF record IONOS provides (or an include like `include:ionos.co.uk` / their current value). This says “IONOS is allowed to send for skyreachvisuals.co.uk”.
+2. **DKIM** — Sign outbound mail with a key stored in DNS. IONOS usually offers DKIM in the control panel (domain or email settings). Turn it on and add the CNAME/TXT records they give you.
+3. **DMARC** — DNS TXT record `_dmarc.skyreachvisuals.co.uk` with a policy (e.g. `v=DMARC1; p=none;` to start, then `p=quarantine` or `p=reject` once you’re happy). This tells receivers what to do with mail that fails SPF/DKIM.
+
+Use the same From address everywhere (e.g. `support@skyreachvisuals.co.uk`) and avoid spammy wording in subject/body. After SPF/DKIM/DMARC are correct, re-send a verification or test email; it may take a little while for Apple’s filters to trust the domain.
+
 ## Development Setup (without Docker)
 
 You'll need a running PostgreSQL instance.

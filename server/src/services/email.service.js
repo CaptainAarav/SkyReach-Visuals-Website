@@ -23,6 +23,7 @@ function getTransporter() {
 function mailHeaders() {
   return {
     'X-Mailer': 'SkyReachVisuals/1.0',
+    'Precedence': 'auto',
     'List-Unsubscribe': `<mailto:${env.emailFrom}?subject=unsubscribe>`,
   };
 }
