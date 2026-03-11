@@ -108,8 +108,8 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero — video fills whole screen from top, no gap above */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black rounded-b-3xl -mt-20">
+      {/* Hero — video fills whole screen from top, no gap above; keep text light on video in both themes */}
+      <section className="hero-on-dark relative min-h-screen flex items-center justify-center overflow-hidden bg-black rounded-b-3xl -mt-20">
         <video
           src={HERO_VIDEO}
           poster="/media/hero-poster.jpg"

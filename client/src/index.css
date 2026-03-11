@@ -194,12 +194,82 @@
 
 /* Light theme overrides (when .light is on html) */
 html.light {
-  --color-bg: #f0f0f0;
+  --color-bg: #f6f6f7;
   --color-bg-elevated: #ffffff;
   --color-bg-card: #ffffff;
   --color-cream: #1a1a1a;
   --color-cream-dark: #2a2a2a;
   --color-black: #1a1a1a;
-  --color-white: #1a1a1a;
   --color-black-muted: #666666;
+  /* Keep --color-white as default (white) so footer/buttons stay light; main content overridden below */
+}
+
+/* Light mode: clean body background (no dark purple/red gradient) */
+html.light body {
+  background: linear-gradient(180deg, #fafafa 0%, #f0f0f2 50%, #eaeaf0 100%);
+  color: #1a1a1a;
+}
+
+/* Light mode: main content (excluding hero) uses dark text so it’s readable */
+html.light main h1,
+html.light main h2,
+html.light main h3 {
+  color: #1a1a1a;
+}
+html.light main .text-white {
+  color: #1a1a1a !important;
+}
+
+/* Light mode: navbar — frosted white instead of dark overlay */
+html.light nav.sticky {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode: nav text dark on light bar; red CTA buttons keep white text */
+html.light nav {
+  color: #1a1a1a;
+}
+html.light nav .text-white {
+  color: #1a1a1a !important;
+}
+html.light nav [class*="hover:text-white"]:hover {
+  color: #0f0f0f !important;
+}
+html.light nav a[class*="bg-red"] {
+  color: #ffffff !important;
+}
+
+/* Light mode: borders that were white/10 or white/20 become visible dark borders */
+html.light [class*="border-white"] {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light [class*="border-white\/20"],
+html.light [class*="border-white/20"] {
+  border-color: rgba(0, 0, 0, 0.14) !important;
+}
+
+/* Light mode: dark overlays (e.g. modals) stay dark but slightly softer */
+html.light .bg-black\/60 {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Light mode: hero (section on dark video) keeps white text, overriding main rules */
+html.light .hero-on-dark h1,
+html.light .hero-on-dark p,
+html.light .hero-on-dark .subtitle,
+html.light .hero-on-dark a,
+html.light .hero-on-dark .text-white {
+  color: #ffffff !important;
+}
+html.light .hero-on-dark .text-white\/90 { color: rgba(255, 255, 255, 0.9) !important; }
+html.light .hero-on-dark .text-white\/85 { color: rgba(255, 255, 255, 0.85) !important; }
+
+/* Light mode: selection remains accent but readable */
+html.light ::selection {
+  background-color: rgba(107, 91, 173, 0.35);
+  color: #1a1a1a;
 }
