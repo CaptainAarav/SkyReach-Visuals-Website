@@ -220,11 +220,11 @@ html.light main .text-white {
   color: #1a1a1a !important;
 }
 
-/* Light mode: navbar — frosted white instead of dark overlay */
+/* Light mode: navbar — translucent frosted white, like dark mode’s bg-black/20 + blur */
 html.light nav.sticky {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
