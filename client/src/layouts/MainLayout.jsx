@@ -12,9 +12,14 @@ function ScrollToTop() {
   return null;
 }
 
+const TRACKED_SESSION_KEY = 'skyreach_view_sent';
+
 function TrackPageView() {
   const { pathname } = useLocation();
   useEffect(() => {
+    if (typeof sessionStorage === 'undefined') return;
+    if (sessionStorage.getItem(TRACKED_SESSION_KEY)) return;
+    sessionStorage.setItem(TRACKED_SESSION_KEY, '1');
     fetch('/api/analytics/view', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

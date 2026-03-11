@@ -22,14 +22,33 @@ export default function AdminDashboard() {
   const [externalLabel, setExternalLabel] = useState('');
   const [externalSubmitting, setExternalSubmitting] = useState(false);
   const [externalError, setExternalError] = useState(null);
+  const today = () => new Date().toISOString().slice(0, 10);
   const [trafficFrom, setTrafficFrom] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 29);
     return d.toISOString().slice(0, 10);
   });
-  const [trafficTo, setTrafficTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [trafficTo, setTrafficTo] = useState(today);
   const [traffic, setTraffic] = useState(null);
   const [trafficLoading, setTrafficLoading] = useState(false);
+
+  const setTrafficPeriod = (preset) => {
+    const now = new Date();
+    const to = today();
+    if (preset === 'today') {
+      setTrafficFrom(to);
+      setTrafficTo(to);
+    } else if (preset === 'month') {
+      setTrafficFrom(new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10));
+      setTrafficTo(to);
+    } else if (preset === 'year') {
+      setTrafficFrom(new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10));
+      setTrafficTo(to);
+    } else if (preset === 'all') {
+      setTrafficFrom('2020-01-01');
+      setTrafficTo(to);
+    }
+  };
 
   const loadStats = () => {
     setLoading(true);
@@ -127,29 +146,44 @@ export default function AdminDashboard() {
           </div>
 
           <div className="bg-bg-card border border-white/10 rounded-2xl p-8 mt-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">Website traffic</p>
-            <div className="flex flex-wrap items-center gap-4 mb-4">
-              <label className="flex items-center gap-2 text-sm text-cream/80">
+            <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">Website traffic (sessions)</p>
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              {[
+                { preset: 'today', label: 'Today' },
+                { preset: 'month', label: 'This month' },
+                { preset: 'year', label: 'This year' },
+                { preset: 'all', label: 'Whole time' },
+              ].map(({ preset, label }) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setTrafficPeriod(preset)}
+                  className="text-sm font-medium px-3 py-1.5 rounded-lg bg-bg text-cream/80 hover:text-white border border-white/10 transition-colors"
+                >
+                  {label}
+                </button>
+              ))}
+              <label className="flex items-center gap-1.5 text-sm text-cream/60 ml-2">
                 <span>From</span>
                 <input
                   type="date"
                   value={trafficFrom}
                   onChange={(e) => setTrafficFrom(e.target.value)}
-                  className="bg-bg border border-white/20 rounded-lg py-1.5 px-2 text-white text-sm"
+                  className="bg-bg border border-white/20 rounded-lg py-1 px-2 text-white text-sm w-36"
                 />
               </label>
-              <label className="flex items-center gap-2 text-sm text-cream/80">
+              <label className="flex items-center gap-1.5 text-sm text-cream/60">
                 <span>To</span>
                 <input
                   type="date"
                   value={trafficTo}
                   onChange={(e) => setTrafficTo(e.target.value)}
-                  className="bg-bg border border-white/20 rounded-lg py-1.5 px-2 text-white text-sm"
+                  className="bg-bg border border-white/20 rounded-lg py-1 px-2 text-white text-sm w-36"
                 />
               </label>
               {traffic && (
-                <span className="text-lg font-bold text-white">
-                  Total: <CountUp value={traffic.total} duration={800} /> views
+                <span className="text-lg font-bold text-white ml-auto">
+                  Total: <CountUp value={traffic.total} duration={800} /> sessions
                 </span>
               )}
             </div>
@@ -159,25 +193,7 @@ export default function AdminDashboard() {
                 {traffic.daily.length === 0 ? (
                   <p className="text-sm text-cream/50">No traffic in this period.</p>
                 ) : (
-                  <div className="flex items-end gap-1 h-32">
-                    {traffic.daily.map(({ date, views }) => {
-                      const max = Math.max(...traffic.daily.map((d) => d.views), 1);
-                      const pct = (views / max) * 100;
-                      return (
-                        <div
-                          key={date}
-                          className="flex-1 min-w-0 flex flex-col items-center group"
-                          title={`${date}: ${views} views`}
-                        >
-                          <div
-                            className="w-full bg-accent/80 rounded-t min-h-[4px] transition-all group-hover:bg-accent"
-                            style={{ height: `${pct}%` }}
-                          />
-                          <span className="text-[10px] text-cream/50 mt-1 truncate w-full text-center">{date.slice(5)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <TrafficLineChart daily={traffic.daily} />
                 )}
               </div>
             )}
@@ -240,5 +256,73 @@ function StatCard({ label, value, color }) {
         <CountUp value={value} duration={1000} />
       </p>
     </div>
+  );
+}
+
+function niceMax(n) {
+  if (n <= 0) return 5;
+  const exp = Math.pow(10, Math.floor(Math.log10(n)));
+  const mant = n / exp;
+  const step = mant <= 1 ? 1 : mant <= 2 ? 2 : mant <= 5 ? 5 : 10;
+  return step * exp;
+}
+
+function TrafficLineChart({ daily }) {
+  const width = 640;
+  const height = 240;
+  const paddingLeft = 36;
+  const paddingRight = 12;
+  const paddingTop = 12;
+  const paddingBottom = 28;
+  const chartW = width - paddingLeft - paddingRight;
+  const chartH = height - paddingTop - paddingBottom;
+
+  const maxViews = Math.max(...daily.map((d) => d.views), 1);
+  const yMax = niceMax(maxViews);
+  const n = daily.length;
+  const stepX = n > 1 ? chartW / (n - 1) : chartW;
+
+  const points = daily.map((d, i) => {
+    const x = paddingLeft + i * stepX;
+    const y = paddingTop + chartH - (d.views / yMax) * chartH;
+    return `${x},${y}`;
+  });
+  const linePath = points.length > 0 ? `M ${points.join(' L ')}` : '';
+
+  const yStep = yMax <= 5 ? 1 : yMax <= 10 ? 2 : Math.ceil(yMax / 5);
+  const yTicks = [];
+  for (let v = 0; v <= yMax; v += yStep) yTicks.push(v);
+  if (yTicks[yTicks.length - 1] !== yMax) yTicks.push(yMax);
+
+  const xTickStep = Math.max(1, Math.floor(n / 8));
+  return (
+    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible" preserveAspectRatio="xMidYMid meet">
+      {/* Y-axis labels (left) */}
+      {yTicks.map((v) => {
+        const y = paddingTop + chartH - (v / yMax) * chartH;
+        return (
+          <g key={v}>
+            <line x1={paddingLeft} y1={y} x2={paddingLeft + chartW} y2={y} stroke="rgba(255,255,255,0.08)" strokeWidth="1" strokeDasharray="2,2" />
+            <text x={paddingLeft - 6} y={y + 4} textAnchor="end" className="fill-cream/60 text-[10px] font-medium">{v}</text>
+          </g>
+        );
+      })}
+      {/* X-axis labels (bottom) */}
+      {daily.map((d, i) => {
+        if (i % xTickStep !== 0 && i !== n - 1) return null;
+        const x = paddingLeft + i * stepX;
+        return (
+          <text key={`${d.date}-${i}`} x={x} y={height - 6} textAnchor="middle" className="fill-cream/50 text-[10px]">{d.date.slice(5)}</text>
+        );
+      })}
+      {/* Line */}
+      <path d={linePath} fill="none" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Points */}
+      {daily.map((d, i) => {
+        const x = paddingLeft + i * stepX;
+        const y = paddingTop + chartH - (d.views / yMax) * chartH;
+        return <circle key={d.date} cx={x} cy={y} r="3" className="fill-accent" />;
+      })}
+    </svg>
   );
 }
