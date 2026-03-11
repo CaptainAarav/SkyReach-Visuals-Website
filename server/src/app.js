@@ -8,6 +8,7 @@ import bookingRoutes from './routes/booking.routes.js';
 import contactRoutes from './routes/contact.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import analyticsRoutes from './routes/analytics.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Global error handler (must be last)
 app.use(errorHandler);

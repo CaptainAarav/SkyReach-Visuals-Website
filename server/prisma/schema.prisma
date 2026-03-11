@@ -184,3 +184,11 @@ model AdminMessage {
   @@index([senderId])
   @@index([recipientId])
 }
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String?  // optional path (e.g. /get-started)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

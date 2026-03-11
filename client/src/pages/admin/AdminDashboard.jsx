@@ -22,6 +22,14 @@ export default function AdminDashboard() {
   const [externalLabel, setExternalLabel] = useState('');
   const [externalSubmitting, setExternalSubmitting] = useState(false);
   const [externalError, setExternalError] = useState(null);
+  const [trafficFrom, setTrafficFrom] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 29);
+    return d.toISOString().slice(0, 10);
+  });
+  const [trafficTo, setTrafficTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [traffic, setTraffic] = useState(null);
+  const [trafficLoading, setTrafficLoading] = useState(false);
 
   const loadStats = () => {
     setLoading(true);
@@ -32,6 +40,15 @@ export default function AdminDashboard() {
   };
 
   useEffect(loadStats, [period]);
+
+  const loadTraffic = () => {
+    setTrafficLoading(true);
+    api.get(`/api/admin/traffic?from=${trafficFrom}&to=${trafficTo}`)
+      .then(setTraffic)
+      .catch(() => setTraffic(null))
+      .finally(() => setTrafficLoading(false));
+  };
+  useEffect(loadTraffic, [trafficFrom, trafficTo]);
 
   const handleAddExternalProject = async (e) => {
     e.preventDefault();
@@ -107,6 +124,63 @@ export default function AdminDashboard() {
             <Link to="/admin/orders"><StatCard label="Total Bookings" value={stats.totalBookings} color="text-amber-400" /></Link>
             <Link to="/admin/orders?status=accepted"><StatCard label="Total Accepted" value={stats.totalAccepted} color="text-emerald-400" /></Link>
             <Link to="/admin/orders?status=declined"><StatCard label="Total Declined" value={stats.totalDeclined} color="text-red-400" /></Link>
+          </div>
+
+          <div className="bg-bg-card border border-white/10 rounded-2xl p-8 mt-8">
+            <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">Website traffic</p>
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              <label className="flex items-center gap-2 text-sm text-cream/80">
+                <span>From</span>
+                <input
+                  type="date"
+                  value={trafficFrom}
+                  onChange={(e) => setTrafficFrom(e.target.value)}
+                  className="bg-bg border border-white/20 rounded-lg py-1.5 px-2 text-white text-sm"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-sm text-cream/80">
+                <span>To</span>
+                <input
+                  type="date"
+                  value={trafficTo}
+                  onChange={(e) => setTrafficTo(e.target.value)}
+                  className="bg-bg border border-white/20 rounded-lg py-1.5 px-2 text-white text-sm"
+                />
+              </label>
+              {traffic && (
+                <span className="text-lg font-bold text-white">
+                  Total: <CountUp value={traffic.total} duration={800} /> views
+                </span>
+              )}
+            </div>
+            {trafficLoading && <p className="text-sm text-cream/50">Loading…</p>}
+            {!trafficLoading && traffic && (
+              <div className="mt-4">
+                {traffic.daily.length === 0 ? (
+                  <p className="text-sm text-cream/50">No traffic in this period.</p>
+                ) : (
+                  <div className="flex items-end gap-1 h-32">
+                    {traffic.daily.map(({ date, views }) => {
+                      const max = Math.max(...traffic.daily.map((d) => d.views), 1);
+                      const pct = (views / max) * 100;
+                      return (
+                        <div
+                          key={date}
+                          className="flex-1 min-w-0 flex flex-col items-center group"
+                          title={`${date}: ${views} views`}
+                        >
+                          <div
+                            className="w-full bg-accent/80 rounded-t min-h-[4px] transition-all group-hover:bg-accent"
+                            style={{ height: `${pct}%` }}
+                          />
+                          <span className="text-[10px] text-cream/50 mt-1 truncate w-full text-center">{date.slice(5)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}

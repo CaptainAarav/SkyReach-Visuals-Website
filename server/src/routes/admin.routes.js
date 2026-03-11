@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { requireAuth, requireAdmin, requireStaff } from '../middleware/auth.js';
 import {
   getStats,
+  getTraffic,
   createExternalProject,
   listAccounts,
   getAccount,
@@ -32,6 +33,7 @@ router.use(requireAuth, requireStaff);
 
 // Stats
 router.get('/stats', getStats);
+router.get('/traffic', getTraffic);
 router.post('/external-projects', requireAdmin, createExternalProject);
 
 // Accounts

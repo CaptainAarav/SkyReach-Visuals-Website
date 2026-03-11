@@ -136,14 +136,14 @@ function ComposeModal({ onClose, onSent, defaults = {} }) {
             <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-white/10 bg-bg-card">
               <div className="p-4 min-h-full" style={{ backgroundColor: '#0f0f0f' }}>
                 <div className="max-w-[520px] rounded-xl overflow-hidden border border-red/20" style={{ backgroundColor: '#1E2D4A' }}>
-                  <div className="px-6 pt-6 pb-4 text-left">
+                  <div className="px-6 pt-6 pb-4 text-left" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
                     <h3 className="text-cream font-semibold text-lg mb-3">{displaySubject}</h3>
                     <p className="text-cream/90 text-sm leading-relaxed whitespace-pre-wrap">{displayBody}</p>
                     <p className="mt-6 pt-4 border-t border-white/10 text-cream/70 text-xs leading-relaxed">
                       <strong className="text-cream">SkyReach Visuals</strong><br />
                       {senderName} — Drone Aerial Photography &amp; Inspection · +44 7877691861 · support@skyreachvisuals.co.uk
                     </p>
-                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-24 h-auto mt-3 rounded-lg opacity-90" />
+                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-24 h-auto mt-3 rounded opacity-90" style={{ borderRadius: '4px' }} />
                   </div>
                 </div>
               </div>

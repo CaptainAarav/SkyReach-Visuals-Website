@@ -29,9 +29,13 @@ function mailHeaders() {
 }
 
 function logoUrl() {
-  const base = (env.clientUrl || 'https://skyreachvisuals.co.uk').replace(/\/$/, '');
+  let base = (env.clientUrl || 'https://skyreachvisuals.co.uk').replace(/\/$/, '');
+  if (base.startsWith('http://') && env.nodeEnv === 'production') base = base.replace('http://', 'https://');
   return `${base}/skyreach_visuals_text_logo.png`;
 }
+
+const EMAIL_RADIUS = '12px';
+const EMAIL_LOGO_RADIUS = '4px';
 
 const EMAIL_DARK = {
   bodyBg: '#1a1a2e',
@@ -49,17 +53,17 @@ const EMAIL_DARK = {
 function emailHeader(title) {
   if (!title) return '';
   return `<tr>
-  <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:left;">
-    <h1 style="margin:0;color:${EMAIL_DARK.text};font-size:20px;font-weight:600;">${title}</h1>
+  <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:left;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+    <h1 style="margin:0;color:${EMAIL_DARK.text};font-size:20px;font-weight:600;font-family:'Inter',Arial,sans-serif;">${title}</h1>
   </td>
 </tr>`;
 }
 
 function emailFooter() {
   return `<tr>
-  <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:left;">
-    <p style="margin:0 0 8px;"><img src="${logoUrl()}" alt="SkyReach Visuals" width="80" style="display:inline-block;border-radius:8px;filter:brightness(0) invert(1);opacity:0.9;" /></p>
-    <p style="margin:0;color:${EMAIL_DARK.footer};font-size:12px;">SkyReach Visuals &middot; Bournemouth, Dorset, UK</p>
+  <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:left;border-radius:0 0 ${EMAIL_RADIUS} ${EMAIL_RADIUS};">
+    <p style="margin:0 0 8px;"><img src="${logoUrl()}" alt="SkyReach Visuals" width="80" height="32" style="display:inline-block;border-radius:${EMAIL_LOGO_RADIUS};filter:brightness(0) invert(1);opacity:0.9;max-width:80px;" /></p>
+    <p style="margin:0;color:${EMAIL_DARK.footer};font-size:12px;font-family:'Inter',Arial,sans-serif;">SkyReach Visuals &middot; Bournemouth, Dorset, UK</p>
   </td>
 </tr>`;
 }
@@ -228,8 +232,8 @@ export async function sendVerificationEmail({ to, name, verifyUrl }) {
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           ${emailHeader()}
           <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;">Verify your email</h2>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">Verify your email</h2>
               <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
                 Hi ${name}, thanks for signing up. Please click the button below to verify your email address.
               </p>
@@ -294,8 +298,8 @@ export async function sendBookingApproved({ to, booking, payUrl }) {
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           ${emailHeader()}
           <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;">Booking Approved</h2>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">Booking Approved</h2>
               <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
                 Great news! Your booking request has been approved. Here are your details:
               </p>
@@ -381,8 +385,8 @@ export async function sendBookingDeclined({ to, booking }) {
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           ${emailHeader()}
           <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;">Booking Update</h2>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">Booking Update</h2>
               <p style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
                 Unfortunately, we are unable to accommodate your booking request for <strong>${booking.packageName}</strong> at this time.
               </p>
@@ -436,9 +440,9 @@ function adminMessageHtml(body, subject, senderName) {
       <td align="left">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:32px 40px;text-align:left;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:22px;font-weight:600;text-align:left;">${subject}</h2>
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;white-space:pre-wrap;text-align:left;">${escaped}</p>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:32px 40px;text-align:left;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:22px;font-weight:600;text-align:left;font-family:'Inter',Arial,sans-serif;">${subject}</h2>
+              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;white-space:pre-wrap;text-align:left;font-family:'Inter',Arial,sans-serif;">${escaped}</p>
               <p style="margin:24px 0 0;padding-top:16px;border-top:1px solid ${EMAIL_DARK.border};color:${EMAIL_DARK.textMuted};font-size:13px;line-height:1.5;text-align:left;">
                 <strong style="color:${EMAIL_DARK.text};">SkyReach Visuals</strong><br/>
                 ${senderName} &mdash; Drone Aerial Photography &amp; Inspection &middot; +44 7877691861 &middot; ${fromAddr}
@@ -529,8 +533,8 @@ export async function sendAdminLoginEmail({ to, name, verifyUrl }) {
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           ${emailHeader()}
           <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;">Confirm your admin login</h2>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">Confirm your admin login</h2>
               <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
                 Hi ${name}, someone (hopefully you) is trying to sign in to your admin account. Click below to confirm.
               </p>
@@ -588,8 +592,8 @@ export async function sendReviewRequestEmail({ to, name, booking, reviewUrl }) {
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           ${emailHeader()}
           <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;">How was your experience?</h2>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">How was your experience?</h2>
               <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
                 Hi ${name}, your <strong>${booking.packageName}</strong> order is now complete. We hope you&rsquo;re happy with the results!
               </p>

@@ -12,11 +12,25 @@ function ScrollToTop() {
   return null;
 }
 
+function TrackPageView() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    fetch('/api/analytics/view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ path: pathname }),
+    }).catch(() => {});
+  }, [pathname]);
+  return null;
+}
+
 export default function MainLayout() {
   useTheme();
   return (
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />
+      <TrackPageView />
       <Navbar />
       <main className="flex-1">
         <Outlet />

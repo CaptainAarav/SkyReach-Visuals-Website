@@ -76,6 +76,39 @@ export async function getStats(req, res, next) {
   }
 }
 
+/** GET /api/admin/traffic?from=YYYY-MM-DD&to=YYYY-MM-DD — page views by day (staff). */
+export async function getTraffic(req, res, next) {
+  try {
+    let from = req.query.from ? new Date(req.query.from + 'T00:00:00Z') : null;
+    let to = req.query.to ? new Date(req.query.to + 'T23:59:59.999Z') : null;
+    if (!from || !to || from > to) {
+      const now = new Date();
+      to = to || now;
+      from = from || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+    const views = await prisma.pageView.findMany({
+      where: { createdAt: { gte: from, lte: to } },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    const byDay = {};
+    views.forEach((v) => {
+      const d = v.createdAt.toISOString().slice(0, 10);
+      byDay[d] = (byDay[d] || 0) + 1;
+    });
+    const daily = Object.entries(byDay)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, views]) => ({ date, views }));
+    res.json({
+      success: true,
+      data: { daily, total: views.length },
+      error: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ── Accounts ────────────────────────────────────────────────────────
 export async function listAccounts(req, res, next) {
   try {
