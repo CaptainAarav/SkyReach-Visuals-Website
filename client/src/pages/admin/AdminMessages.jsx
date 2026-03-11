@@ -203,6 +203,16 @@ export default function AdminMessages() {
     }).catch((err) => setError(err.message));
   };
 
+  const [deletingId, setDeletingId] = useState(null);
+  const permanentDelete = (id) => {
+    if (!window.confirm('Are you sure you want to permanently delete this message? This cannot be undone.')) return;
+    setDeletingId(id);
+    api.delete(`/api/admin/messages/${id}`)
+      .then(() => setMessages((list) => list.filter((m) => m.id !== id)))
+      .catch((err) => setError(err.message))
+      .finally(() => setDeletingId(null));
+  };
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -257,7 +267,7 @@ export default function AdminMessages() {
               onClick={() => setFilter('archived')}
               className={`text-sm px-4 py-2 rounded-xl ${filter === 'archived' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 border border-white/10'}`}
             >
-              Archived
+              Deleted
             </button>
           </div>
           <div className="space-y-6">
@@ -310,8 +320,18 @@ export default function AdminMessages() {
                       onClick={() => markArchived(msg.id, !msg.archived)}
                       className="text-sm font-medium text-cream/60 hover:text-cream"
                     >
-                      {msg.archived ? 'Unarchive' : 'Archive'}
+                      {msg.archived ? 'Restore' : 'Delete'}
                     </button>
+                    {msg.archived && (
+                      <button
+                        type="button"
+                        onClick={() => permanentDelete(msg.id)}
+                        disabled={deletingId === msg.id}
+                        className="text-sm font-medium text-red hover:text-red-dark disabled:opacity-50"
+                      >
+                        {deletingId === msg.id ? 'Deleting...' : 'Permanently delete'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

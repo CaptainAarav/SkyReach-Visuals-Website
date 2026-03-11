@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
+import { formatOrderNumber } from '../utils/format.js';
+import { generateInvoiceHtml } from './invoice.service.js';
 import { appendToSent } from './imap.service.js';
 
 let transporter = null;
@@ -132,7 +134,7 @@ export async function sendBookingConfirmation({ to, booking }) {
                 <tr>
                   <td style="padding:12px 0;text-align:left;">
                     <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Order No</span><br/>
-                    <span style="color:${EMAIL_DARK.text};font-size:15px;font-weight:600;">${booking.orderNumber}</span>
+                    <span style="color:${EMAIL_DARK.text};font-size:15px;font-weight:600;">${formatOrderNumber(booking.orderNumber)}</span>
                   </td>
                 </tr>
               </table>
@@ -155,6 +157,161 @@ export async function sendBookingConfirmation({ to, booking }) {
     from: `"SkyReach Visuals" <${env.emailFrom}>`,
     to,
     subject: `Booking Confirmed — ${booking.packageName} | SkyReach Visuals`,
+    headers: mailHeaders(),
+    html,
+  });
+}
+
+export async function sendInvoiceEmail({ booking, user }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.log('SMTP not configured — skipping invoice email');
+    return;
+  }
+  const to = user?.email;
+  if (!to) return;
+  const html = generateInvoiceHtml(booking, user);
+  const orderNo = formatOrderNumber(booking.orderNumber);
+  await transport.sendMail({
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
+    to,
+    subject: `Your invoice — Order ${orderNo} | SkyReach Visuals`,
+    headers: mailHeaders(),
+    html,
+  });
+}
+
+export async function sendPaymentRequestAccepted({ to, payUrl, customerName }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.log('SMTP not configured — skipping payment request accepted email');
+    return;
+  }
+  const name = customerName || 'there';
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          ${emailHeader('Payment link ready')}
+          <tr>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
+              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
+                Hi ${name}, your payment request has been accepted. Use the link below to complete your payment securely.
+              </p>
+              <p style="margin:0 0 24px;">
+                <a href="${payUrl}" style="display:inline-block;background-color:${EMAIL_DARK.buttonBg};color:${EMAIL_DARK.buttonText};text-decoration:none;font-size:16px;font-weight:600;padding:14px 28px;border-radius:8px;">Pay Now</a>
+              </p>
+              <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">
+                If you have any questions, reply to this email or call us on 07877 691861.
+              </p>
+            </td>
+          </tr>
+          ${emailFooter()}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  await transport.sendMail({
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
+    to,
+    subject: 'Your payment link is ready | SkyReach Visuals',
+    headers: mailHeaders(),
+    html,
+  });
+}
+
+export async function sendPaymentRequestDeclined({ to, customerName }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.log('SMTP not configured — skipping payment request declined email');
+    return;
+  }
+  const name = customerName || 'there';
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          ${emailHeader('Payment request update')}
+          <tr>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
+              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
+                Hi ${name}, we're unable to proceed with your payment request at this time.
+              </p>
+              <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">
+                If you have questions, reply to this email or call us on 07877 691861.
+              </p>
+            </td>
+          </tr>
+          ${emailFooter()}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  await transport.sendMail({
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
+    to,
+    subject: 'Payment request update | SkyReach Visuals',
+    headers: mailHeaders(),
+    html,
+  });
+}
+
+export async function sendPaymentRequestAdjusted({ to, customerName, adminNotes, adjustedAmount }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.log('SMTP not configured — skipping payment request adjusted email');
+    return;
+  }
+  const name = customerName || 'there';
+  const amountLine = adjustedAmount != null ? `<p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Revised amount:</strong> &pound;${(adjustedAmount / 100).toFixed(2)}</p>` : '';
+  const notesLine = adminNotes ? `<p style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:14px;line-height:1.6;">${adminNotes}</p>` : '';
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          ${emailHeader('Payment request update')}
+          <tr>
+            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
+              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
+                Hi ${name}, your payment request has been updated with the details below.
+              </p>
+              ${amountLine}
+              ${notesLine}
+              <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">
+                We'll be in touch with a payment link if applicable, or reply to this email / call 07877 691861 with any questions.
+              </p>
+            </td>
+          </tr>
+          ${emailFooter()}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  await transport.sendMail({
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
+    to,
+    subject: 'Payment request update | SkyReach Visuals',
     headers: mailHeaders(),
     html,
   });
@@ -337,7 +494,7 @@ export async function sendBookingApproved({ to, booking, payUrl }) {
                 <tr>
                   <td style="padding:12px 0;text-align:center;">
                     <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Order No</span><br/>
-                    <span style="color:${EMAIL_DARK.text};font-size:15px;font-weight:600;">${booking.orderNumber}</span>
+                    <span style="color:${EMAIL_DARK.text};font-size:15px;font-weight:600;">${formatOrderNumber(booking.orderNumber)}</span>
                   </td>
                 </tr>
               </table>

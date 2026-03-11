@@ -12,20 +12,25 @@ import {
   getAccountOrders,
   getAccountMessages,
   getAccountReviews,
+  listTransactions,
   listOrders,
   updateOrder,
   deleteOrder,
+  permanentDeleteOrder,
   listMessages,
   markMessageRead,
   markMessageArchived,
+  deleteMessage,
   sendMessageToClient,
   listSentMessages,
   listReviews,
+  updateReviewShowOnMainPage,
   listAdminLogs,
   getMailInbox,
   getMailSent,
   getMailMessage,
 } from '../controllers/admin.controller.js';
+import { listPaymentRequests, updatePaymentRequest } from '../controllers/paymentRequest.controller.js';
 
 const router = Router();
 
@@ -46,20 +51,30 @@ router.get('/accounts/:id/orders', getAccountOrders);
 router.get('/accounts/:id/messages', getAccountMessages);
 router.get('/accounts/:id/reviews', getAccountReviews);
 
+// Transactions
+router.get('/transactions', listTransactions);
+
+// Payment requests (Quick Pay flow)
+router.get('/payment-requests', listPaymentRequests);
+router.patch('/payment-requests/:id', updatePaymentRequest);
+
 // Orders
 router.get('/orders', listOrders);
 router.patch('/orders/:id', updateOrder);
 router.delete('/orders/:id', deleteOrder);
+router.delete('/orders/:id/permanent', permanentDeleteOrder);
 
 // Messages
 router.get('/messages', listMessages);
 router.patch('/messages/:id', markMessageRead);
 router.patch('/messages/:id/archived', markMessageArchived);
+router.delete('/messages/:id', deleteMessage);
 router.post('/messages/send', sendMessageToClient);
 router.get('/messages/sent', listSentMessages);
 
 // Reviews
 router.get('/reviews', listReviews);
+router.patch('/reviews/:id', updateReviewShowOnMainPage);
 
 // Admin Logs (admin only)
 router.get('/logs', requireAdmin, listAdminLogs);

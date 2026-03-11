@@ -139,6 +139,20 @@ model ExternalProject {
   @@index([paidAt])
 }
 
+model PaymentRequest {
+  id             String    @id @default(cuid())
+  customerEmail  String
+  customerName   String
+  status         String    @default("PENDING") // PENDING | ACCEPTED | DECLINED | ADJUSTED
+  adminNotes     String?
+  bookingId      String?
+  adjustedAmount Int?      // pence, when ADJUSTED
+  createdAt      DateTime  @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
+
 model ContactMessage {
   id             String    @id @default(cuid())
   name           String
@@ -158,14 +172,15 @@ model ContactMessage {
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  bookingId String   @unique
-  booking   Booking  @relation(fields: [bookingId], references: [id])
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  rating    Int?
-  comment   String
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  bookingId       String   @unique
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  rating          Int?
+  comment         String
+  showOnMainPage  Boolean  @default(false)
+  createdAt       DateTime @default(now())
 
   @@index([userId])
 }

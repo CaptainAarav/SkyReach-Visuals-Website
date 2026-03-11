@@ -76,7 +76,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-white/40">
-            &copy; {new Date().getFullYear()} SkyReach Visuals. All rights reserved. &middot; v1.7
+            &copy; {new Date().getFullYear()} SkyReach Visuals. All rights reserved. &middot; v1.8
           </p>
           <p className="text-xs text-white/40">
             CAA certified drone operators

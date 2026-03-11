@@ -4,12 +4,12 @@ import { AppError } from '../utils/AppError.js';
 export async function getPublicReviews(req, res, next) {
   try {
     const reviews = await prisma.review.findMany({
-      where: { rating: { not: null } },
+      where: { rating: { not: null }, showOnMainPage: true },
       orderBy: { createdAt: 'desc' },
       take: 10,
       include: {
         user: { select: { name: true } },
-        booking: { select: { packageName: true } },
+        booking: { select: { packageName: true, location: true } },
       },
     });
 
@@ -19,6 +19,7 @@ export async function getPublicReviews(req, res, next) {
       rating: r.rating,
       comment: r.comment,
       packageName: r.booking.packageName,
+      location: r.booking.location || null,
       createdAt: r.createdAt,
     }));
 

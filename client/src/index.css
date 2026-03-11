@@ -257,16 +257,33 @@ html.light .bg-black\/60 {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-/* Light mode: hero (section on dark video) keeps white text, overriding main rules */
+/* Light mode: hero text dark for readability (e.g. on light overlay) */
 html.light .hero-on-dark h1,
 html.light .hero-on-dark p,
 html.light .hero-on-dark .subtitle,
 html.light .hero-on-dark a,
 html.light .hero-on-dark .text-white {
+  color: #1a1a1a !important;
+}
+html.light .hero-on-dark .text-white\/90 { color: rgba(26, 26, 26, 0.9) !important; }
+html.light .hero-on-dark .text-white\/85 { color: rgba(26, 26, 26, 0.85) !important; }
+
+/* Light mode: footer stays dark with white text so contact / copyright remain readable */
+html.light footer {
   color: #ffffff !important;
 }
-html.light .hero-on-dark .text-white\/90 { color: rgba(255, 255, 255, 0.9) !important; }
-html.light .hero-on-dark .text-white\/85 { color: rgba(255, 255, 255, 0.85) !important; }
+html.light footer p,
+html.light footer li,
+html.light footer h4,
+html.light footer a {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+html.light footer .text-white\/70 { color: rgba(255, 255, 255, 0.7) !important; }
+html.light footer .text-white\/50 { color: rgba(255, 255, 255, 0.5) !important; }
+html.light footer .text-white\/40 { color: rgba(255, 255, 255, 0.4) !important; }
+html.light footer a:hover {
+  color: var(--color-red) !important;
+}
 
 /* Light mode: selection remains accent but readable */
 html.light ::selection {

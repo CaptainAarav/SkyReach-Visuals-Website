@@ -339,6 +339,31 @@ export async function createExternalProject(req, res, next) {
   }
 }
 
+// ── Transactions ────────────────────────────────────────────────────
+export async function listTransactions(req, res, next) {
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
+    const data = bookings.map((b) => ({
+      id: b.id,
+      orderNumber: b.orderNumber,
+      clientName: b.user?.name,
+      clientEmail: b.user?.email,
+      amount: b.packagePrice,
+      status: b.paidAt ? 'completed' : (b.status === 'APPROVED' ? 'waiting_for_payment' : 'pending'),
+      paidAt: b.paidAt,
+      createdAt: b.createdAt,
+      bookingStatus: b.status,
+    }));
+    res.json({ success: true, data, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ── Orders ──────────────────────────────────────────────────────────
 export async function listOrders(req, res, next) {
   try {
@@ -351,6 +376,9 @@ export async function listOrders(req, res, next) {
     }
     if (status === 'accepted') {
       where.status = { in: ['APPROVED', 'CONFIRMED', 'COMPLETED'] };
+    } else if (status === 'approved') {
+      where.status = 'APPROVED';
+      where.paidAt = null;
     } else if (status === 'declined') {
       where.status = 'DECLINED';
     } else if (status === 'pending') {
@@ -378,6 +406,20 @@ export async function deleteOrder(req, res, next) {
       data: { deletedAt: new Date() },
     });
     await logAdminAction(req.user.id, 'DELETE_ORDER', null, `Order ${id} (${booking.orderNumber}) moved to deleted`);
+    res.json({ success: true, data: { id }, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function permanentDeleteOrder(req, res, next) {
+  try {
+    const { id } = req.params;
+    const booking = await prisma.booking.findUnique({ where: { id } });
+    if (!booking) throw new AppError('Order not found', 404);
+    if (!booking.deletedAt) throw new AppError('Order must be deleted before it can be permanently removed', 400);
+    await prisma.booking.delete({ where: { id } });
+    await logAdminAction(req.user.id, 'PERMANENT_DELETE_ORDER', null, `Order ${id} (${booking.orderNumber}) permanently deleted`);
     res.json({ success: true, data: { id }, error: null });
   } catch (err) {
     next(err);
@@ -505,6 +547,18 @@ export async function markMessageArchived(req, res, next) {
   }
 }
 
+export async function deleteMessage(req, res, next) {
+  try {
+    const { id } = req.params;
+    const msg = await prisma.contactMessage.findUnique({ where: { id } });
+    if (!msg) throw new AppError('Message not found', 404);
+    await prisma.contactMessage.delete({ where: { id } });
+    res.json({ success: true, data: { id }, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ── Admin Messaging ──────────────────────────────────────────────────
 export async function sendMessageToClient(req, res, next) {
   try {
@@ -570,11 +624,30 @@ export async function listReviews(req, res, next) {
     const reviews = await prisma.review.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        booking: { select: { id: true, packageName: true, shootDate: true } },
+        booking: { select: { id: true, packageName: true, shootDate: true, location: true } },
         user: { select: { id: true, name: true, email: true } },
       },
     });
     res.json({ success: true, data: reviews, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function updateReviewShowOnMainPage(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { showOnMainPage } = req.body;
+    if (typeof showOnMainPage !== 'boolean') {
+      throw new AppError('showOnMainPage must be a boolean', 400);
+    }
+    const review = await prisma.review.findUnique({ where: { id } });
+    if (!review) throw new AppError('Review not found', 404);
+    await prisma.review.update({
+      where: { id },
+      data: { showOnMainPage },
+    });
+    res.json({ success: true, data: { showOnMainPage }, error: null });
   } catch (err) {
     next(err);
   }

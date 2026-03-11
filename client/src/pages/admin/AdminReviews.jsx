@@ -7,6 +7,15 @@ export default function AdminReviews() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [togglingMain, setTogglingMain] = useState(null);
+
+  const setShowOnMainPage = (id, showOnMainPage) => {
+    setTogglingMain(id);
+    api.patch(`/api/admin/reviews/${id}`, { showOnMainPage })
+      .then(() => setReviews((list) => list.map((r) => (r.id === id ? { ...r, showOnMainPage } : r))))
+      .catch((err) => setError(err.message))
+      .finally(() => setTogglingMain(null));
+  };
 
   useEffect(() => {
     api.get('/api/admin/reviews')
@@ -40,8 +49,13 @@ export default function AdminReviews() {
                 <p className="font-medium text-white">{review.user?.name}</p>
                 <p className="text-sm text-cream/60">{review.user?.email}</p>
                 <p className="mt-2 text-sm text-cream/70">
-                  Order: {review.booking?.packageName} · {review.booking?.shootDate && new Date(review.booking.shootDate).toLocaleDateString('en-GB')}
+                  Order: {review.booking?.packageName}
+                  {review.booking?.location && ` · ${review.booking.location}`}
+                  {review.booking?.shootDate && ` · ${new Date(review.booking.shootDate).toLocaleDateString('en-GB')}`}
                 </p>
+                {review.showOnMainPage && (
+                  <p className="mt-1 text-xs text-emerald-400">On main page</p>
+                )}
                 {review.rating != null && (
                   <p className="mt-1 text-sm text-cream/60">{review.rating} star{review.rating !== 1 ? 's' : ''}</p>
                 )}
@@ -50,14 +64,24 @@ export default function AdminReviews() {
                   {new Date(review.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => removeReview(review.id)}
-                disabled={deleting === review.id}
-                className="text-sm font-medium text-red hover:text-red-dark shrink-0 disabled:opacity-50"
-              >
-                {deleting === review.id ? 'Removing...' : 'Remove'}
-              </button>
+              <div className="flex flex-col gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowOnMainPage(review.id, !review.showOnMainPage)}
+                  disabled={togglingMain === review.id}
+                  className={`text-sm font-medium shrink-0 disabled:opacity-50 ${review.showOnMainPage ? 'text-cream/70 hover:text-cream' : 'text-accent hover:text-accent-light'}`}
+                >
+                  {togglingMain === review.id ? 'Updating...' : review.showOnMainPage ? 'Remove from main page' : 'Add to main page'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeReview(review.id)}
+                  disabled={deleting === review.id}
+                  className="text-sm font-medium text-red hover:text-red-dark shrink-0 disabled:opacity-50"
+                >
+                  {deleting === review.id ? 'Removing...' : 'Remove'}
+                </button>
+              </div>
             </div>
           </div>
         ))}

@@ -14,21 +14,23 @@ const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 min
 const authChallenges = new Map(); // email -> { challenge, createdAt }
 const regChallenges = new Map(); // userId -> { options, createdAt }
 
-function getRpId() {
+function getRpId(originOrReq) {
   try {
-    const u = new URL(env.clientUrl);
+    const origin = typeof originOrReq === 'string' ? originOrReq : (originOrReq?.get?.('origin') || env.clientUrl);
+    const u = new URL(origin);
     return u.hostname || 'localhost';
   } catch {
     return 'localhost';
   }
 }
 
-function getOrigin() {
+function getOrigin(originOrReq) {
   try {
-    const u = new URL(env.clientUrl);
-    return u.origin;
+    if (typeof originOrReq === 'string') return originOrReq;
+    const origin = originOrReq?.get?.('origin') || env.clientUrl;
+    return new URL(origin).origin || env.clientUrl;
   } catch {
-    return 'http://localhost:5173';
+    return env.clientUrl || 'http://localhost:5173';
   }
 }
 
@@ -59,7 +61,7 @@ export async function passkeyAuthOptions(req, res, next) {
       throw new AppError('Please verify your email before signing in.', 403);
     }
     purgeOldChallenges(authChallenges);
-    const rpID = getRpId();
+    const rpID = getRpId(req);
     const options = await generateAuthenticationOptions({
       rpID,
       allowCredentials: user.passkeyCredentials.map((c) => ({ id: c.credentialId })),
@@ -110,8 +112,8 @@ export async function passkeyAuth(req, res, next) {
     const verification = await verifyAuthenticationResponse({
       response: responseJson,
       expectedChallenge: stored.challenge,
-      expectedOrigin: getOrigin(),
-      expectedRPID: getRpId(),
+      expectedOrigin: getOrigin(req),
+      expectedRPID: getRpId(req),
       credential,
     });
     if (!verification.verified) {
@@ -150,7 +152,7 @@ export async function passkeyRegisterOptions(req, res, next) {
       throw new AppError('User not found', 404);
     }
     purgeOldChallenges(regChallenges);
-    const rpID = getRpId();
+    const rpID = getRpId(req);
     const options = await generateRegistrationOptions({
       rpName: 'SkyReach Visuals',
       rpID,
@@ -179,8 +181,8 @@ export async function passkeyRegister(req, res, next) {
     const verification = await verifyRegistrationResponse({
       response: req.body,
       expectedChallenge: stored.options.challenge,
-      expectedOrigin: getOrigin(),
-      expectedRPID: getRpId(),
+      expectedOrigin: getOrigin(req),
+      expectedRPID: getRpId(req),
     });
     if (!verification.verified || !verification.registrationInfo) {
       throw new AppError('Passkey registration failed', 400);

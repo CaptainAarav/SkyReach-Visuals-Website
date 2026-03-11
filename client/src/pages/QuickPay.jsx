@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 
 export default function QuickPay() {
-  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [bookings, setBookings] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,17 +17,16 @@ export default function QuickPay() {
       return;
     }
     setError(null);
-    setBookings(null);
+    setSuccess(null);
     setLoading(true);
     try {
-      const data = await api.post('/api/bookings/by-customer', { email: trimmedEmail, name: name.trim() });
-      if (!data || data.length === 0) {
-        setError('No approved unpaid bookings found for this email.');
-      } else if (data.length === 1) {
-        navigate(`/booking/pay/${data[0].id}`, { replace: true });
-      } else {
-        setBookings(data);
-      }
+      const data = await api.post('/api/payment-requests', {
+        email: trimmedEmail,
+        name: name.trim(),
+      });
+      setSuccess(data?.message || 'Request sent. We\'ll email you once your payment link is ready.');
+      setName('');
+      setEmail('');
     } catch (err) {
       setError(err.message || 'Something went wrong.');
     } finally {
@@ -40,7 +38,7 @@ export default function QuickPay() {
     <div className="max-w-md mx-auto px-6 py-24">
       <h1 className="text-3xl font-bold text-white">Already discussed a project?</h1>
       <p className="mt-3 text-cream/70">
-        Enter your name and email to find your approved booking and complete payment. You&rsquo;ll need to be logged in to pay.
+        Request a payment link. Enter your name and email and we&rsquo;ll send you a link to pay once it&rsquo;s approved.
       </p>
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <div>
@@ -73,32 +71,17 @@ export default function QuickPay() {
         {error && (
           <p className="text-sm text-red">{error}</p>
         )}
+        {success && (
+          <p className="text-sm text-emerald-400">{success}</p>
+        )}
         <button
           type="submit"
           disabled={loading}
           className="w-full bg-red text-white font-medium py-3 px-6 rounded-xl hover:bg-red-dark transition-colors disabled:opacity-50"
         >
-          {loading ? 'Looking up...' : 'Find my booking'}
+          {loading ? 'Sending...' : 'Request Payment'}
         </button>
       </form>
-      {bookings && bookings.length > 1 && (
-        <div className="mt-6 space-y-2">
-          <p className="text-sm text-cream/80 font-medium">Select a booking to pay:</p>
-          {bookings.map((b) => (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => navigate(`/booking/pay/${b.id}`, { replace: true })}
-              className="w-full text-left bg-bg-card border border-white/20 rounded-xl py-3 px-4 text-white hover:border-red/40 transition-colors"
-            >
-              <span className="font-medium">{b.packageName}</span>
-              <span className="text-cream/60 text-sm block mt-0.5">
-                &pound;{(b.packagePrice / 100).toFixed(2)} &middot; {b.shootDate ? new Date(b.shootDate).toLocaleDateString('en-GB') : ''}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
       <p className="mt-6 text-sm text-cream/50">
         Don&rsquo;t have a booking yet?{' '}
         <Link to="/book" className="text-accent hover:text-accent-light transition-colors">

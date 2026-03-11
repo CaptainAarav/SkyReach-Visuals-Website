@@ -231,6 +231,11 @@ export default function Home() {
                       </div>
                       <StarRating rating={r.rating} />
                     </div>
+                    {(r.packageName || r.location) && (
+                      <p className="text-sm text-cream/60">
+                        {[r.packageName, r.location].filter(Boolean).join(' · ')}
+                      </p>
+                    )}
                     <p className="text-cream/80 text-base md:text-lg leading-relaxed flex-1">{r.comment}</p>
                   </div>
                 </div>

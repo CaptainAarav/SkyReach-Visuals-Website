@@ -8,8 +8,8 @@ const statusOptions = ['PENDING', 'APPROVED', 'CONFIRMED', 'COMPLETED', 'CANCELL
 const statusColors = {
   PENDING: 'bg-amber-500/20 text-amber-400',
   APPROVED: 'bg-blue-500/20 text-blue-400',
-  CONFIRMED: 'bg-emerald-500/20 text-emerald-400',
-  COMPLETED: 'bg-cream/20 text-cream',
+  CONFIRMED: 'bg-teal-500/20 text-teal-400',
+  COMPLETED: 'bg-emerald-500/20 text-emerald-400',
   CANCELLED: 'bg-red/20 text-red',
   DECLINED: 'bg-red/20 text-red-400',
 };
@@ -315,20 +315,12 @@ export default function AdminOrders() {
                     {order.status}
                   </span>
                 </td>
-                <td className="py-4 flex items-center gap-2">
+                <td className="py-4">
                   <button
                     onClick={() => setViewOrder(order)}
                     className="text-xs font-medium bg-white/10 text-cream px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors"
                   >
                     View
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingOrder(order)}
-                    className="text-xs text-cream/50 hover:text-cream/80 transition-colors"
-                    title="Edit (for testing)"
-                  >
-                    Edit
                   </button>
                 </td>
               </tr>
@@ -362,6 +354,14 @@ export default function AdminOrders() {
               setViewOrder(null);
             } catch (err) { setError(err.message); }
           }}
+          onPermanentDelete={async () => {
+            if (!window.confirm('Are you sure you want to permanently delete this order? This cannot be undone.')) return;
+            try {
+              await api.delete(`/api/admin/orders/${viewOrder.id}/permanent`);
+              setOrders((list) => list.filter((o) => o.id !== viewOrder.id));
+              setViewOrder(null);
+            } catch (err) { setError(err.message); }
+          }}
           isDeleted={statusFilter === 'deleted'}
           onSave={handleEditSave}
         />
@@ -378,7 +378,7 @@ export default function AdminOrders() {
   );
 }
 
-function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline, onDelete, isDeleted }) {
+function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline, onDelete, onPermanentDelete, isDeleted }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -439,6 +439,9 @@ function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline, onDelete,
                   <button type="button" onClick={onDelete} className="text-sm font-medium bg-red/20 text-red px-4 py-2 rounded-lg hover:bg-red/30">Delete Order</button>
                 )}
               </>
+            )}
+            {isDeleted && onPermanentDelete && (
+              <button type="button" onClick={onPermanentDelete} className="text-sm font-medium bg-red/20 text-red px-4 py-2 rounded-lg hover:bg-red/30">Permanently Delete</button>
             )}
           </div>
         </div>

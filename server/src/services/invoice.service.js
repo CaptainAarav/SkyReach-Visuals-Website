@@ -1,3 +1,5 @@
+import { formatOrderNumber } from '../utils/format.js';
+
 /**
  * Generate invoice HTML. When a template file is provided, it can be used to style the output.
  * For now generates a simple HTML invoice with customer details and booking info.
@@ -8,12 +10,13 @@ export function generateInvoiceHtml(booking, user) {
     ? new Date(booking.shootDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—';
   const amount = (booking.packagePrice / 100).toFixed(2);
+  const orderNo = formatOrderNumber(booking.orderNumber);
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Invoice — Order ${booking.orderNumber ?? ''}</title>
+  <title>Invoice — Order ${orderNo || '—'}</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; color: #1a1a2e; }
     h1 { font-size: 24px; margin-bottom: 8px; }
@@ -31,7 +34,7 @@ export function generateInvoiceHtml(booking, user) {
   <p class="meta">Date: ${date}</p>
 
   <table>
-    <tr><th>Order number</th><td>${booking.orderNumber ?? '—'}</td></tr>
+    <tr><th>Order number</th><td>${orderNo || '—'}</td></tr>
     <tr><th>Customer</th><td>${user?.name ?? '—'}</td></tr>
     <tr><th>Email</th><td>${user?.email ?? '—'}</td></tr>
     <tr><th>Service</th><td>${booking.packageName}</td></tr>

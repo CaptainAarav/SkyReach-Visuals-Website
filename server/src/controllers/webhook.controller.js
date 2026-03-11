@@ -1,7 +1,7 @@
 import stripe from '../config/stripe.js';
 import { env } from '../config/env.js';
 import prisma from '../config/db.js';
-import { sendBookingConfirmation } from '../services/email.service.js';
+import { sendBookingConfirmation, sendInvoiceEmail } from '../services/email.service.js';
 
 export async function handleStripeWebhook(req, res) {
   if (!stripe) {
@@ -26,18 +26,22 @@ export async function handleStripeWebhook(req, res) {
       try {
         const booking = await prisma.booking.findUnique({
           where: { id: bookingId },
-          include: { user: { select: { email: true } } },
+          include: { user: { select: { name: true, email: true } } },
         });
 
         if (booking && (booking.status === 'APPROVED' || booking.status === 'PENDING')) {
           const updated = await prisma.booking.update({
             where: { id: bookingId },
-            data: { status: 'CONFIRMED', paidAt: new Date() },
+            data: { status: 'COMPLETED', paidAt: new Date() },
           });
 
           await sendBookingConfirmation({
             to: booking.user.email,
             booking: { ...updated, user: booking.user },
+          });
+          await sendInvoiceEmail({
+            booking: updated,
+            user: booking.user,
           });
         }
       } catch (err) {

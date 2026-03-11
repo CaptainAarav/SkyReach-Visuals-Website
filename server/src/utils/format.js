@@ -1,5 +1,5 @@
 /**
- * Format order number for display (e.g. "CR5266").
+ * Format order number for display and emails (e.g. "CR5266").
  */
 export function formatOrderNumber(orderNumber) {
   if (orderNumber == null) return '';
