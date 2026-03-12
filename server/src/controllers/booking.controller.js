@@ -1,9 +1,77 @@
+import crypto from 'crypto';
 import prisma from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
 import { getServiceBySlug } from '../data/packages.js';
 import { createCheckoutSession, retrieveSession } from '../services/stripe.service.js';
 import { sendBookingConfirmation } from '../services/email.service.js';
 import { generateInvoiceHtml } from '../services/invoice.service.js';
+import { hashPassword } from '../services/auth.service.js';
+
+async function findOrCreateUser(email, name) {
+  const key = email.trim().toLowerCase();
+  let user = await prisma.user.findUnique({ where: { email: key } });
+  if (!user) {
+    const tempPassword = crypto.randomBytes(24).toString('base64url');
+    const passwordHash = await hashPassword(tempPassword);
+    user = await prisma.user.create({
+      data: { email: key, name: (name || key).trim(), passwordHash, emailVerified: true },
+    });
+  }
+  return user;
+}
+
+export async function createQuoteRequest(req, res, next) {
+  try {
+    const { name, email, phone, location, serviceType, packageName, message, preferredDate, preferredTime } = req.body;
+    if (!name || !email || !phone || !location || !serviceType || !message) {
+      throw new AppError('Name, email, phone, location, project type, and description are required', 400);
+    }
+    const user = await findOrCreateUser(email, name);
+    const shootDate = preferredDate ? new Date(preferredDate) : new Date();
+    const booking = await prisma.booking.create({
+      data: {
+        userId: user.id,
+        packageName: packageName || serviceType || 'Quote request',
+        packagePrice: 0,
+        shootDate,
+        shootTime: preferredTime || null,
+        location: location.trim(),
+        phone: phone.trim(),
+        notes: message.trim(),
+        status: 'PENDING',
+        source: 'QUOTE',
+      },
+    });
+    res.status(201).json({ success: true, data: booking, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function createQuickPayRequest(req, res, next) {
+  try {
+    const { name, email } = req.body;
+    if (!email || typeof email !== 'string') {
+      throw new AppError('Email is required', 400);
+    }
+    const user = await findOrCreateUser(email.trim(), (name || '').trim());
+    const booking = await prisma.booking.create({
+      data: {
+        userId: user.id,
+        packageName: 'Quick pay',
+        packagePrice: 0,
+        shootDate: new Date(),
+        location: '',
+        phone: '',
+        status: 'PENDING',
+        source: 'QUICK_PAY',
+      },
+    });
+    res.status(201).json({ success: true, data: { id: booking.id, message: 'Request sent. We\'ll email you once your payment link is ready.' }, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
 
 export async function createBooking(req, res, next) {
   try {
@@ -29,6 +97,7 @@ export async function createBooking(req, res, next) {
         phone,
         notes: notes || null,
         status: 'PENDING',
+        source: 'BOOKING',
       },
     });
 

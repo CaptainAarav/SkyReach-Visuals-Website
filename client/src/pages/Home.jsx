@@ -373,11 +373,6 @@ export default function Home() {
                 <p className="text-cream">Bournemouth, Dorset, UK</p>
                 <p className="mt-1 text-sm text-cream/70">We cover Dorset, Hampshire, and Wiltshire. Further afield by arrangement.</p>
               </div>
-              <div>
-                <h3 className="text-xs font-semibold tracking-widest uppercase text-accent-light/80 mb-3">Hours</h3>
-                <p className="text-cream">Monday to Friday, 9am – 5pm</p>
-                <p className="mt-1 text-sm text-cream/70">Weekend shoots available by prior arrangement.</p>
-              </div>
             </div>
           </div>
         </div>

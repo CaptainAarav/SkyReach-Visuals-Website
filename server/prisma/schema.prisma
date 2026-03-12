@@ -112,12 +112,19 @@ model Booking {
   stripeSessionId String?       @unique
   paidAt          DateTime?
   status          BookingStatus @default(PENDING)
-  deletedAt      DateTime?
+  source          BookingSource @default(BOOKING)
+  deletedAt       DateTime?
   createdAt       DateTime      @default(now())
   reviews         Review[]
 
   @@index([userId])
   @@index([deletedAt])
+}
+
+enum BookingSource {
+  BOOKING
+  QUOTE
+  QUICK_PAY
 }
 
 enum BookingStatus {

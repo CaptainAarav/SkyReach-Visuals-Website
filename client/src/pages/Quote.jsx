@@ -21,7 +21,6 @@ export default function Quote() {
   const [postcodeSuggestions, setPostcodeSuggestions] = useState([]);
   const [showPostcodeDropdown, setShowPostcodeDropdown] = useState(false);
   const [customTime, setCustomTime] = useState('');
-  const [budgetDigits, setBudgetDigits] = useState('');
   const postcodeDropdownRef = useRef(null);
 
   const { values, errors, submitting, submitError, handleChange, handleSubmit, reset } = useForm({
@@ -32,7 +31,6 @@ export default function Quote() {
       location: '',
       serviceType: '',
       message: '',
-      budget: '',
       preferredDate: '',
       preferredTime: '',
     },
@@ -49,15 +47,20 @@ export default function Quote() {
     },
     onSubmit: async (vals) => {
       const timeValue = vals.preferredTime === 'Custom' ? customTime : vals.preferredTime;
-      await api.post('/api/contact', {
-        ...vals,
-        budget: budgetDigits ? `£${budgetDigits}` : null,
+      const selected = QUOTE_SERVICES.find((s) => s.slug === vals.serviceType);
+      await api.post('/api/bookings/quote-requests', {
+        name: vals.name.trim(),
+        email: vals.email.trim(),
+        phone: vals.phone.trim(),
+        location: vals.location.trim(),
+        serviceType: vals.serviceType,
+        packageName: selected?.name || vals.serviceType,
+        message: vals.message.trim(),
         preferredDate: vals.preferredDate || null,
         preferredTime: timeValue || null,
       });
       setSuccess(true);
       setCustomTime('');
-      setBudgetDigits('');
       reset();
     },
   });
@@ -218,22 +221,6 @@ export default function Quote() {
                 </div>
               )}
               {errors.serviceType && <p className="mt-1 text-xs text-red">{errors.serviceType}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="budget" className="block text-sm font-medium mb-2">Budget <span className="text-cream/40">(optional)</span></label>
-              <div className="flex items-center">
-                <span className="text-cream/80 mr-1">£</span>
-                <input
-                  id="budget"
-                  type="text"
-                  inputMode="numeric"
-                  value={budgetDigits}
-                  onChange={(e) => setBudgetDigits(e.target.value.replace(/\D/g, ''))}
-                  placeholder="e.g. 500"
-                  className="w-full bg-transparent border-b-2 border-white/20 focus:border-accent outline-none py-2 transition-colors text-cream placeholder:text-cream/40"
-                />
-              </div>
             </div>
 
             <div>

@@ -126,13 +126,15 @@ export default function BookNow() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-24">
+    <div className="max-w-7xl mx-auto px-6 py-24">
       <h1 className="text-4xl md:text-5xl font-bold text-white">Make a Booking</h1>
       <p className="mt-4 text-cream/70 max-w-2xl">
         Select a service and fill in the details below. Your request will be reviewed and you&rsquo;ll receive an email to complete payment once approved.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-12 space-y-6 max-w-xl">
+      <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <div className="max-w-xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="serviceSlug" className="block text-sm font-medium mb-2">
             Service
@@ -288,6 +290,16 @@ export default function BookNow() {
           Your request will be reviewed. You&rsquo;ll only be asked to pay after we confirm availability.
         </p>
       </form>
+        </div>
+        <div className="hidden lg:flex flex-col items-center justify-center sticky top-24">
+          <img
+            src="/skyreach_visuals_text_logo.png"
+            alt="SkyReach Visuals"
+            className="w-full max-w-xl object-contain rounded-xl"
+            loading="lazy"
+          />
+        </div>
+      </div>
     </div>
   );
 }

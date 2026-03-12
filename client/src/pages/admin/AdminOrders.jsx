@@ -14,6 +14,81 @@ const statusColors = {
   DECLINED: 'bg-red/20 text-red-400',
 };
 
+const sourceLabels = {
+  QUOTE: 'Get a quote',
+  BOOKING: 'Booking request',
+  QUICK_PAY: 'Quick pay',
+};
+
+function OrderComposeModal({ order, onClose, onSent }) {
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [sending, setSending] = useState(false);
+  const [err, setErr] = useState(null);
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!subject.trim() || !body.trim()) return;
+    setSending(true);
+    setErr(null);
+    try {
+      await api.post('/api/admin/messages/send', {
+        recipientEmail: order.user?.email,
+        subject: subject.trim(),
+        body: body.trim(),
+      });
+      onSent?.();
+      onClose();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <h2 className="text-lg font-bold text-white">Send email</h2>
+          <button onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
+        </div>
+        <form onSubmit={handleSend} className="p-6 space-y-4">
+          {err && <p className="text-sm text-red">{err}</p>}
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">To</label>
+            <p className="text-sm text-white">{order.user?.email}</p>
+          </div>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Subject</label>
+            <input
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Message</label>
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={5}
+              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none"
+              required
+            />
+          </div>
+          <div className="flex gap-2">
+            <button type="submit" disabled={sending} className="text-sm font-medium bg-accent text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50">Send</button>
+            <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function ApproveModal({ order, onClose, onSave }) {
   const [quotedPrice, setQuotedPrice] = useState(
     order.packagePrice ? (order.packagePrice / 100).toFixed(2) : ''
@@ -49,7 +124,7 @@ function ApproveModal({ order, onClose, onSave }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <h2 className="text-lg font-bold text-white">Approve Booking</h2>
+          <h2 className="text-lg font-bold text-white">{(order.source === 'QUOTE' || order.source === 'QUICK_PAY') ? 'Send invoice' : 'Approve Booking'}</h2>
           <button onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -89,7 +164,7 @@ function ApproveModal({ order, onClose, onSave }) {
           </div>
           <div className="flex gap-2 pt-2">
             <button type="submit" disabled={saving} className="bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
-              {saving ? 'Approving...' : 'Approve & Send Payment Link'}
+              {saving ? 'Sending...' : ((order.source === 'QUOTE' || order.source === 'QUICK_PAY') ? 'Set amount & send invoice' : 'Approve & Send Payment Link')}
             </button>
             <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">
               Cancel
@@ -222,6 +297,7 @@ export default function AdminOrders() {
   const [approvingOrder, setApprovingOrder] = useState(null);
 
   const [viewOrder, setViewOrder] = useState(null);
+  const [composeOrder, setComposeOrder] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -275,12 +351,12 @@ export default function AdminOrders() {
           </button>
         ))}
       </div>
-      <p className="text-xs text-cream/50 mb-2">Sorted by shoot date (soonest first)</p>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-white/20">
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Order</th>
+              <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Type</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Client</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Service</th>
               <th className="pb-3 pr-4 text-xs font-semibold uppercase text-cream/60">Date</th>
@@ -295,6 +371,11 @@ export default function AdminOrders() {
               <tr key={order.id} className="border-b border-white/10">
                 <td className="py-4 pr-4 text-sm font-semibold text-white">
                   {order.orderNumber != null ? formatOrderNumber(order.orderNumber) : '—'}
+                </td>
+                <td className="py-4 pr-4">
+                  <span className="text-xs font-medium text-cream/80">
+                    {sourceLabels[order.source] ?? 'Booking'}
+                  </span>
                 </td>
                 <td className="py-4 pr-4">
                   <p className="font-medium text-white">{order.user?.name}</p>
@@ -346,6 +427,7 @@ export default function AdminOrders() {
           onClose={() => setViewOrder(null)}
           onEdit={() => { setEditingOrder(viewOrder); setViewOrder(null); }}
           onAccept={() => { setApprovingOrder(viewOrder); setViewOrder(null); }}
+          onSendEmail={() => setComposeOrder(viewOrder)}
           onDecline={async () => { await declineOrder(viewOrder.id); setViewOrder(null); }}
           onDelete={async () => {
             try {
@@ -367,6 +449,14 @@ export default function AdminOrders() {
         />
       )}
 
+      {composeOrder && (
+        <OrderComposeModal
+          order={composeOrder}
+          onClose={() => setComposeOrder(null)}
+          onSent={() => {}}
+        />
+      )}
+
       {editingOrder && (
         <EditOrderModal
           order={editingOrder}
@@ -378,7 +468,8 @@ export default function AdminOrders() {
   );
 }
 
-function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline, onDelete, onPermanentDelete, isDeleted }) {
+function ViewOrderModal({ order, onClose, onEdit, onAccept, onSendEmail, onDecline, onDelete, onPermanentDelete, isDeleted }) {
+  const isQuoteOrQuickPay = order.source === 'QUOTE' || order.source === 'QUICK_PAY';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -403,6 +494,18 @@ function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline, onDelete,
             <p className="text-xs text-cream/50 mb-1">Service</p>
             <p className="text-sm text-white">{order.packageName}</p>
           </div>
+          {order.location && (
+            <div>
+              <p className="text-xs text-cream/50 mb-1">Location</p>
+              <p className="text-sm text-white">{order.location}</p>
+            </div>
+          )}
+          {order.notes && (
+            <div>
+              <p className="text-xs text-cream/50 mb-1">Details / Message</p>
+              <p className="text-sm text-cream/90 whitespace-pre-wrap">{order.notes}</p>
+            </div>
+          )}
           <div>
             <p className="text-xs text-cream/50 mb-1">Shoot date</p>
             <p className="text-sm text-white">{order.shootDate ? new Date(order.shootDate).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</p>
@@ -430,9 +533,14 @@ function ViewOrderModal({ order, onClose, onEdit, onAccept, onDecline, onDelete,
               <>
                 {order.status === 'PENDING' && (
                   <>
-                    <button type="button" onClick={onAccept} className="text-sm font-medium bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">Accept</button>
+                    <button type="button" onClick={onAccept} className="text-sm font-medium bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">
+                      {isQuoteOrQuickPay ? 'Send invoice' : 'Accept'}
+                    </button>
                     <button type="button" onClick={onDecline} className="text-sm font-medium bg-red/80 text-white px-4 py-2 rounded-lg hover:bg-red">Decline</button>
                   </>
+                )}
+                {onSendEmail && (
+                  <button type="button" onClick={onSendEmail} className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20">Send email</button>
                 )}
                 <button type="button" onClick={onEdit} className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20">Edit Booking</button>
                 {onDelete && (

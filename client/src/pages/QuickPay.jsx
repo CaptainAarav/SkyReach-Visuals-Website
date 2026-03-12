@@ -20,7 +20,7 @@ export default function QuickPay() {
     setSuccess(null);
     setLoading(true);
     try {
-      const data = await api.post('/api/payment-requests', {
+      const data = await api.post('/api/bookings/quick-pay', {
         email: trimmedEmail,
         name: name.trim(),
       });
