@@ -13,6 +13,7 @@ COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY prisma ./prisma
 COPY src ./src
+COPY templates ./templates
 COPY entrypoint.sh ./
 RUN chmod +x entrypoint.sh
 EXPOSE 5000

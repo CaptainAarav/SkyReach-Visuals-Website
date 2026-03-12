@@ -96,6 +96,37 @@ function ApproveModal({ order, onClose, onSave }) {
   const [adminNotes, setAdminNotes] = useState(order.adminNotes || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
+  const handlePreviewInvoice = async () => {
+    const priceNum = parseFloat(quotedPrice);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setError('Enter a valid price first to preview the invoice.');
+      return;
+    }
+    setError(null);
+    setLoadingPreview(true);
+    try {
+      const qs = new URLSearchParams({ quotedPrice: quotedPrice.trim() }).toString();
+      const res = await fetch(`/api/admin/orders/${order.id}/invoice-preview?${qs}`, { credentials: 'include' });
+      if (!res.ok) throw new Error(res.status === 503 ? 'Invoice template not available.' : 'Preview failed.');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setPreviewPdfUrl(url);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewPdfUrl) {
+      URL.revokeObjectURL(previewPdfUrl);
+      setPreviewPdfUrl(null);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -149,8 +180,18 @@ function ApproveModal({ order, onClose, onSave }) {
               required
             />
             <p className="text-xs text-cream/40 mt-1">
-              The customer will be charged this amount. An email with a payment link will be sent.
+              The customer will be charged this amount. An email with a payment link and invoice PDF will be sent.
             </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handlePreviewInvoice}
+              disabled={loadingPreview || !quotedPrice || parseFloat(quotedPrice) <= 0}
+              className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20 disabled:opacity-50"
+            >
+              {loadingPreview ? 'Loading...' : 'Preview invoice'}
+            </button>
           </div>
           <div>
             <label className="block text-xs text-cream/50 mb-1">Admin Notes (optional)</label>
@@ -172,6 +213,18 @@ function ApproveModal({ order, onClose, onSave }) {
           </div>
         </form>
       </div>
+
+      {previewPdfUrl && (
+        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/80 p-4" onClick={closePreview}>
+          <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
+              <h3 className="text-lg font-bold text-white">Invoice preview</h3>
+              <button type="button" onClick={closePreview} className="text-cream/60 hover:text-white text-xl">&times;</button>
+            </div>
+            <iframe src={previewPdfUrl} title="Invoice preview" className="w-full flex-1 min-h-[70vh] rounded-b-2xl bg-white" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

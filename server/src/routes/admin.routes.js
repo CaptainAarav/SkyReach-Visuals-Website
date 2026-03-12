@@ -14,6 +14,7 @@ import {
   getAccountReviews,
   listTransactions,
   listOrders,
+  getOrderInvoicePreview,
   updateOrder,
   deleteOrder,
   permanentDeleteOrder,
@@ -60,6 +61,7 @@ router.patch('/payment-requests/:id', updatePaymentRequest);
 
 // Orders
 router.get('/orders', listOrders);
+router.get('/orders/:id/invoice-preview', getOrderInvoicePreview);
 router.patch('/orders/:id', updateOrder);
 router.delete('/orders/:id', deleteOrder);
 router.delete('/orders/:id/permanent', permanentDeleteOrder);

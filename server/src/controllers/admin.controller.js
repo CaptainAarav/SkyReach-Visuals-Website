@@ -4,6 +4,7 @@ import { AppError } from '../utils/AppError.js';
 import { hashPassword } from '../services/auth.service.js';
 import { sendBookingApproved, sendBookingDeclined, sendAdminMessage, sendReviewRequestEmail } from '../services/email.service.js';
 import { getInboxList, getSentList, getMessage } from '../services/imap.service.js';
+import { generateInvoicePdf } from '../services/pdf-invoice.service.js';
 import { env } from '../config/env.js';
 
 // ── Admin Audit Log helper ──────────────────────────────────────────
@@ -426,6 +427,37 @@ export async function permanentDeleteOrder(req, res, next) {
   }
 }
 
+/** GET /orders/:id/invoice-preview — returns filled invoice PDF for preview. Query: quotedPrice (e.g. 39.99) optional. */
+export async function getOrderInvoicePreview(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { quotedPrice: quotedPriceStr } = req.query;
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
+    if (!booking) throw new AppError('Order not found', 404);
+
+    let pricePenceOverride;
+    if (quotedPriceStr != null && quotedPriceStr !== '') {
+      const pounds = parseFloat(quotedPriceStr);
+      if (!Number.isNaN(pounds) && pounds >= 0) pricePenceOverride = Math.round(pounds * 100);
+    }
+
+    const pdfBuffer = await generateInvoicePdf(booking, booking.user, {
+      pricePence: pricePenceOverride,
+    });
+    if (!pdfBuffer) {
+      throw new AppError('Invoice template not available', 503);
+    }
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="invoice-' + (booking.orderNumber ?? id) + '.pdf"');
+    res.send(pdfBuffer);
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function updateOrder(req, res, next) {
   try {
     const { id } = req.params;
@@ -469,7 +501,8 @@ export async function updateOrder(req, res, next) {
 
     if (status === 'APPROVED' && booking.status !== 'APPROVED' && updated.user?.email) {
       const payUrl = `${env.clientUrl}/booking/pay/${booking.id}`;
-      await sendBookingApproved({ to: updated.user.email, booking: updated, payUrl }).catch((err) => {
+      const invoicePdfBuffer = await generateInvoicePdf(updated, updated.user).catch(() => null);
+      await sendBookingApproved({ to: updated.user.email, booking: updated, payUrl, invoicePdfBuffer: invoicePdfBuffer ?? undefined }).catch((err) => {
         console.error('Failed to send approval email:', err.message);
       });
     }

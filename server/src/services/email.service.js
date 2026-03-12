@@ -52,6 +52,24 @@ const EMAIL_DARK = {
   buttonText: '#ffffff',
 };
 
+/** Light, minimal theme: white card on grey, clear hierarchy, accent highlights (inspired by verification-style emails). */
+const L = {
+  bodyBg: '#f4f4f5',
+  cardBg: '#ffffff',
+  cardShadow: '0 1px 3px rgba(0,0,0,0.08)',
+  text: '#111827',
+  textMuted: '#4b5563',
+  textFaint: '#6b7280',
+  border: '#e5e7eb',
+  accent: '#C41E3A',
+  accentLight: 'rgba(196, 30, 58, 0.08)',
+  link: '#2563eb',
+  buttonBg: '#C41E3A',
+  buttonText: '#ffffff',
+  footer: '#6b7280',
+  font: "'Inter',Arial,sans-serif",
+};
+
 function emailHeader(title) {
   if (!title) return '';
   return `<tr>
@@ -66,6 +84,58 @@ function emailFooter() {
   <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:left;border-radius:0 0 ${EMAIL_RADIUS} ${EMAIL_RADIUS};">
     <p style="margin:0 0 8px;"><img src="${logoUrl()}" alt="SkyReach Visuals" width="80" height="32" style="display:inline-block;border-radius:${EMAIL_LOGO_RADIUS};filter:brightness(0) invert(1);opacity:0.9;max-width:80px;" /></p>
     <p style="margin:0;color:${EMAIL_DARK.footer};font-size:12px;font-family:'Inter',Arial,sans-serif;">SkyReach Visuals &middot; Bournemouth, Dorset, UK</p>
+  </td>
+</tr>`;
+}
+
+/** Light layout: outer grey, centered white card with shadow. */
+function lightWrapper(innerRows) {
+  return `
+<body style="margin:0;padding:0;background-color:${L.bodyBg};font-family:${L.font};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${L.bodyBg};padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:${L.cardBg};border-radius:${EMAIL_RADIUS};box-shadow:${L.cardShadow};border:1px solid ${L.border};">
+          ${innerRows}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>`;
+}
+
+/** Logo at top of white card (light theme). */
+function lightLogoHeader() {
+  return `<tr>
+  <td style="padding:32px 40px 24px;text-align:left;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+    <img src="${logoUrl()}" alt="SkyReach Visuals" width="120" height="40" style="display:block;max-width:120px;height:auto;" />
+  </td>
+</tr>`;
+}
+
+/** Highlight box for key info (e.g. amount, order number, code). */
+function lightHighlight(htmlContent) {
+  return `<div style="background-color:${L.accentLight};border-radius:8px;padding:16px 20px;margin:20px 0;text-align:center;">
+    <span style="font-size:22px;font-weight:700;color:${L.text};font-family:${L.font};">${htmlContent}</span>
+  </div>`;
+}
+
+/** Primary CTA button. */
+function lightCtaButton(href, label) {
+  return `<p style="margin:28px 0 24px;">
+    <a href="${href}" style="display:inline-block;background-color:${L.buttonBg};color:${L.buttonText};text-decoration:none;font-size:16px;font-weight:600;padding:14px 28px;border-radius:8px;font-family:${L.font};">${label}</a>
+  </p>`;
+}
+
+/** Footer: support link + address (light theme). */
+function lightFooter() {
+  const supportUrl = (env.clientUrl || 'https://skyreachvisuals.co.uk').replace(/\/$/, '') + '/#contact';
+  return `<tr>
+  <td style="padding:24px 40px 32px;border-radius:0 0 ${EMAIL_RADIUS} ${EMAIL_RADIUS};border-top:1px solid ${L.border};">
+    <p style="margin:0 0 6px;font-size:12px;color:${L.footer};font-family:${L.font};">
+      <a href="${supportUrl}" style="color:${L.link};text-decoration:none;">Support</a> &middot; SkyReach Visuals &middot; Bournemouth, Dorset, UK
+    </p>
+    <p style="margin:0;font-size:12px;color:${L.footer};font-family:${L.font};">07877 691861 &middot; ${env.emailFrom || 'support@skyreachvisuals.co.uk'}</p>
   </td>
 </tr>`;
 }
@@ -85,73 +155,25 @@ export async function sendBookingConfirmation({ to, booking }) {
     year: 'numeric',
   });
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader('Booking confirmed')}
-          <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
-                Thanks for booking with us. Here are your details:
-              </p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;max-width:400px;">
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Package</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">${booking.packageName}</strong>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Shoot date</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">${shootDate}</strong>
-                  </td>
-                </tr>
-                ${booking.shootTime ? `<tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Shoot time</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">${booking.shootTime}</strong>
-                  </td>
-                </tr>` : ''}
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Location</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">${booking.location}</strong>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:left;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Amount paid</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">&pound;${(booking.packagePrice / 100).toFixed(2)}</strong>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;text-align:left;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Order No</span><br/>
-                    <span style="color:${EMAIL_DARK.text};font-size:15px;font-weight:600;">${formatOrderNumber(booking.orderNumber)}</span>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">
-                We'll be in touch within 24 hours to confirm the final details of your shoot.
-                If you have any questions in the meantime, reply to this email or call us on
-                07877 691861.
-              </p>
-            </td>
-          </tr>
-          ${emailFooter()}
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const orderNo = formatOrderNumber(booking.orderNumber);
+  const amount = `£${(booking.packagePrice / 100).toFixed(2)}`;
+  const inner = `
+  ${lightLogoHeader()}
+  <tr><td style="padding:0 40px 8px;"><h2 style="margin:0;color:${L.text};font-size:22px;font-weight:600;font-family:${L.font};">Booking confirmed</h2></td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;font-family:${L.font};">Thanks for booking with us. Here are your details:</p></td></tr>
+  <tr><td style="padding:0 40px;">${lightHighlight(`Order ${orderNo} &middot; ${amount}`)}</td></tr>
+  <tr><td style="padding:0 40px 24px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="font-family:${L.font};">
+      <tr><td style="padding:8px 0;color:${L.textFaint};font-size:13px;">Service</td><td style="padding:8px 0;color:${L.text};font-size:15px;font-weight:600;">${booking.packageName}</td></tr>
+      <tr><td style="padding:8px 0;color:${L.textFaint};font-size:13px;">Date</td><td style="padding:8px 0;color:${L.text};font-size:15px;">${shootDate}</td></tr>
+      ${booking.shootTime ? `<tr><td style="padding:8px 0;color:${L.textFaint};font-size:13px;">Time</td><td style="padding:8px 0;color:${L.text};font-size:15px;">${booking.shootTime}</td></tr>` : ''}
+      <tr><td style="padding:8px 0;color:${L.textFaint};font-size:13px;">Location</td><td style="padding:8px 0;color:${L.text};font-size:15px;">${booking.location || '—'}</td></tr>
+    </table>
+    <p style="margin:24px 0 0;color:${L.textMuted};font-size:14px;line-height:1.6;">We'll be in touch within 24 hours to confirm the final details. If you have any questions, reply to this email or call us on 07877 691861.</p>
+  </td></tr>
+  ${lightFooter()}`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
 
   await transport.sendMail({
     from: `"SkyReach Visuals" <${env.emailFrom}>`,
@@ -325,39 +347,26 @@ export async function sendContactNotification({ name, email, phone, location, se
     return;
   }
 
-  const locationLine = location ? `<p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Location:</strong> ${location}</p>` : '';
-  const serviceTypeLine = serviceType ? `<p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Service type:</strong> ${serviceType}</p>` : '';
-  const extraDetailsLine = extraDetails ? `<p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Extra details:</strong></p><p style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:14px;line-height:1.6;white-space:pre-wrap;">${extraDetails}</p>` : '';
+  const locationLine = location ? `<tr><td style="padding:6px 0;color:${L.textFaint};font-size:13px;">Location</td><td style="padding:6px 0;color:${L.text};font-size:14px;">${location}</td></tr>` : '';
+  const serviceTypeLine = serviceType ? `<tr><td style="padding:6px 0;color:${L.textFaint};font-size:13px;">Service type</td><td style="padding:6px 0;color:${L.text};font-size:14px;">${serviceType}</td></tr>` : '';
+  const extraDetailsLine = extraDetails ? `<tr><td colspan="2" style="padding:12px 0 6px;color:${L.text};font-size:14px;line-height:1.6;white-space:pre-wrap;">${extraDetails}</td></tr>` : '';
+  const inner = `
+  ${lightLogoHeader()}
+  <tr><td style="padding:0 40px 8px;"><h2 style="margin:0;color:${L.text};font-size:22px;font-weight:600;font-family:${L.font};">New enquiry</h2></td></tr>
+  <tr><td style="padding:0 40px 24px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="font-family:${L.font};font-size:14px;">
+      <tr><td style="padding:6px 0;color:${L.textFaint};width:100px;">Name</td><td style="padding:6px 0;color:${L.text};">${name}</td></tr>
+      <tr><td style="padding:6px 0;color:${L.textFaint};">Email</td><td style="padding:6px 0;color:${L.text};"><a href="mailto:${email}" style="color:${L.link};">${email}</a></td></tr>
+      ${phone ? `<tr><td style="padding:6px 0;color:${L.textFaint};">Phone</td><td style="padding:6px 0;color:${L.text};">${phone}</td></tr>` : ''}
+      ${locationLine}
+      ${serviceTypeLine}
+      ${extraDetailsLine}
+    </table>
+    <p style="margin:20px 0 0;padding-top:16px;border-top:1px solid ${L.border};color:${L.text};font-size:14px;line-height:1.6;white-space:pre-wrap;">${message}</p>
+  </td></tr>
+  ${lightFooter()}`;
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader('New Enquiry')}
-          <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
-              <p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Name:</strong> ${name}</p>
-              <p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Email:</strong> ${email}</p>
-              ${phone ? `<p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:14px;"><strong>Phone:</strong> ${phone}</p>` : ''}
-              ${locationLine}
-              ${serviceTypeLine}
-              ${extraDetailsLine}
-              <hr style="border:none;border-top:1px solid ${EMAIL_DARK.border};margin:16px 0;" />
-              <p style="margin:0;color:${EMAIL_DARK.text};font-size:14px;line-height:1.6;white-space:pre-wrap;">${message}</p>
-            </td>
-          </tr>
-          ${emailFooter()}
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
 
   await transport.sendMail({
     from: `"SkyReach Visuals" <${env.emailFrom}>`,
@@ -378,41 +387,16 @@ export async function sendVerificationEmail({ to, name, verifyUrl }) {
     throw err;
   }
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader()}
-          <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">Verify your email</h2>
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
-                Hi ${name}, thanks for signing up. Please click the button below to verify your email address.
-              </p>
-              <p style="margin:0 0 24px;">
-                <a href="${verifyUrl}" style="display:inline-block;background-color:${EMAIL_DARK.buttonBg};color:${EMAIL_DARK.buttonText};text-decoration:none;font-size:16px;font-weight:600;padding:14px 28px;border-radius:8px;">Verify my email</a>
-              </p>
-              <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:13px;line-height:1.6;">
-                If the button doesn't work, copy and paste this link into your browser:<br/>
-                <a href="${verifyUrl}" style="color:${EMAIL_DARK.link};word-break:break-all;">${verifyUrl}</a>
-              </p>
-              <p style="margin:24px 0 0;color:${EMAIL_DARK.textFaint};font-size:12px;">
-                This link expires in 24 hours. If you didn't create an account, you can ignore this email.
-              </p>
-            </td>
-          </tr>
-          ${emailFooter()}
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const inner = `
+  ${lightLogoHeader()}
+  <tr><td style="padding:0 40px 8px;"><h2 style="margin:0;color:${L.text};font-size:22px;font-weight:600;font-family:${L.font};">Verify your email</h2></td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;font-family:${L.font};">Hi ${name}, thanks for signing up. Click the button below to verify your email address.</p></td></tr>
+  <tr><td style="padding:0 40px 8px;">${lightCtaButton(verifyUrl, 'Verify my email')}</td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textFaint};font-size:13px;line-height:1.6;">If the button doesn't work, copy this link into your browser: <a href="${verifyUrl}" style="color:${L.link};word-break:break-all;">${verifyUrl}</a></p></td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textFaint};font-size:12px;">This link expires in 24 hours. If you didn't create an account, you can ignore this email.</p></td></tr>
+  ${lightFooter()}`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
 
   try {
     await transport.sendMail({
@@ -429,7 +413,7 @@ export async function sendVerificationEmail({ to, name, verifyUrl }) {
   }
 }
 
-export async function sendBookingApproved({ to, booking, payUrl }) {
+export async function sendBookingApproved({ to, booking, payUrl, invoicePdfBuffer }) {
   const transport = getTransporter();
   if (!transport) {
     console.log('SMTP not configured — skipping booking approved email');
@@ -443,84 +427,40 @@ export async function sendBookingApproved({ to, booking, payUrl }) {
     month: 'long',
     year: 'numeric',
   });
+  const orderNo = formatOrderNumber(booking.orderNumber);
+  const amount = `£${(booking.packagePrice / 100).toFixed(2)}`;
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader()}
-          <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">Booking Approved</h2>
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
-                Great news! Your booking request has been approved. Here are your details:
-              </p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;max-width:400px;">
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Service</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">${booking.packageName}</strong>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Date</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">${shootDate}</strong>
-                  </td>
-                </tr>
-                ${booking.shootTime ? `<tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Time</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">${booking.shootTime}</strong>
-                  </td>
-                </tr>` : ''}
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Location</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">${booking.location}</strong>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid ${EMAIL_DARK.border};text-align:center;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Amount to pay</span><br/>
-                    <strong style="color:${EMAIL_DARK.text};font-size:15px;">&pound;${(booking.packagePrice / 100).toFixed(2)}</strong>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;text-align:center;">
-                    <span style="color:${EMAIL_DARK.textFaint};font-size:13px;">Order No</span><br/>
-                    <span style="color:${EMAIL_DARK.text};font-size:15px;font-weight:600;">${formatOrderNumber(booking.orderNumber)}</span>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin:0 0 24px;">
-                <a href="${payUrl}" style="display:inline-block;background-color:${EMAIL_DARK.buttonBg};color:${EMAIL_DARK.buttonText};text-decoration:none;font-size:16px;font-weight:600;padding:14px 28px;border-radius:8px;">Pay Now</a>
-              </p>
-              <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">
-                Click the button above to complete your payment securely via Stripe. If you have any questions, reply to this email or call us on 07877 691861.
-              </p>
-            </td>
-          </tr>
-          ${emailFooter()}
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const inner = `
+  ${lightLogoHeader()}
+  <tr><td style="padding:0 40px 8px;"><h2 style="margin:0;color:${L.text};font-size:22px;font-weight:600;font-family:${L.font};">Booking approved</h2></td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;font-family:${L.font};">Great news! Your booking request has been approved. Complete your payment below.</p></td></tr>
+  <tr><td style="padding:0 40px;">${lightHighlight(`Amount to pay: ${amount}`)}</td></tr>
+  <tr><td style="padding:0 40px 16px;text-align:center;"><p style="margin:0;color:${L.textFaint};font-size:13px;">Order ${orderNo}</p></td></tr>
+  <tr><td style="padding:0 40px 8px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="font-family:${L.font};font-size:14px;">
+      <tr><td style="padding:6px 0;color:${L.textFaint};">Service</td><td style="padding:6px 0;color:${L.text};">${booking.packageName}</td></tr>
+      <tr><td style="padding:6px 0;color:${L.textFaint};">Date</td><td style="padding:6px 0;color:${L.text};">${shootDate}</td></tr>
+      ${booking.shootTime ? `<tr><td style="padding:6px 0;color:${L.textFaint};">Time</td><td style="padding:6px 0;color:${L.text};">${booking.shootTime}</td></tr>` : ''}
+      ${booking.location ? `<tr><td style="padding:6px 0;color:${L.textFaint};">Location</td><td style="padding:6px 0;color:${L.text};">${booking.location}</td></tr>` : ''}
+    </table>
+  </td></tr>
+  <tr><td style="padding:0 40px 8px;">${lightCtaButton(payUrl, 'Pay now')}</td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textMuted};font-size:14px;line-height:1.6;">Click the button above to pay securely via Stripe. Your invoice is attached to this email. Questions? Reply to this email or call 07877 691861.</p></td></tr>
+  ${lightFooter()}`;
 
-  await transport.sendMail({
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
+
+  const mailOptions = {
     from: `"SkyReach Visuals" <${env.emailFrom}>`,
     to,
     subject: `Booking Approved — ${booking.packageName} | SkyReach Visuals`,
     headers: mailHeaders(),
     html,
-  });
+  };
+  if (invoicePdfBuffer && Buffer.isBuffer(invoicePdfBuffer)) {
+    mailOptions.attachments = [{ filename: 'invoice.pdf', content: invoicePdfBuffer }];
+  }
+  await transport.sendMail(mailOptions);
 }
 
 export async function sendBookingDeclined({ to, booking }) {
@@ -531,35 +471,15 @@ export async function sendBookingDeclined({ to, booking }) {
     return;
   }
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader()}
-          <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">Booking Update</h2>
-              <p style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
-                Unfortunately, we are unable to accommodate your booking request for <strong>${booking.packageName}</strong> at this time.
-              </p>
-              ${booking.adminNotes ? `<p style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:14px;line-height:1.6;"><strong>Reason:</strong> ${booking.adminNotes}</p>` : ''}
-              <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">
-                If you'd like to discuss alternatives, please reply to this email or call us on 07877 691861. We'd love to help find a solution.
-              </p>
-            </td>
-          </tr>
-          ${emailFooter()}
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const inner = `
+  ${lightLogoHeader()}
+  <tr><td style="padding:0 40px 8px;"><h2 style="margin:0;color:${L.text};font-size:22px;font-weight:600;font-family:${L.font};">Booking update</h2></td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;font-family:${L.font};">We're sorry, but we're unable to approve your request for <strong style="color:${L.text};">${booking.packageName}</strong> at this time.</p></td></tr>
+  ${booking.adminNotes ? `<tr><td style="padding:0 40px 16px;"><p style="margin:0;color:${L.text};font-size:14px;line-height:1.6;"><strong>Note:</strong> ${booking.adminNotes}</p></td></tr>` : ''}
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textMuted};font-size:14px;line-height:1.6;">If you'd like to discuss alternatives, reply to this email or call us on 07877 691861.</p></td></tr>
+  ${lightFooter()}`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
 
   await transport.sendMail({
     from: `"SkyReach Visuals" <${env.emailFrom}>`,
@@ -583,36 +503,17 @@ function adminSignatureText(senderName) {
   ].join('\r\n');
 }
 
-/** Build admin message HTML: real-email look, left-aligned, no logo at top, inline signature, small white logo at bottom. */
+/** Build admin message HTML: light card, logo, subject, body, signature. */
 function adminMessageHtml(body, subject, senderName) {
   const escaped = body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
   const fromAddr = env.emailFrom || 'support@skyreachvisuals.co.uk';
-  return `
-<!DOCTYPE html>
-<html dir="ltr">
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;direction:ltr;text-align:left;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:24px 20px;">
-    <tr>
-      <td align="left">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:32px 40px;text-align:left;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:22px;font-weight:600;text-align:left;font-family:'Inter',Arial,sans-serif;">${subject}</h2>
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;white-space:pre-wrap;text-align:left;font-family:'Inter',Arial,sans-serif;">${escaped}</p>
-              <p style="margin:24px 0 0;padding-top:16px;border-top:1px solid ${EMAIL_DARK.border};color:${EMAIL_DARK.textMuted};font-size:13px;line-height:1.5;text-align:left;">
-                <strong style="color:${EMAIL_DARK.text};">SkyReach Visuals</strong><br/>
-                ${senderName} &mdash; Drone Aerial Photography &amp; Inspection &middot; +44 7877691861 &middot; ${fromAddr}
-              </p>
-            </td>
-          </tr>
-          ${emailFooter()}
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const inner = `
+  ${lightLogoHeader()}
+  <tr><td style="padding:0 40px 8px;"><h2 style="margin:0;color:${L.text};font-size:20px;font-weight:600;font-family:${L.font};">${subject}</h2></td></tr>
+  <tr><td style="padding:0 40px 24px;"><div style="color:${L.text};font-size:15px;line-height:1.6;white-space:pre-wrap;font-family:${L.font};">${escaped}</div></td></tr>
+  <tr><td style="padding:0 40px 24px;border-top:1px solid ${L.border};"><p style="margin:16px 0 0;color:${L.textMuted};font-size:13px;line-height:1.5;font-family:${L.font};"><strong style="color:${L.text};">SkyReach Visuals</strong><br/>${senderName} &mdash; Drone Aerial Photography &amp; Inspection &middot; 07877 691861 &middot; ${fromAddr}</p></td></tr>
+  ${lightFooter()}`;
+  return `<!DOCTYPE html><html dir="ltr"><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
 }
 
 /** Build raw RFC822 message (multipart/alternative) for sending and appending to Sent. */
@@ -679,41 +580,15 @@ export async function sendAdminLoginEmail({ to, name, verifyUrl }) {
     throw err;
   }
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader()}
-          <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">Confirm your admin login</h2>
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
-                Hi ${name}, someone (hopefully you) is trying to sign in to your admin account. Click below to confirm.
-              </p>
-              <p style="margin:0 0 24px;">
-                <a href="${verifyUrl}" style="display:inline-block;background-color:${EMAIL_DARK.buttonBg};color:${EMAIL_DARK.buttonText};text-decoration:none;font-size:16px;font-weight:600;padding:14px 28px;border-radius:8px;">Confirm sign-in</a>
-              </p>
-              <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:13px;line-height:1.6;">
-                If the button doesn't work, copy and paste this link into your browser:<br/>
-                <a href="${verifyUrl}" style="color:${EMAIL_DARK.link};word-break:break-all;">${verifyUrl}</a>
-              </p>
-              <p style="margin:24px 0 0;color:${EMAIL_DARK.textFaint};font-size:12px;">
-                This link expires in 15 minutes. If you didn't try to sign in, change your password immediately.
-              </p>
-            </td>
-          </tr>
-          ${emailFooter()}
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const inner = `
+  ${lightLogoHeader()}
+  <tr><td style="padding:0 40px 8px;"><h2 style="margin:0;color:${L.text};font-size:22px;font-weight:600;font-family:${L.font};">Confirm your admin login</h2></td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;font-family:${L.font};">Hi ${name}, someone (hopefully you) is trying to sign in to your admin account. Click below to confirm.</p></td></tr>
+  <tr><td style="padding:0 40px 8px;">${lightCtaButton(verifyUrl, 'Confirm sign-in')}</td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textFaint};font-size:12px;">This link expires in 15 minutes. If you didn't try to sign in, change your password immediately.</p></td></tr>
+  ${lightFooter()}`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
 
   try {
     await transport.sendMail({
@@ -738,40 +613,16 @@ export async function sendReviewRequestEmail({ to, name, booking, reviewUrl }) {
     return;
   }
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background-color:${EMAIL_DARK.bodyBg};font-family:'Inter',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${EMAIL_DARK.bodyBg};padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          ${emailHeader()}
-          <tr>
-            <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:center;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
-              <h2 style="margin:0 0 16px;color:${EMAIL_DARK.text};font-size:24px;font-weight:600;font-family:'Inter',Arial,sans-serif;">How was your experience?</h2>
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
-                Hi ${name}, your <strong>${booking.packageName}</strong> order is now complete. We hope you&rsquo;re happy with the results!
-              </p>
-              <p style="margin:0 0 24px;color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;">
-                We&rsquo;d really appreciate it if you could take a moment to leave a review. Your feedback helps us improve and helps other customers make informed decisions.
-              </p>
-              <p style="margin:0 0 24px;">
-                <a href="${reviewUrl}" style="display:inline-block;background-color:${EMAIL_DARK.buttonBg};color:${EMAIL_DARK.buttonText};text-decoration:none;font-size:16px;font-weight:600;padding:14px 28px;border-radius:8px;">Leave a Review</a>
-              </p>
-              <p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">
-                Thank you for choosing SkyReach Visuals. If you have any questions, reply to this email or call us on 07877 691861.
-              </p>
-            </td>
-          </tr>
-          ${emailFooter()}
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const inner = `
+  ${lightLogoHeader()}
+  <tr><td style="padding:0 40px 8px;"><h2 style="margin:0;color:${L.text};font-size:22px;font-weight:600;font-family:${L.font};">How was your experience?</h2></td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;font-family:${L.font};">Hi ${name}, your <strong style="color:${L.text};">${booking.packageName}</strong> order is complete. We hope you're happy with the results.</p></td></tr>
+  <tr><td style="padding:0 40px 16px;"><p style="margin:0;color:${L.textMuted};font-size:14px;line-height:1.6;">We'd love a quick review — your feedback helps us improve and helps other customers decide.</p></td></tr>
+  <tr><td style="padding:0 40px 8px;">${lightCtaButton(reviewUrl, 'Leave a review')}</td></tr>
+  <tr><td style="padding:0 40px 24px;"><p style="margin:0;color:${L.textFaint};font-size:13px;">Thank you for choosing SkyReach Visuals. Questions? Reply to this email or call 07877 691861.</p></td></tr>
+  ${lightFooter()}`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
 
   await transport.sendMail({
     from: `"SkyReach Visuals" <${env.emailFrom}>`,

@@ -50,7 +50,6 @@ export default function AdminReviews() {
                 <p className="text-sm text-cream/60">{review.user?.email}</p>
                 <p className="mt-2 text-sm text-cream/70">
                   Order: {review.booking?.packageName}
-                  {review.booking?.location && ` · ${review.booking.location}`}
                   {review.booking?.shootDate && ` · ${new Date(review.booking.shootDate).toLocaleDateString('en-GB')}`}
                 </p>
                 {review.showOnMainPage && (
