@@ -203,98 +203,99 @@ export default function Home() {
         </Link>
       </AnimateInView>
 
-      {/* Testimonials — Gmail/outlook-style card strip, one highlighted blue card */}
-      <AnimateInView as="section" id="reviews" className="bg-white py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-serif text-gray-900 text-center">Testimonials</h2>
-          <p className="mt-3 text-gray-500 text-center max-w-2xl mx-auto">
-            Real feedback from customers who have used our drone photography services.
-          </p>
-          <div className="mt-12 relative">
-            <div
-              ref={testimonialsScrollRef}
-              className="flex gap-6 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scroll-smooth scrollbar-thin"
-              style={{ scrollbarWidth: 'thin' }}
-            >
-              {reviews.map((r, i) => {
-                const isHighlight = i === 0;
-                const expanded = reviewExpandedId === r.id;
-                const showReadMore = (r.comment?.length || 0) > COMMENT_PREVIEW_LEN && !expanded;
-                const displayComment = expanded ? r.comment : (r.comment?.slice(0, COMMENT_PREVIEW_LEN) || '');
-                const dateStr = r.createdAt
-                  ? new Date(r.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')
-                  : '';
-                const initial = (r.name || '?').charAt(0).toUpperCase();
-                return (
-                  <div
-                    key={r.id}
-                    className={`shrink-0 w-[300px] md:w-[320px] snap-center rounded-xl shadow-md flex flex-col p-6 min-h-[280px] ${!isHighlight ? 'bg-gray-100' : ''}`}
-                    style={isHighlight ? { backgroundColor: '#2563eb' } : undefined}
-                  >
-                    <div className={`flex items-start gap-3 ${isHighlight ? 'text-white' : 'text-gray-900'}`}>
-                      <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold shrink-0 ${isHighlight ? 'bg-white/20 text-white' : 'bg-gray-300 text-gray-700'}`}
-                      >
-                        {initial}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold truncate">{r.name}</p>
-                        <div className="mt-1">
-                          <StarRating rating={r.rating ?? 5} light={isHighlight} />
-                        </div>
-                      </div>
+      {/* Testimonials — inspired by reference: horizontal cards, avatar, stars, date; in our dark style */}
+      <AnimateInView as="section" id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
+        <h2 className="text-3xl md:text-4xl font-semibold text-white">Testimonials</h2>
+        <p className="mt-3 text-cream/70 max-w-2xl">
+          Real feedback from customers who have used our drone photography services.
+        </p>
+        <div className="mt-12 relative">
+          <div
+            ref={testimonialsScrollRef}
+            className="flex gap-6 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scroll-smooth"
+            style={{ scrollbarWidth: 'thin' }}
+          >
+            {reviews.map((r, i) => {
+              const isFeatured = i === 0;
+              const expanded = reviewExpandedId === r.id;
+              const showReadMore = (r.comment?.length || 0) > COMMENT_PREVIEW_LEN && !expanded;
+              const displayComment = expanded ? r.comment : (r.comment?.slice(0, COMMENT_PREVIEW_LEN) || '');
+              const dateStr = r.createdAt
+                ? new Date(r.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')
+                : '';
+              const initial = (r.name || '?').charAt(0).toUpperCase();
+              return (
+                <div
+                  key={r.id}
+                  className={`shrink-0 w-[300px] md:w-[320px] snap-center rounded-2xl flex flex-col p-6 min-h-[280px] border transition-all duration-200 ${
+                    isFeatured
+                      ? 'bg-navy border-accent/40 shadow-lg shadow-accent/15'
+                      : 'bg-bg-card border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold shrink-0 ${
+                        isFeatured ? 'bg-accent/30 text-cream' : 'bg-white/10 text-cream'
+                      }`}
+                    >
+                      {initial}
                     </div>
-                    <div className={`mt-4 flex-1 flex flex-col ${isHighlight ? 'text-white/95' : 'text-gray-700'}`}>
-                      <p className="text-sm leading-relaxed">
-                        {displayComment}
-                        {showReadMore && (
-                          <>
-                            {' … '}
-                            <button
-                              type="button"
-                              onClick={() => setReviewExpandedId(r.id)}
-                              className="underline font-medium hover:opacity-90"
-                            >
-                              Read more
-                            </button>
-                          </>
-                        )}
-                      </p>
-                      {dateStr && (
-                        <p className={`mt-auto pt-4 text-right text-xs ${isHighlight ? 'text-white/80' : 'text-gray-500'}`}>
-                          {dateStr}
-                        </p>
-                      )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-cream truncate">{r.name}</p>
+                      <div className="mt-1">
+                        <StarRating rating={r.rating ?? 5} light={isFeatured} />
+                      </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-            {reviews.length > 1 && (
-              <div className="mt-6 flex items-center justify-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => testimonialsScrollRef.current?.scrollBy({ left: -340, behavior: 'smooth' })}
-                  className="w-11 h-11 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center shadow-sm"
-                  aria-label="Previous testimonials"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => testimonialsScrollRef.current?.scrollBy({ left: 340, behavior: 'smooth' })}
-                  className="w-11 h-11 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center shadow-sm"
-                  aria-label="Next testimonials"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            )}
+                  <div className="mt-4 flex-1 flex flex-col">
+                    <p className="text-sm text-cream/80 leading-relaxed">
+                      {displayComment}
+                      {showReadMore && (
+                        <>
+                          {' … '}
+                          <button
+                            type="button"
+                            onClick={() => setReviewExpandedId(r.id)}
+                            className="underline font-medium text-accent-light hover:opacity-90"
+                          >
+                            Read more
+                          </button>
+                        </>
+                      )}
+                    </p>
+                    {dateStr && (
+                      <p className="mt-auto pt-4 text-right text-xs text-cream/50">{dateStr}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
+          {reviews.length > 1 && (
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={() => testimonialsScrollRef.current?.scrollBy({ left: -340, behavior: 'smooth' })}
+                className="w-12 h-12 rounded-xl bg-bg-card border border-white/15 text-cream hover:bg-accent/20 hover:border-accent/50 flex items-center justify-center transition-all"
+                aria-label="Previous testimonials"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => testimonialsScrollRef.current?.scrollBy({ left: 340, behavior: 'smooth' })}
+                className="w-12 h-12 rounded-xl bg-bg-card border border-white/15 text-cream hover:bg-accent/20 hover:border-accent/50 flex items-center justify-center transition-all"
+                aria-label="Next testimonials"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
       </AnimateInView>
 

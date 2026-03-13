@@ -115,19 +115,21 @@ function ComposeModal({ onClose, onSent, replyTo }) {
               <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">Cancel</button>
             </div>
           </form>
-          <div className="hidden md:flex flex-col flex-1 min-w-0 bg-bg p-4">
-            <p className="text-xs text-cream/50 mb-2 font-medium">Preview (as recipient will see)</p>
-            <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-white/10 bg-bg-card">
-              <div className="p-4 min-h-full" style={{ backgroundColor: '#0f0f0f' }}>
-                <div className="max-w-[520px] rounded-xl overflow-hidden border border-red/20" style={{ backgroundColor: '#1E2D4A' }}>
-                  <div className="px-6 pt-6 pb-4 text-left" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
-                    <h3 className="text-cream font-semibold text-lg mb-3">{displaySubject}</h3>
-                    <p className="text-cream/90 text-sm leading-relaxed whitespace-pre-wrap">{displayBody}</p>
-                    <p className="mt-6 pt-4 border-t border-white/10 text-cream/70 text-xs leading-relaxed">
+          <div className="hidden md:flex flex-col flex-1 min-w-0 bg-[#0f0f0f] p-4">
+            <p className="text-xs text-cream/50 mb-2 font-medium">Preview (as recipient will see — new dark design)</p>
+            <div className="flex-1 min-h-0 overflow-auto rounded-xl">
+              <div className="min-h-full flex justify-center py-6" style={{ backgroundColor: '#0f0f0f' }}>
+                <div className="w-full max-w-[520px] rounded-xl overflow-hidden border border-red/20" style={{ backgroundColor: '#1E2D4A' }}>
+                  <div className="px-6 pt-6 pb-2">
+                    <h2 className="text-cream font-semibold text-xl m-0" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>{displaySubject}</h2>
+                  </div>
+                  <div className="px-6 pb-4 text-cream/90 text-[15px] leading-relaxed whitespace-pre-wrap" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>{displayBody}</div>
+                  <div className="px-6 py-4 border-t border-white/10">
+                    <p className="text-cream/80 text-[13px] leading-relaxed m-0" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>
                       <strong className="text-cream">SkyReach Visuals</strong><br />
-                      {senderName} — Drone Aerial Photography &amp; Inspection · +44 7877691861 · support@skyreachvisuals.co.uk
+                      {senderName} — Drone Aerial Photography &amp; Inspection · 07877 691861 · support@skyreachvisuals.co.uk
                     </p>
-                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-24 h-auto mt-3 rounded opacity-90" style={{ borderRadius: '4px' }} />
+                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-24 h-auto mt-3 opacity-90" style={{ borderRadius: '4px', filter: 'brightness(0) invert(1)' }} />
                   </div>
                 </div>
               </div>
@@ -210,10 +212,11 @@ export default function AdminEmail() {
     setError(null);
     try {
       const params = peopleFilter ? `?filter=${encodeURIComponent(peopleFilter)}` : '';
-      const data = await api.get(`/api/admin/people${params}`);
-      setPeople(Array.isArray(data) ? data : []);
+      const raw = await api.get(`/api/admin/people${params}`);
+      const list = Array.isArray(raw) ? raw : (raw?.data && Array.isArray(raw.data) ? raw.data : []);
+      setPeople(list);
     } catch (err) {
-      setError(err.message || 'Could not load people');
+      setError(err?.message || 'Could not load people');
       setPeople([]);
     } finally {
       setLoading(false);
@@ -221,8 +224,13 @@ export default function AdminEmail() {
   }, [peopleFilter]);
 
   useEffect(() => {
-    if (view === 'messages') loadList();
-    else loadPeople();
+    if (view === 'messages') {
+      setError(null);
+      loadList();
+    } else {
+      setError(null);
+      loadPeople();
+    }
   }, [view, loadList, loadPeople]);
 
   const openMessage = async (item) => {
@@ -324,12 +332,6 @@ export default function AdminEmail() {
           </button>
         </div>
 
-        {view === 'messages' && (
-          <p className="text-xs text-cream/50 mb-4">
-            Live view of your IONOS mailbox. Sending uses the same account (no need to open IONOS webmail).
-          </p>
-        )}
-
         {error && (
           <div className="mb-4 p-4 rounded-xl bg-red/10 border border-red/30 text-red">
             <p className="font-medium">{view === 'people' ? 'Could not load people' : 'Mailbox unavailable'}</p>
@@ -340,74 +342,117 @@ export default function AdminEmail() {
           </div>
         )}
 
-        {loading ? (
-          <LoadingSpinner />
-        ) : view === 'people' ? (
-          <div className="space-y-2">
-            {people.length === 0 && !error && (
-              <p className="text-cream/60 py-8">No people match this filter.</p>
-            )}
-            {people.map((p) => (
-              <div
-                key={p.email}
-                className="flex items-center justify-between gap-4 bg-bg-card border border-white/10 rounded-xl p-4"
-              >
-                <div className="min-w-0">
-                  <p className="font-medium text-white truncate">{p.name}</p>
-                  <p className="text-sm text-cream/70 truncate">{p.email}</p>
-                </div>
-                <div className="flex gap-1.5 shrink-0">
-                  {p.sources.map((s) => (
-                    <span key={s} className="text-xs px-2 py-1 rounded-lg bg-white/10 text-cream/80 capitalize">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-                <a
-                  href={`mailto:${p.email}`}
-                  className="text-sm font-medium text-accent hover:underline shrink-0"
+        {view === 'people' ? (
+          loading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="space-y-2">
+              {people.length === 0 && !error && (
+                <p className="text-cream/60 py-8">No people match this filter.</p>
+              )}
+              {people.map((p) => (
+                <div
+                  key={p.email}
+                  className="flex items-center justify-between gap-4 bg-bg-card border border-white/10 rounded-xl p-4"
                 >
-                  Email
-                </a>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {list.length === 0 && !error && (
-              <p className="text-cream/60 py-8">{tab === 'inbox' ? 'No emails in inbox.' : 'No sent emails.'}</p>
-            )}
-            {list.map((item) => (
-              <button
-                key={`${tab}-${item.uid}`}
-                type="button"
-                onClick={() => openMessage(item)}
-                className="w-full text-left bg-bg-card border border-white/10 rounded-xl p-4 hover:border-white/20 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-white truncate">{tab === 'inbox' ? item.from : item.to}</p>
-                    <p className="text-sm text-cream/70 truncate">{item.subject}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium text-white truncate">{p.name}</p>
+                    <p className="text-sm text-cream/70 truncate">{p.email}</p>
                   </div>
-                  <span className="text-xs text-cream/50 shrink-0">
-                    {item.date ? new Date(item.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
-                  </span>
+                  <div className="flex gap-1.5 shrink-0">
+                    {(p.sources || []).map((s) => (
+                      <span key={s} className="text-xs px-2 py-1 rounded-lg bg-white/10 text-cream/80 capitalize">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                  <a
+                    href={`mailto:${p.email}`}
+                    className="text-sm font-medium text-accent hover:underline shrink-0"
+                  >
+                    Email
+                  </a>
                 </div>
-              </button>
-            ))}
+              ))}
+            </div>
+          )
+        ) : view === 'messages' ? (
+          <div className="flex flex-col md:flex-row gap-0 rounded-xl border border-white/10 overflow-hidden bg-bg-card min-h-[420px]">
+            {/* Left: message list — Gmail/Outlook style */}
+            <div className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-r border-white/10 flex flex-col max-h-[50vh] md:max-h-none md:min-h-[420px]">
+              <div className="px-3 py-2 border-b border-white/10 flex items-center gap-2 shrink-0">
+                <span className="text-cream/40 text-sm">Search mail</span>
+              </div>
+              {loading ? (
+                <div className="flex-1 flex items-center justify-center p-4"><LoadingSpinner /></div>
+              ) : list.length === 0 && !error ? (
+                <div className="flex-1 flex items-center justify-center p-4 text-cream/50 text-sm">{tab === 'inbox' ? 'No emails in inbox.' : 'No sent emails.'}</div>
+              ) : (
+                <div className="flex-1 overflow-y-auto">
+                  {list.map((item) => {
+                    const isSelected = selectedMessage?.uid === item.uid;
+                    return (
+                      <button
+                        key={`${tab}-${item.uid}`}
+                        type="button"
+                        onClick={() => openMessage(item)}
+                        className={`w-full text-left px-3 py-2.5 border-b border-white/5 hover:bg-white/5 transition-colors ${isSelected ? 'bg-white/10 border-l-2 border-l-red' : ''}`}
+                      >
+                        <div className="flex justify-between gap-2 items-start">
+                          <span className="text-sm font-medium text-cream truncate flex-1">{tab === 'inbox' ? item.from : item.to}</span>
+                          <span className="text-xs text-cream/50 shrink-0">{item.date ? new Date(item.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : ''}</span>
+                        </div>
+                        <p className="text-xs text-cream/60 truncate mt-0.5">{item.subject || '(No subject)'}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            {/* Right: read pane — Gmail/Outlook style */}
+            <div className="flex-1 flex flex-col min-w-0 bg-bg min-h-[320px]">
+              {!selectedMessage ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-cream/50 text-sm p-8">
+                  <svg className="w-12 h-12 text-cream/30 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Select a message
+                </div>
+              ) : (
+                <>
+                  <div className="p-4 border-b border-white/10 shrink-0 space-y-1">
+                    <h2 className="text-lg font-semibold text-cream truncate pr-8">{loadingMessage ? 'Loading…' : (messageDetail?.subject || selectedMessage.subject)}</h2>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0 text-sm text-cream/70">
+                      <span><strong className="text-cream/80">From:</strong> {messageDetail?.from ?? selectedMessage.from}</span>
+                      <span><strong className="text-cream/80">To:</strong> {messageDetail?.to ?? selectedMessage.to}</span>
+                      <span><strong className="text-cream/80">Date:</strong> {messageDetail?.date || selectedMessage.date ? new Date(messageDetail?.date || selectedMessage.date).toLocaleString() : ''}</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4">
+                    {loadingMessage ? (
+                      <p className="text-cream/50">Loading…</p>
+                    ) : messageDetail?.bodyHtml ? (
+                      <div className="prose prose-invert prose-sm max-w-none break-words" dangerouslySetInnerHTML={{ __html: messageDetail.bodyHtml }} />
+                    ) : (
+                      <pre className="whitespace-pre-wrap text-sm text-cream/90 font-sans">{messageDetail?.bodyText ?? messageDetail?.body ?? 'No content'}</pre>
+                    )}
+                  </div>
+                  <div className="p-4 border-t border-white/10 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleReply({ from: messageDetail?.from ?? selectedMessage.from, to: messageDetail?.to ?? selectedMessage.to, subject: messageDetail?.subject ?? selectedMessage.subject, body: messageDetail?.bodyText ?? messageDetail?.body })}
+                      className="text-sm font-medium text-accent hover:underline"
+                    >
+                      Reply
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        )}
+        ) : null}
 
       </div>
-
-      {selectedMessage && (
-        <MessageModal
-          message={loadingMessage ? { ...selectedMessage, bodyText: 'Loading…' } : messageDetail}
-          folder={tab}
-          onClose={() => { setSelectedMessage(null); setMessageDetail(null); }}
-          onReply={handleReply}
-        />
-      )}
 
       {composeOpen && (
         <ComposeModal
