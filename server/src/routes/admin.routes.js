@@ -31,6 +31,7 @@ import {
   getMailInbox,
   getMailSent,
   getMailMessage,
+  getPeople,
 } from '../controllers/admin.controller.js';
 import { listPaymentRequests, updatePaymentRequest } from '../controllers/paymentRequest.controller.js';
 
@@ -88,5 +89,8 @@ router.get('/logs', requireAdmin, listAdminLogs);
 router.get('/mail/inbox', getMailInbox);
 router.get('/mail/sent', getMailSent);
 router.get('/mail/messages/:folder/:uid', getMailMessage);
+
+// People (quote / booking / direct email)
+router.get('/people', getPeople);
 
 export default router;

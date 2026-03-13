@@ -774,3 +774,63 @@ export async function getMailMessage(req, res, next) {
     next(err);
   }
 }
+
+/** GET /api/admin/people?filter=quote|booking|direct — people who got a quote (contact), booking, or direct email. */
+export async function getPeople(req, res, next) {
+  try {
+    const filter = (req.query.filter || '').toLowerCase();
+    const allowed = ['quote', 'booking', 'direct'];
+    const filterBy = allowed.includes(filter) ? filter : null;
+
+    const [contacts, usersWithBookings, directRecipients] = await Promise.all([
+      prisma.contactMessage.findMany({
+        select: { email: true, name: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.user.findMany({
+        where: { bookings: { some: {} } },
+        select: { email: true, name: true },
+      }),
+      prisma.adminMessage.findMany({
+        select: { recipientEmail: true },
+      }),
+    ]);
+
+    const byEmail = new Map();
+    contacts.forEach((c) => {
+      const key = c.email.toLowerCase();
+      if (!byEmail.has(key)) {
+        byEmail.set(key, { email: c.email, name: c.name || c.email, sources: ['quote'] });
+      }
+    });
+    usersWithBookings.forEach((u) => {
+      const key = u.email.toLowerCase();
+      const existing = byEmail.get(key);
+      if (existing) {
+        if (!existing.sources.includes('booking')) existing.sources.push('booking');
+        if (u.name) existing.name = u.name;
+      } else {
+        byEmail.set(key, { email: u.email, name: u.name || u.email, sources: ['booking'] });
+      }
+    });
+    directRecipients.forEach((a) => {
+      const key = a.recipientEmail.toLowerCase();
+      const existing = byEmail.get(key);
+      if (existing) {
+        if (!existing.sources.includes('direct')) existing.sources.push('direct');
+      } else {
+        byEmail.set(key, { email: a.recipientEmail, name: a.recipientEmail, sources: ['direct'] });
+      }
+    });
+
+    let list = Array.from(byEmail.values());
+    if (filterBy) {
+      list = list.filter((p) => p.sources.includes(filterBy));
+    }
+    list.sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email, undefined, { sensitivity: 'base' }));
+
+    res.json({ success: true, data: list, error: null });
+  } catch (err) {
+    next(err);
+  }
+}

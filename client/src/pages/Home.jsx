@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useForm } from '../hooks/useForm.js';
 import { useAuth } from '../hooks/useAuth.js';
@@ -14,25 +14,28 @@ const SERVICES = [
 ];
 
 const PLACEHOLDER_REVIEWS = [
-  { id: 'p1', name: 'James H.', rating: 5, comment: 'Brilliant aerial shots of our property. The team was professional, turned up on time, and the turnaround was incredibly quick. We got the edited photos within a few days and they made our listing look fantastic. Couldn\'t ask for more — will definitely use SkyReach again for our next project.' },
-  { id: 'p2', name: 'Sarah M.', rating: 5, comment: 'We used SkyReach for our roof inspection and it was a game-changer. Saved us the cost of scaffolding and the photos were crystal clear. The report they provided helped our builder identify exactly what needed fixing. Highly professional and great value for money.' },
-  { id: 'p3', name: 'Tom R.', rating: 4, comment: 'Great quality drone footage for our estate listing. Really helped the property stand out online and we had a lot of interest from buyers. The only reason I\'m not giving five stars is we had to reschedule once due to weather, but they were very flexible and the final result was worth the wait.' },
-  { id: 'p4', name: 'Emily P.', rating: 5, comment: 'Fantastic experience from start to finish. The aerial photos made our Airbnb listing look amazing and we\'ve had so many compliments from guests. The team was friendly, efficient, and the quality was exactly what we wanted. Would recommend to anyone needing property or event photography.' },
-  { id: 'p5', name: 'David L.', rating: 5, comment: 'Professional, reliable, and affordable. We\'ve used SkyReach for several projects now — property shots, a construction progress film, and a few marketing clips. Every time they deliver on time and the quality is consistently high. Would highly recommend for any property or business photography needs.' },
-  { id: 'p6', name: 'Rachel K.', rating: 4, comment: 'Quick turnaround on our construction site survey. The drone footage was exactly what we needed for the client presentation and the team worked around our schedule. Clear communication and fair pricing. We\'ll be using them again for the next phase of the build.' },
+  { id: 'p1', name: 'James H.', rating: 5, comment: 'Brilliant aerial shots of our property. The team was professional, turned up on time, and the turnaround was incredibly quick. We got the edited photos within a few days and they made our listing look fantastic. Couldn\'t ask for more — will definitely use SkyReach again for our next project.', createdAt: '2023-10-10T12:00:00Z' },
+  { id: 'p2', name: 'Sarah M.', rating: 5, comment: 'We used SkyReach for our roof inspection and it was a game-changer. Saved us the cost of scaffolding and the photos were crystal clear. The report they provided helped our builder identify exactly what needed fixing. Highly professional and great value for money.', createdAt: '2023-09-09T12:00:00Z' },
+  { id: 'p3', name: 'Tom R.', rating: 4, comment: 'Great quality drone footage for our estate listing. Really helped the property stand out online and we had a lot of interest from buyers. The only reason I\'m not giving five stars is we had to reschedule once due to weather, but they were very flexible and the final result was worth the wait.', createdAt: '2023-10-30T12:00:00Z' },
+  { id: 'p4', name: 'Emily P.', rating: 5, comment: 'Fantastic experience from start to finish. The aerial photos made our Airbnb listing look amazing and we\'ve had so many compliments from guests. The team was friendly, efficient, and the quality was exactly what we wanted. Would recommend to anyone needing property or event photography.', createdAt: '2023-08-15T12:00:00Z' },
+  { id: 'p5', name: 'David L.', rating: 5, comment: 'Professional, reliable, and affordable. We\'ve used SkyReach for several projects now — property shots, a construction progress film, and a few marketing clips. Every time they deliver on time and the quality is consistently high. Would highly recommend for any property or business photography needs.', createdAt: '2023-11-01T12:00:00Z' },
+  { id: 'p6', name: 'Rachel K.', rating: 4, comment: 'Quick turnaround on our construction site survey. The drone footage was exactly what we needed for the client presentation and the team worked around our schedule. Clear communication and fair pricing. We\'ll be using them again for the next phase of the build.', createdAt: '2023-09-22T12:00:00Z' },
 ];
 
-function StarRating({ rating }) {
+function StarRating({ rating, light }) {
+  const starClass = light ? (n) => (n <= rating ? 'text-amber-300' : 'text-white/30') : (n) => (n <= rating ? 'text-amber-500' : 'text-gray-300');
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
-        <svg key={n} className={`w-4 h-4 ${n <= rating ? 'text-amber-400' : 'text-white/20'}`} fill="currentColor" viewBox="0 0 20 20">
+        <svg key={n} className={`w-4 h-4 ${starClass(n)}`} fill="currentColor" viewBox="0 0 20 20">
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
       ))}
     </div>
   );
 }
+
+const COMMENT_PREVIEW_LEN = 120;
 
 const GALLERY_VIDEO = '/media/paul-srv.mp4';
 const GALLERY_POSTER = '/media/gallery-poster.jpg';
@@ -54,9 +57,6 @@ const galleryItems = [
 
 const ABOUT_VIDEO = '/media/paul-srv.mp4';
 
-/** Per-card hover rotation (any direction) so the carousel feels less uniform */
-const REVIEW_HOVER_ROTATIONS = ['hover:rotate-1', 'hover:-rotate-1', 'hover:rotate-2', 'hover:-rotate-2', 'hover:rotate-1', 'hover:-rotate-2'];
-
 function scrollToSection(id) {
   const el = document.getElementById(id);
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -69,11 +69,12 @@ export default function Home() {
   const [contactSuccess, setContactSuccess] = useState(false);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
   const [reviews, setReviews] = useState(PLACEHOLDER_REVIEWS);
-  const [reviewIndex, setReviewIndex] = useState(0);
+  const [reviewExpandedId, setReviewExpandedId] = useState(null);
+  const testimonialsScrollRef = useRef(null);
 
   useEffect(() => {
     api.get('/api/reviews/public')
-      .then((data) => { if (data.length > 0) setReviews(data); })
+      .then((data) => { if (data?.length > 0) setReviews(data); })
       .catch(() => {});
   }, []);
 
@@ -202,71 +203,98 @@ export default function Home() {
         </Link>
       </AnimateInView>
 
-      {/* Reviews carousel — big card, arrows below, hover interactive */}
-      <AnimateInView as="section" id="reviews" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20" animation="animate-slide-in-right">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white">What People Think About Us</h2>
-        <p className="mt-3 text-cream/70 max-w-2xl">
-          Real feedback from verified customers who have used our drone photography services.
-        </p>
-        <div className="mt-12">
-          <div className="min-w-0 overflow-hidden py-6">
+      {/* Testimonials — Gmail/outlook-style card strip, one highlighted blue card */}
+      <AnimateInView as="section" id="reviews" className="bg-white py-24 scroll-mt-20" animation="animate-slide-in-right">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-4xl md:text-5xl font-serif text-gray-900 text-center">Testimonials</h2>
+          <p className="mt-3 text-gray-500 text-center max-w-2xl mx-auto">
+            Real feedback from customers who have used our drone photography services.
+          </p>
+          <div className="mt-12 relative">
             <div
-              className="flex transition-[transform] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
-              style={{ transform: `translateX(-${reviewIndex * 100}%)` }}
+              ref={testimonialsScrollRef}
+              className="flex gap-6 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scroll-smooth scrollbar-thin"
+              style={{ scrollbarWidth: 'thin' }}
             >
-              {reviews.map((r, i) => (
-                <div key={r.id} className="w-full shrink-0 px-3">
-                  <div className={`review-card isolate bg-bg-card p-8 md:p-12 rounded-2xl border border-white/10 flex flex-col gap-6 min-h-[300px] md:min-h-[340px] cursor-default transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 ${REVIEW_HOVER_ROTATIONS[i % REVIEW_HOVER_ROTATIONS.length]} hover:border-accent/50 hover:shadow-xl hover:shadow-accent/15`}>
-                    <div className="flex items-center justify-between flex-wrap gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-base md:text-lg font-semibold text-white">{r.name}</span>
-                        <span className="verified-badge group/verified relative inline-flex shrink-0 cursor-help" title="Verified Purchase">
-                          <svg className="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-                          </svg>
-                          <span className="verified-tooltip pointer-events-none absolute left-1/2 bottom-full -translate-x-1/2 mb-1.5 px-2 py-1 text-xs font-medium text-white bg-neutral-800 rounded shadow-lg whitespace-nowrap opacity-0 invisible group-hover/verified:opacity-100 group-hover/verified:visible transition-all duration-150 z-10">
-                            Verified Purchase
-                          </span>
-                        </span>
+              {reviews.map((r, i) => {
+                const isHighlight = i === 0;
+                const expanded = reviewExpandedId === r.id;
+                const showReadMore = (r.comment?.length || 0) > COMMENT_PREVIEW_LEN && !expanded;
+                const displayComment = expanded ? r.comment : (r.comment?.slice(0, COMMENT_PREVIEW_LEN) || '');
+                const dateStr = r.createdAt
+                  ? new Date(r.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')
+                  : '';
+                const initial = (r.name || '?').charAt(0).toUpperCase();
+                return (
+                  <div
+                    key={r.id}
+                    className={`shrink-0 w-[300px] md:w-[320px] snap-center rounded-xl shadow-md flex flex-col p-6 min-h-[280px] ${!isHighlight ? 'bg-gray-100' : ''}`}
+                    style={isHighlight ? { backgroundColor: '#2563eb' } : undefined}
+                  >
+                    <div className={`flex items-start gap-3 ${isHighlight ? 'text-white' : 'text-gray-900'}`}>
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold shrink-0 ${isHighlight ? 'bg-white/20 text-white' : 'bg-gray-300 text-gray-700'}`}
+                      >
+                        {initial}
                       </div>
-                      <StarRating rating={r.rating} />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold truncate">{r.name}</p>
+                        <div className="mt-1">
+                          <StarRating rating={r.rating ?? 5} light={isHighlight} />
+                        </div>
+                      </div>
                     </div>
-                    {r.packageName && (
-                      <p className="text-sm text-cream/60">{r.packageName}</p>
-                    )}
-                    <p className="text-cream/80 text-base md:text-lg leading-relaxed flex-1">{r.comment}</p>
+                    <div className={`mt-4 flex-1 flex flex-col ${isHighlight ? 'text-white/95' : 'text-gray-700'}`}>
+                      <p className="text-sm leading-relaxed">
+                        {displayComment}
+                        {showReadMore && (
+                          <>
+                            {' … '}
+                            <button
+                              type="button"
+                              onClick={() => setReviewExpandedId(r.id)}
+                              className="underline font-medium hover:opacity-90"
+                            >
+                              Read more
+                            </button>
+                          </>
+                        )}
+                      </p>
+                      {dateStr && (
+                        <p className={`mt-auto pt-4 text-right text-xs ${isHighlight ? 'text-white/80' : 'text-gray-500'}`}>
+                          {dateStr}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+            {reviews.length > 1 && (
+              <div className="mt-6 flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => testimonialsScrollRef.current?.scrollBy({ left: -340, behavior: 'smooth' })}
+                  className="w-11 h-11 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center shadow-sm"
+                  aria-label="Previous testimonials"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => testimonialsScrollRef.current?.scrollBy({ left: 340, behavior: 'smooth' })}
+                  className="w-11 h-11 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center shadow-sm"
+                  aria-label="Next testimonials"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
-          {reviews.length > 1 && (
-            <div className="mt-8 flex items-center justify-center gap-6">
-              <button
-                type="button"
-                onClick={() => setReviewIndex((i) => (i <= 0 ? reviews.length - 1 : i - 1))}
-                className="w-12 h-12 rounded-full bg-bg-card border border-white/15 text-white hover:bg-accent hover:border-accent hover:shadow-lg hover:shadow-accent/30 transition-all duration-200 flex items-center justify-center"
-                aria-label="Previous review"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <p className="text-sm text-cream/50 min-w-[4rem] text-center">
-                {reviewIndex + 1} of {reviews.length}
-              </p>
-              <button
-                type="button"
-                onClick={() => setReviewIndex((i) => (i >= reviews.length - 1 ? 0 : i + 1))}
-                className="w-12 h-12 rounded-full bg-bg-card border border-white/15 text-white hover:bg-accent hover:border-accent hover:shadow-lg hover:shadow-accent/30 transition-all duration-200 flex items-center justify-center"
-                aria-label="Next review"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          )}
         </div>
       </AnimateInView>
 

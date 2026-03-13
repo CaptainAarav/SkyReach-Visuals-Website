@@ -20,10 +20,11 @@
   --color-navy-light: #3D5299;
   --color-navy-dark: #1E2D4A;
 
-  /* Fonts: Title = Nasalization, Subtitle = Exo SemiBold, Paragraph = Exo Regular */
+  /* Fonts: Title = Nasalization, Subtitle = Exo SemiBold, Paragraph = Exo Regular, Serif = testimonials */
   --font-title: 'Nasalization', sans-serif;
   --font-subtitle: 'Exo', system-ui, sans-serif;
   --font-sans: 'Exo', system-ui, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
 
   /* Rounded corners site-wide */
   --radius-sm: 0.5rem;
@@ -290,3 +291,34 @@ html.light ::selection {
   background-color: rgba(107, 91, 173, 0.35);
   color: #1a1a1a;
 }
+
+/* Admin Messages page: always dark with light text (even in site light mode) */
+html.light .force-dark {
+  background-color: #0f0f0f !important;
+  color: #E8E8E8 !important;
+}
+html.light .force-dark .text-cream,
+html.light .force-dark .text-white,
+html.light .force-dark p,
+html.light .force-dark span,
+html.light .force-dark label,
+html.light .force-dark h1,
+html.light .force-dark h2 {
+  color: #E8E8E8 !important;
+}
+html.light .force-dark .text-cream\/50 { color: rgba(232, 232, 232, 0.5) !important; }
+html.light .force-dark .text-cream\/60 { color: rgba(232, 232, 232, 0.6) !important; }
+html.light .force-dark .text-cream\/70 { color: rgba(232, 232, 232, 0.7) !important; }
+html.light .force-dark .text-cream\/80 { color: rgba(232, 232, 232, 0.8) !important; }
+html.light .force-dark .text-cream\/90 { color: rgba(232, 232, 232, 0.9) !important; }
+html.light .force-dark input,
+html.light .force-dark textarea {
+  background-color: #1a1a1a !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #E8E8E8 !important;
+}
+html.light .force-dark .bg-bg-card { background-color: #242424 !important; }
+html.light .force-dark .bg-bg { background-color: #0f0f0f !important; }
+html.light .force-dark .bg-bg-elevated { background-color: #1a1a1a !important; }
+html.light .force-dark .border-white\/10 { border-color: rgba(255, 255, 255, 0.1) !important; }
+html.light .force-dark .border-white\/20 { border-color: rgba(255, 255, 255, 0.2) !important; }

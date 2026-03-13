@@ -177,6 +177,7 @@ function MessageModal({ message, folder, onClose, onReply }) {
 }
 
 export default function AdminEmail() {
+  const [view, setView] = useState('messages'); // 'messages' | 'people'
   const [tab, setTab] = useState('inbox');
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -186,6 +187,8 @@ export default function AdminEmail() {
   const [loadingMessage, setLoadingMessage] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
+  const [people, setPeople] = useState([]);
+  const [peopleFilter, setPeopleFilter] = useState(''); // '' | 'quote' | 'booking' | 'direct'
 
   const loadList = useCallback(async () => {
     setLoading(true);
@@ -202,9 +205,25 @@ export default function AdminEmail() {
     }
   }, [tab]);
 
+  const loadPeople = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = peopleFilter ? `?filter=${encodeURIComponent(peopleFilter)}` : '';
+      const data = await api.get(`/api/admin/people${params}`);
+      setPeople(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || 'Could not load people');
+      setPeople([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [peopleFilter]);
+
   useEffect(() => {
-    loadList();
-  }, [loadList]);
+    if (view === 'messages') loadList();
+    else loadPeople();
+  }, [view, loadList, loadPeople]);
 
   const openMessage = async (item) => {
     const folder = tab === 'inbox' ? 'INBOX' : 'Sent';
@@ -229,70 +248,157 @@ export default function AdminEmail() {
   };
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center gap-2 mb-6">
-        <button
-          type="button"
-          onClick={() => setTab('inbox')}
-          className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${tab === 'inbox' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 hover:text-white border border-white/10'}`}
-        >
-          Inbox
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('sent')}
-          className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${tab === 'sent' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 hover:text-white border border-white/10'}`}
-        >
-          Sent
-        </button>
-        <button
-          type="button"
-          onClick={() => { setReplyTo(null); setComposeOpen(true); }}
-          className="ml-auto text-sm font-medium px-4 py-2 rounded-xl bg-red text-white hover:bg-red-dark transition-colors"
-        >
-          New email
-        </button>
-      </div>
-
-      <p className="text-xs text-cream/50 mb-4">
-        Live view of your IONOS mailbox. Sending uses the same account (no need to open IONOS webmail).
-      </p>
-
-      {error && (
-        <div className="mb-4 p-4 rounded-xl bg-red/10 border border-red/30 text-red">
-          <p className="font-medium">Mailbox unavailable</p>
-          <p className="text-sm mt-1">{error}</p>
-          <p className="text-xs mt-2 text-cream/70">Ensure IMAP is configured (IMAP_HOST, IMAP_USER, IMAP_PASS or SMTP_USER/SMTP_PASS for the same mailbox).</p>
-        </div>
-      )}
-
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="space-y-2">
-          {list.length === 0 && !error && (
-            <p className="text-cream/60 py-8">{tab === 'inbox' ? 'No emails in inbox.' : 'No sent emails.'}</p>
+    <div className="admin-messages-page force-dark rounded-xl border border-white/10 overflow-hidden bg-bg">
+      <div className="p-6">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <button
+            type="button"
+            onClick={() => setView('messages')}
+            className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${view === 'messages' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 hover:text-white border border-white/10'}`}
+          >
+            Messages
+          </button>
+          <button
+            type="button"
+            onClick={() => setView('people')}
+            className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${view === 'people' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 hover:text-white border border-white/10'}`}
+          >
+            People
+          </button>
+          {view === 'messages' && (
+            <>
+              <button
+                type="button"
+                onClick={() => setTab('inbox')}
+                className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${tab === 'inbox' ? 'bg-white/15 text-white' : 'text-cream/80 hover:text-white border border-white/10'}`}
+              >
+                Inbox
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab('sent')}
+                className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${tab === 'sent' ? 'bg-white/15 text-white' : 'text-cream/80 hover:text-white border border-white/10'}`}
+              >
+                Sent
+              </button>
+            </>
           )}
-          {list.map((item) => (
-            <button
-              key={`${tab}-${item.uid}`}
-              type="button"
-              onClick={() => openMessage(item)}
-              className="w-full text-left bg-bg-card border border-white/10 rounded-xl p-4 hover:border-white/20 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-white truncate">{tab === 'inbox' ? item.from : item.to}</p>
-                  <p className="text-sm text-cream/70 truncate">{item.subject}</p>
-                </div>
-                <span className="text-xs text-cream/50 shrink-0">
-                  {item.date ? new Date(item.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
-                </span>
-              </div>
-            </button>
-          ))}
+          {view === 'people' && (
+            <>
+              <button
+                type="button"
+                onClick={() => setPeopleFilter('')}
+                className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${!peopleFilter ? 'bg-white/15 text-white' : 'text-cream/80 hover:text-white border border-white/10'}`}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => setPeopleFilter('quote')}
+                className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${peopleFilter === 'quote' ? 'bg-white/15 text-white' : 'text-cream/80 hover:text-white border border-white/10'}`}
+              >
+                Quote
+              </button>
+              <button
+                type="button"
+                onClick={() => setPeopleFilter('booking')}
+                className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${peopleFilter === 'booking' ? 'bg-white/15 text-white' : 'text-cream/80 hover:text-white border border-white/10'}`}
+              >
+                Booking
+              </button>
+              <button
+                type="button"
+                onClick={() => setPeopleFilter('direct')}
+                className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${peopleFilter === 'direct' ? 'bg-white/15 text-white' : 'text-cream/80 hover:text-white border border-white/10'}`}
+              >
+                Direct email
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => { setReplyTo(null); setComposeOpen(true); }}
+            className="ml-auto text-sm font-medium px-4 py-2 rounded-xl bg-red text-white hover:bg-red-dark transition-colors"
+          >
+            New email
+          </button>
         </div>
-      )}
+
+        {view === 'messages' && (
+          <p className="text-xs text-cream/50 mb-4">
+            Live view of your IONOS mailbox. Sending uses the same account (no need to open IONOS webmail).
+          </p>
+        )}
+
+        {error && (
+          <div className="mb-4 p-4 rounded-xl bg-red/10 border border-red/30 text-red">
+            <p className="font-medium">{view === 'people' ? 'Could not load people' : 'Mailbox unavailable'}</p>
+            <p className="text-sm mt-1">{error}</p>
+            {view === 'messages' && (
+              <p className="text-xs mt-2 text-cream/70">Ensure IMAP is configured (IMAP_HOST, IMAP_USER, IMAP_PASS or SMTP_USER/SMTP_PASS for the same mailbox).</p>
+            )}
+          </div>
+        )}
+
+        {loading ? (
+          <LoadingSpinner />
+        ) : view === 'people' ? (
+          <div className="space-y-2">
+            {people.length === 0 && !error && (
+              <p className="text-cream/60 py-8">No people match this filter.</p>
+            )}
+            {people.map((p) => (
+              <div
+                key={p.email}
+                className="flex items-center justify-between gap-4 bg-bg-card border border-white/10 rounded-xl p-4"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium text-white truncate">{p.name}</p>
+                  <p className="text-sm text-cream/70 truncate">{p.email}</p>
+                </div>
+                <div className="flex gap-1.5 shrink-0">
+                  {p.sources.map((s) => (
+                    <span key={s} className="text-xs px-2 py-1 rounded-lg bg-white/10 text-cream/80 capitalize">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+                <a
+                  href={`mailto:${p.email}`}
+                  className="text-sm font-medium text-accent hover:underline shrink-0"
+                >
+                  Email
+                </a>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {list.length === 0 && !error && (
+              <p className="text-cream/60 py-8">{tab === 'inbox' ? 'No emails in inbox.' : 'No sent emails.'}</p>
+            )}
+            {list.map((item) => (
+              <button
+                key={`${tab}-${item.uid}`}
+                type="button"
+                onClick={() => openMessage(item)}
+                className="w-full text-left bg-bg-card border border-white/10 rounded-xl p-4 hover:border-white/20 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-white truncate">{tab === 'inbox' ? item.from : item.to}</p>
+                    <p className="text-sm text-cream/70 truncate">{item.subject}</p>
+                  </div>
+                  <span className="text-xs text-cream/50 shrink-0">
+                    {item.date ? new Date(item.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+      </div>
 
       {selectedMessage && (
         <MessageModal
@@ -307,7 +413,7 @@ export default function AdminEmail() {
         <ComposeModal
           replyTo={replyTo || undefined}
           onClose={() => { setComposeOpen(false); setReplyTo(null); }}
-          onSent={() => { loadList(); }}
+          onSent={() => { if (view === 'messages') loadList(); }}
         />
       )}
     </div>

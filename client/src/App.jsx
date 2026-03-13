@@ -22,7 +22,6 @@ import Settings from './pages/dashboard/Settings.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import AdminOrders from './pages/admin/AdminOrders.jsx';
 import AdminTransactions from './pages/admin/AdminTransactions.jsx';
-import AdminMessages from './pages/admin/AdminMessages.jsx';
 import AdminEmail from './pages/admin/AdminEmail.jsx';
 import AdminReviews from './pages/admin/AdminReviews.jsx';
 import AdminLogs from './pages/admin/AdminLogs.jsx';
@@ -78,8 +77,7 @@ export default function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="transactions" element={<AdminTransactions />} />
-          <Route path="messages" element={<AdminMessages />} />
-          <Route path="email" element={<AdminEmail />} />
+          <Route path="messages" element={<AdminEmail />} />
           <Route path="reviews" element={<AdminReviews />} />
           <Route path="logs" element={<AdminLogs />} />
         </Route>
