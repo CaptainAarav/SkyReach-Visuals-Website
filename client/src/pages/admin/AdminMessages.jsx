@@ -56,100 +56,70 @@ function ComposeModal({ onClose, onSent, defaults = {} }) {
   const senderName = user?.name || 'SkyReach';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
-          <h2 className="text-lg font-bold text-white">Compose Message</h2>
-          <button onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-200" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-base font-semibold text-gray-900">New message</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-xl leading-none">&times;</button>
         </div>
-        <div className="flex flex-1 min-h-0">
-          <form onSubmit={handleSend} className="flex flex-col w-full md:w-[420px] shrink-0 p-6 space-y-4 overflow-y-auto border-r border-white/10">
-            {error && <p className="text-sm text-red">{error}</p>}
-
-            <div className="relative">
-              <label className="block text-xs text-cream/50 mb-1">Recipient Email</label>
-              <input
-                type="text"
-                value={recipientEmail}
-                onChange={(e) => setRecipientEmail(e.target.value)}
-                onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-                onFocus={() => { if (searchResults.length > 0) setShowDropdown(true); }}
-                placeholder="Search by name or email..."
-                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
-                required
-              />
-              {showDropdown && searchResults.length > 0 && (
-                <ul className="absolute left-0 right-0 top-full mt-1 py-1 bg-bg-elevated border border-white/10 rounded-xl shadow-lg z-50 max-h-48 overflow-auto">
-                  {searchResults.map((u) => (
-                    <li key={u.id}>
-                      <button
-                        type="button"
-                        onClick={() => selectRecipient(u.email)}
-                        className="w-full text-left px-4 py-2 text-sm text-cream/90 hover:text-white hover:bg-white/10 transition-colors"
-                      >
-                        <span className="font-medium">{u.name}</span>
-                        <span className="text-cream/50 ml-2">{u.email}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-xs text-cream/50 mb-1">Subject</label>
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-cream/50 mb-1">Message</label>
-              <textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                rows={6}
-                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none"
-                required
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                type="submit"
-                disabled={sending}
-                className="bg-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-red-dark disabled:opacity-50"
-              >
-                {sending ? 'Sending...' : 'Send Message'}
-              </button>
-              <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">
-                Cancel
-              </button>
-            </div>
-          </form>
-          <div className="hidden md:flex flex-col flex-1 min-w-0 bg-bg p-4">
-            <p className="text-xs text-cream/50 mb-2 font-medium">Preview (as recipient will see)</p>
-            <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-white/10 bg-bg-card">
-              <div className="p-4 min-h-full" style={{ backgroundColor: '#0f0f0f' }}>
-                <div className="max-w-[520px] rounded-xl overflow-hidden border border-red/20" style={{ backgroundColor: '#1E2D4A' }}>
-                  <div className="px-6 pt-6 pb-4 text-left" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
-                    <h3 className="text-cream font-semibold text-lg mb-3">{displaySubject}</h3>
-                    <p className="text-cream/90 text-sm leading-relaxed whitespace-pre-wrap">{displayBody}</p>
-                    <p className="mt-6 pt-4 border-t border-white/10 text-cream/70 text-xs leading-relaxed">
-                      <strong className="text-cream">SkyReach Visuals</strong><br />
-                      {senderName} — Drone Aerial Photography &amp; Inspection · +44 7877691861 · support@skyreachvisuals.co.uk
-                    </p>
-                    <img src="/skyreach_visuals_text_logo.png" alt="SkyReach Visuals" className="w-24 h-auto mt-3 rounded opacity-90" style={{ borderRadius: '4px' }} />
-                  </div>
-                </div>
-              </div>
-            </div>
+        <form onSubmit={handleSend} className="flex flex-col flex-1 min-h-0 p-4 space-y-3">
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <div className="relative">
+            <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+            <input
+              type="text"
+              value={recipientEmail}
+              onChange={(e) => setRecipientEmail(e.target.value)}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+              onFocus={() => { if (searchResults.length > 0) setShowDropdown(true); }}
+              placeholder="Search by name or email..."
+              className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-900 placeholder:text-gray-400"
+              required
+            />
+            {showDropdown && searchResults.length > 0 && (
+              <ul className="absolute left-0 right-0 top-full mt-1 py-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-auto">
+                {searchResults.map((u) => (
+                  <li key={u.id}>
+                    <button
+                      type="button"
+                      onClick={() => selectRecipient(u.email)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <span className="font-medium">{u.name}</span>
+                      <span className="text-gray-500 ml-2">{u.email}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-        </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Subject</label>
+            <input
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-900"
+              required
+            />
+          </div>
+          <div className="flex-1 min-h-0 flex flex-col">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Message</label>
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={8}
+              className="w-full flex-1 min-h-[120px] bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-900 resize-none"
+              required
+            />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={sending} className="bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50">
+              {sending ? 'Sending...' : 'Send'}
+            </button>
+            <button type="button" onClick={onClose} className="text-sm text-gray-600 hover:text-gray-900 px-4 py-2">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -164,8 +134,8 @@ export default function AdminMessages() {
   const [showCompose, setShowCompose] = useState(false);
   const [composeDefaults, setComposeDefaults] = useState({});
   const [tab, setTab] = useState('inbox');
-  const [expandedInboxId, setExpandedInboxId] = useState(null);
-  const [expandedSentId, setExpandedSentId] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const loadInbox = useCallback(() => {
     setLoading(true);
@@ -173,7 +143,7 @@ export default function AdminMessages() {
     if (filter === 'unread') params.set('read', 'false');
     if (filter === 'archived') params.set('archived', 'true');
     api.get(`/api/admin/messages?${params}`)
-      .then(setMessages)
+      .then((data) => { setMessages(data); setSelectedId(null); })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [filter]);
@@ -181,7 +151,7 @@ export default function AdminMessages() {
   const loadSent = useCallback(() => {
     setLoading(true);
     api.get('/api/admin/messages/sent')
-      .then(setSentMessages)
+      .then((data) => { setSentMessages(data); setSelectedId(null); })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -200,181 +170,141 @@ export default function AdminMessages() {
   const markArchived = (id, archived) => {
     api.patch(`/api/admin/messages/${id}/archived`, { archived }).then(() => {
       setMessages((list) => list.filter((m) => m.id !== id));
+      if (selectedId === id) setSelectedId(null);
     }).catch((err) => setError(err.message));
   };
 
-  const [deletingId, setDeletingId] = useState(null);
   const permanentDelete = (id) => {
-    if (!window.confirm('Are you sure you want to permanently delete this message? This cannot be undone.')) return;
+    if (!window.confirm('Permanently delete this message?')) return;
     setDeletingId(id);
     api.delete(`/api/admin/messages/${id}`)
-      .then(() => setMessages((list) => list.filter((m) => m.id !== id)))
+      .then(() => {
+        setMessages((list) => list.filter((m) => m.id !== id));
+        if (selectedId === id) setSelectedId(null);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setDeletingId(null));
   };
 
+  const list = tab === 'inbox' ? messages : sentMessages;
+  const selected = tab === 'inbox'
+    ? messages.find((m) => m.id === selectedId)
+    : sentMessages.find((m) => m.id === selectedId);
+
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div>
-      {error && <p className="text-sm text-red mb-4">{error}</p>}
+    <div className="h-[calc(100vh-8rem)] flex flex-col bg-gray-100 rounded-xl border border-gray-200 overflow-hidden">
+      {error && <p className="text-sm text-red-600 px-4 py-2 bg-red-50">{error}</p>}
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setTab('inbox')}
-            className={`text-sm px-4 py-2 rounded-xl ${tab === 'inbox' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 border border-white/10'}`}
-          >
-            Inbox
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab('sent')}
-            className={`text-sm px-4 py-2 rounded-xl ${tab === 'sent' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 border border-white/10'}`}
-          >
-            Sent
-          </button>
-        </div>
+      {/* Toolbar — Gmail/Outlook style */}
+      <div className="flex items-center gap-2 px-4 py-2 bg-white border-b border-gray-200 shrink-0">
+        <button
+          type="button"
+          onClick={() => setTab('inbox')}
+          className={`text-sm font-medium px-3 py-2 rounded-lg ${tab === 'inbox' ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
+        >
+          Inbox
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('sent')}
+          className={`text-sm font-medium px-3 py-2 rounded-lg ${tab === 'sent' ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
+        >
+          Sent
+        </button>
+        {tab === 'inbox' && (
+          <>
+            <span className="text-gray-300 mx-1">|</span>
+            <button type="button" onClick={() => setFilter('all')} className={`text-sm px-3 py-1.5 rounded ${filter === 'all' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'}`}>All</button>
+            <button type="button" onClick={() => setFilter('unread')} className={`text-sm px-3 py-1.5 rounded ${filter === 'unread' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'}`}>Unread</button>
+            <button type="button" onClick={() => setFilter('archived')} className={`text-sm px-3 py-1.5 rounded ${filter === 'archived' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'}`}>Deleted</button>
+          </>
+        )}
         <button
           type="button"
           onClick={() => { setComposeDefaults({}); setShowCompose(true); }}
-          className="bg-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-red-dark transition-colors"
+          className="ml-auto bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-700"
         >
-          Compose Message
+          Compose
         </button>
       </div>
 
-      {tab === 'inbox' && (
-        <>
-          <div className="flex gap-2 mb-6">
-            <button
-              type="button"
-              onClick={() => setFilter('all')}
-              className={`text-sm px-4 py-2 rounded-xl ${filter === 'all' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 border border-white/10'}`}
-            >
-              All
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter('unread')}
-              className={`text-sm px-4 py-2 rounded-xl ${filter === 'unread' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 border border-white/10'}`}
-            >
-              New (unread)
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter('archived')}
-              className={`text-sm px-4 py-2 rounded-xl ${filter === 'archived' ? 'bg-accent text-white' : 'bg-bg-card text-cream/80 border border-white/10'}`}
-            >
-              Deleted
-            </button>
+      {/* Two-panel layout */}
+      <div className="flex-1 flex min-h-0">
+        {/* Message list — left */}
+        <div className="w-80 shrink-0 flex flex-col bg-white border-r border-gray-200 overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
+            {list.length === 0 ? (
+              <p className="p-4 text-sm text-gray-500">No messages.</p>
+            ) : (
+              list.map((msg) => {
+                const isInbox = tab === 'inbox';
+                const isSelected = selectedId === msg.id;
+                const from = isInbox ? msg.name : msg.recipientEmail;
+                const preview = isInbox ? (msg.message?.slice(0, 60) || '') + (msg.message?.length > 60 ? '…' : '') : (msg.subject || '') + ' — ' + (msg.body?.slice(0, 40) || '') + (msg.body?.length > 40 ? '…' : '');
+                const date = new Date(msg.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                return (
+                  <button
+                    key={msg.id}
+                    type="button"
+                    onClick={() => setSelectedId(msg.id)}
+                    className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50 border-l-4 border-l-red-600' : ''} ${!isInbox ? '' : !msg.read ? 'font-semibold' : ''}`}
+                  >
+                    <div className="flex justify-between gap-2">
+                      <span className="text-sm text-gray-900 truncate">{from}</span>
+                      <span className="text-xs text-gray-500 shrink-0">{date}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 truncate mt-0.5">{preview}</p>
+                  </button>
+                );
+              })
+            )}
           </div>
-          <div className="space-y-6">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`bg-bg-card border rounded-2xl p-6 ${msg.read ? 'border-white/10' : 'border-accent/50'} ${expandedInboxId === msg.id ? '' : 'cursor-pointer hover:border-white/20'}`}
-                onClick={() => setExpandedInboxId(expandedInboxId === msg.id ? null : msg.id)}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-white">{msg.name}</p>
-                    <a href={`mailto:${msg.email}`} className="block text-sm text-cream/70 hover:text-accent transition-colors" onClick={(e) => e.stopPropagation()}>{msg.email}</a>
-                    {msg.phone && <a href={`tel:${msg.phone.replace(/\s/g, '')}`} className="block text-sm text-cream/60 hover:text-accent transition-colors" onClick={(e) => e.stopPropagation()}>{msg.phone}</a>}
-                    <p className="mt-3 text-cream/80 text-sm">
-                      {expandedInboxId === msg.id ? msg.message : (msg.message.length > 80 ? msg.message.slice(0, 80) + '…' : msg.message)}
-                    </p>
-                    {msg.message.length > 80 && (
-                      <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedInboxId(expandedInboxId === msg.id ? null : msg.id); }} className="mt-1 text-xs text-accent hover:underline">
-                        {expandedInboxId === msg.id ? 'Show less' : 'Read more'}
-                      </button>
-                    )}
-                    <p className="mt-2 text-xs text-cream/50">
-                      {new Date(msg.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      {msg.read && ' · Read'}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setComposeDefaults({ recipientEmail: msg.email, subject: `Re: ${msg.name}'s enquiry` });
-                        setShowCompose(true);
-                      }}
-                      className="text-sm font-medium text-red hover:text-red-dark"
-                    >
-                      Reply
-                    </button>
-                    {!msg.read && (
-                      <button
-                        type="button"
-                        onClick={() => markRead(msg.id)}
-                        className="text-sm font-medium text-accent hover:text-accent-light"
-                      >
-                        Mark read
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => markArchived(msg.id, !msg.archived)}
-                      className="text-sm font-medium text-cream/60 hover:text-cream"
-                    >
-                      {msg.archived ? 'Restore' : 'Delete'}
-                    </button>
-                    {msg.archived && (
-                      <button
-                        type="button"
-                        onClick={() => permanentDelete(msg.id)}
-                        disabled={deletingId === msg.id}
-                        className="text-sm font-medium text-red hover:text-red-dark disabled:opacity-50"
-                      >
-                        {deletingId === msg.id ? 'Deleting...' : 'Permanently delete'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {messages.length === 0 && !loading && (
-            <p className="text-cream/60 py-8">No messages.</p>
-          )}
-        </>
-      )}
+        </div>
 
-      {tab === 'sent' && (
-        <div className="space-y-6">
-          {sentMessages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`bg-bg-card border border-white/10 rounded-2xl p-6 cursor-pointer hover:border-white/20 transition-colors ${expandedSentId === msg.id ? '' : ''}`}
-              onClick={() => setExpandedSentId(expandedSentId === msg.id ? null : msg.id)}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-cream/50 mb-1">To: <a href={`mailto:${msg.recipientEmail}`} className="text-cream/70 hover:text-accent transition-colors" onClick={(e) => e.stopPropagation()}>{msg.recipientEmail}</a></p>
-                  <p className="font-medium text-white">{msg.subject}</p>
-                  <p className="mt-2 text-cream/80 text-sm whitespace-pre-wrap">
-                    {expandedSentId === msg.id ? msg.body : (msg.body.length > 80 ? msg.body.slice(0, 80) + '…' : msg.body)}
-                  </p>
-                  {msg.body.length > 80 && (
-                    <button type="button" onClick={(e) => { e.stopPropagation(); setExpandedSentId(expandedSentId === msg.id ? null : msg.id); }} className="mt-1 text-xs text-accent hover:underline">
-                      {expandedSentId === msg.id ? 'Show less' : 'Read more'}
-                    </button>
-                  )}
-                  <p className="mt-2 text-xs text-cream/50">
-                    Sent by {msg.sender?.name} &middot; {new Date(msg.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </p>
+        {/* Read pane — right */}
+        <div className="flex-1 min-w-0 flex flex-col bg-gray-50 overflow-hidden">
+          {!selected ? (
+            <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">Select a message</div>
+          ) : (
+            <>
+              <div className="px-4 py-3 bg-white border-b border-gray-200 shrink-0">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    {tab === 'inbox' ? (
+                      <>
+                        <p className="font-semibold text-gray-900">{selected.name}</p>
+                        <a href={`mailto:${selected.email}`} className="text-sm text-blue-600 hover:underline">{selected.email}</a>
+                        {selected.phone && <a href={`tel:${selected.phone.replace(/\s/g, '')}`} className="text-sm text-gray-600 ml-2">{selected.phone}</a>}
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-600">To: <a href={`mailto:${selected.recipientEmail}`} className="text-blue-600 hover:underline">{selected.recipientEmail}</a></p>
+                    )}
+                    <p className="mt-1 text-sm text-gray-500">{new Date(selected.createdAt).toLocaleString('en-GB')}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 shrink-0">
+                    {tab === 'inbox' && (
+                      <>
+                        <button type="button" onClick={() => { setComposeDefaults({ recipientEmail: selected.email, subject: `Re: ${selected.name}'s enquiry` }); setShowCompose(true); }} className="text-sm font-medium text-red-600 hover:text-red-700">Reply</button>
+                        {!selected.read && <button type="button" onClick={() => markRead(selected.id)} className="text-sm font-medium text-gray-600 hover:text-gray-900">Mark read</button>}
+                        <button type="button" onClick={() => markArchived(selected.id, !selected.archived)} className="text-sm font-medium text-gray-600 hover:text-gray-900">{selected.archived ? 'Restore' : 'Delete'}</button>
+                        {selected.archived && <button type="button" onClick={() => permanentDelete(selected.id)} disabled={deletingId === selected.id} className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50">Permanently delete</button>}
+                      </>
+                    )}
+                  </div>
+                </div>
+                {tab === 'sent' && <p className="font-semibold text-gray-900 mt-2">{selected.subject}</p>}
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="bg-white rounded-lg border border-gray-200 p-4 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {tab === 'inbox' ? selected.message : selected.body}
                 </div>
               </div>
-            </div>
-          ))}
-          {sentMessages.length === 0 && !loading && (
-            <p className="text-cream/60 py-8">No sent messages.</p>
+            </>
           )}
         </div>
-      )}
+      </div>
 
       {showCompose && (
         <ComposeModal

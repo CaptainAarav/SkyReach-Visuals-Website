@@ -3,6 +3,7 @@ import { requireAuth, requireAdmin, requireStaff } from '../middleware/auth.js';
 import {
   getStats,
   getTraffic,
+  resetTraffic,
   createExternalProject,
   listAccounts,
   getAccount,
@@ -40,6 +41,7 @@ router.use(requireAuth, requireStaff);
 // Stats
 router.get('/stats', getStats);
 router.get('/traffic', getTraffic);
+router.delete('/traffic', requireAdmin, resetTraffic);
 router.post('/external-projects', requireAdmin, createExternalProject);
 
 // Accounts
@@ -62,6 +64,7 @@ router.patch('/payment-requests/:id', updatePaymentRequest);
 // Orders
 router.get('/orders', listOrders);
 router.get('/orders/:id/invoice-preview', getOrderInvoicePreview);
+router.post('/orders/:id/invoice-preview', getOrderInvoicePreview);
 router.patch('/orders/:id', updateOrder);
 router.delete('/orders/:id', deleteOrder);
 router.delete('/orders/:id/permanent', permanentDeleteOrder);

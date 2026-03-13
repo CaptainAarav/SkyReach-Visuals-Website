@@ -27,7 +27,7 @@ const LAYOUT = {
  * Generate a filled invoice PDF for a booking. Returns buffer or null if template missing.
  * @param {Object} booking - Booking record (orderNumber, packageName, packagePrice, shootDate, location, etc.)
  * @param {Object} user - User record (name, email)
- * @param {{ pricePence?: number }} [options] - Optional override price in pence for preview
+ * @param {{ pricePence?: number, customerName?: string, customerEmail?: string, serviceName?: string, location?: string, invoiceDate?: string }} [options] - Overrides for PDF fields
  * @returns {Promise<Buffer|null>}
  */
 export async function generateInvoicePdf(booking, user, options = {}) {
@@ -45,10 +45,12 @@ export async function generateInvoicePdf(booking, user, options = {}) {
   if (!page) return null;
 
   const font = await doc.embedFont(StandardFonts.Helvetica);
-  const { width, height } = page.getSize();
+  const { height } = page.getSize();
 
   const orderNo = formatOrderNumber(booking.orderNumber);
-  const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const dateStr = options.invoiceDate != null && options.invoiceDate !== ''
+    ? (new Date(options.invoiceDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) || new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))
+    : new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const pricePence = options.pricePence != null ? options.pricePence : (booking.packagePrice ?? 0);
   const amountStr = `£${(pricePence / 100).toFixed(2)}`;
 
@@ -65,11 +67,11 @@ export async function generateInvoicePdf(booking, user, options = {}) {
 
   draw(orderNo, LAYOUT.orderNumber);
   draw(dateStr, LAYOUT.date);
-  draw(user?.name ?? '', LAYOUT.customerName);
-  draw(user?.email ?? '', LAYOUT.customerEmail);
-  draw(booking.packageName ?? '', LAYOUT.service);
+  draw(options.customerName ?? user?.name ?? '', LAYOUT.customerName);
+  draw(options.customerEmail ?? user?.email ?? '', LAYOUT.customerEmail);
+  draw(options.serviceName ?? booking.packageName ?? '', LAYOUT.service);
   draw(amountStr, LAYOUT.amount);
-  draw(booking.location ?? '', LAYOUT.location);
+  draw(options.location ?? booking.location ?? '', LAYOUT.location);
 
   const pdfBytes = await doc.save();
   return Buffer.from(pdfBytes);

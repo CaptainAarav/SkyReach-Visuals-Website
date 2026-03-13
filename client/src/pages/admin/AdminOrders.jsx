@@ -98,6 +98,15 @@ function ApproveModal({ order, onClose, onSave }) {
   const [error, setError] = useState(null);
   const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
+  const [showInvoiceEditor, setShowInvoiceEditor] = useState(false);
+  const [invoiceCustomerName, setInvoiceCustomerName] = useState(order.user?.name || '');
+  const [invoiceCustomerEmail, setInvoiceCustomerEmail] = useState(order.user?.email || '');
+  const [invoiceServiceName, setInvoiceServiceName] = useState(order.packageName || '');
+  const [invoiceLocation, setInvoiceLocation] = useState(order.location || '');
+  const [invoiceDate, setInvoiceDate] = useState(() => {
+    const d = order.shootDate ? new Date(order.shootDate) : new Date();
+    return d.toISOString().slice(0, 10);
+  });
 
   const handlePreviewInvoice = async () => {
     const priceNum = parseFloat(quotedPrice);
@@ -108,8 +117,20 @@ function ApproveModal({ order, onClose, onSave }) {
     setError(null);
     setLoadingPreview(true);
     try {
-      const qs = new URLSearchParams({ quotedPrice: quotedPrice.trim() }).toString();
-      const res = await fetch(`/api/admin/orders/${order.id}/invoice-preview?${qs}`, { credentials: 'include' });
+      const body = {
+        quotedPrice: quotedPrice.trim(),
+        customerName: invoiceCustomerName.trim(),
+        customerEmail: invoiceCustomerEmail.trim(),
+        serviceName: invoiceServiceName.trim(),
+        location: invoiceLocation.trim(),
+        invoiceDate: invoiceDate || undefined,
+      };
+      const res = await fetch(`/api/admin/orders/${order.id}/invoice-preview`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
       if (!res.ok) throw new Error(res.status === 503 ? 'Invoice template not available.' : 'Preview failed.');
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -141,6 +162,13 @@ function ApproveModal({ order, onClose, onSave }) {
       }
       const body = { status: 'APPROVED', quotedPrice: priceInPence };
       if (adminNotes !== (order.adminNotes || '')) body.adminNotes = adminNotes;
+      body.invoiceOverrides = {
+        customerName: invoiceCustomerName.trim() || undefined,
+        customerEmail: invoiceCustomerEmail.trim() || undefined,
+        serviceName: invoiceServiceName.trim() || undefined,
+        location: invoiceLocation.trim() || undefined,
+        invoiceDate: invoiceDate || undefined,
+      };
       const updated = await api.patch(`/api/admin/orders/${order.id}`, body);
       onSave(updated);
       onClose();
@@ -182,6 +210,39 @@ function ApproveModal({ order, onClose, onSave }) {
             <p className="text-xs text-cream/40 mt-1">
               The customer will be charged this amount. An email with a payment link and invoice PDF will be sent.
             </p>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowInvoiceEditor(!showInvoiceEditor)}
+              className="text-sm font-medium text-cream/70 hover:text-white"
+            >
+              {showInvoiceEditor ? 'Hide invoice details' : 'Edit invoice details'}
+            </button>
+            {showInvoiceEditor && (
+              <div className="mt-3 p-4 bg-bg rounded-lg border border-white/10 space-y-3">
+                <div>
+                  <label className="block text-xs text-cream/50 mb-1">Customer name</label>
+                  <input type="text" value={invoiceCustomerName} onChange={(e) => setInvoiceCustomerName(e.target.value)} className="w-full bg-bg-card border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+                </div>
+                <div>
+                  <label className="block text-xs text-cream/50 mb-1">Customer email</label>
+                  <input type="email" value={invoiceCustomerEmail} onChange={(e) => setInvoiceCustomerEmail(e.target.value)} className="w-full bg-bg-card border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+                </div>
+                <div>
+                  <label className="block text-xs text-cream/50 mb-1">Service name</label>
+                  <input type="text" value={invoiceServiceName} onChange={(e) => setInvoiceServiceName(e.target.value)} className="w-full bg-bg-card border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+                </div>
+                <div>
+                  <label className="block text-xs text-cream/50 mb-1">Location</label>
+                  <input type="text" value={invoiceLocation} onChange={(e) => setInvoiceLocation(e.target.value)} className="w-full bg-bg-card border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+                </div>
+                <div>
+                  <label className="block text-xs text-cream/50 mb-1">Invoice date</label>
+                  <input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} className="w-full bg-bg-card border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <button

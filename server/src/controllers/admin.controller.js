@@ -110,6 +110,17 @@ export async function getTraffic(req, res, next) {
   }
 }
 
+/** DELETE /api/admin/traffic — reset all page views (sessions) to 0 (admin only). */
+export async function resetTraffic(req, res, next) {
+  try {
+    await prisma.pageView.deleteMany({});
+    await logAdminAction(req.user.id, 'RESET_TRAFFIC', null, 'All page views (sessions) reset to 0');
+    res.json({ success: true, data: { message: 'Traffic reset.' }, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ── Accounts ────────────────────────────────────────────────────────
 export async function listAccounts(req, res, next) {
   try {
@@ -427,11 +438,13 @@ export async function permanentDeleteOrder(req, res, next) {
   }
 }
 
-/** GET /orders/:id/invoice-preview — returns filled invoice PDF for preview. Query: quotedPrice (e.g. 39.99) optional. */
+/** GET or POST /orders/:id/invoice-preview — returns filled invoice PDF. GET: query quotedPrice. POST: body { quotedPrice, customerName, customerEmail, serviceName, location, invoiceDate } for editable fields. */
 export async function getOrderInvoicePreview(req, res, next) {
   try {
     const { id } = req.params;
-    const { quotedPrice: quotedPriceStr } = req.query;
+    const isPost = req.method === 'POST';
+    const from = isPost ? req.body : req.query;
+    const quotedPriceStr = from?.quotedPrice;
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: { user: { select: { id: true, name: true, email: true } } },
@@ -444,9 +457,16 @@ export async function getOrderInvoicePreview(req, res, next) {
       if (!Number.isNaN(pounds) && pounds >= 0) pricePenceOverride = Math.round(pounds * 100);
     }
 
-    const pdfBuffer = await generateInvoicePdf(booking, booking.user, {
-      pricePence: pricePenceOverride,
-    });
+    const options = { pricePence: pricePenceOverride };
+    if (isPost && from) {
+      if (from.customerName !== undefined) options.customerName = String(from.customerName);
+      if (from.customerEmail !== undefined) options.customerEmail = String(from.customerEmail);
+      if (from.serviceName !== undefined) options.serviceName = String(from.serviceName);
+      if (from.location !== undefined) options.location = String(from.location);
+      if (from.invoiceDate !== undefined && from.invoiceDate !== '') options.invoiceDate = from.invoiceDate;
+    }
+
+    const pdfBuffer = await generateInvoicePdf(booking, booking.user, options);
     if (!pdfBuffer) {
       throw new AppError('Invoice template not available', 503);
     }
@@ -461,7 +481,7 @@ export async function getOrderInvoicePreview(req, res, next) {
 export async function updateOrder(req, res, next) {
   try {
     const { id } = req.params;
-    const { status, shootDate, shootTime, adminNotes, quotedPrice } = req.body;
+    const { status, shootDate, shootTime, adminNotes, quotedPrice, invoiceOverrides } = req.body;
 
     const booking = await prisma.booking.findUnique({
       where: { id },
@@ -501,7 +521,16 @@ export async function updateOrder(req, res, next) {
 
     if (status === 'APPROVED' && booking.status !== 'APPROVED' && updated.user?.email) {
       const payUrl = `${env.clientUrl}/booking/pay/${booking.id}`;
-      const invoicePdfBuffer = await generateInvoicePdf(updated, updated.user).catch(() => null);
+      const pdfOptions = {};
+      if (invoiceOverrides && typeof invoiceOverrides === 'object') {
+        if (invoiceOverrides.customerName !== undefined) pdfOptions.customerName = String(invoiceOverrides.customerName);
+        if (invoiceOverrides.customerEmail !== undefined) pdfOptions.customerEmail = String(invoiceOverrides.customerEmail);
+        if (invoiceOverrides.serviceName !== undefined) pdfOptions.serviceName = String(invoiceOverrides.serviceName);
+        if (invoiceOverrides.location !== undefined) pdfOptions.location = String(invoiceOverrides.location);
+        if (invoiceOverrides.invoiceDate !== undefined) pdfOptions.invoiceDate = invoiceOverrides.invoiceDate;
+      }
+      pdfOptions.pricePence = updated.packagePrice ?? 0;
+      const invoicePdfBuffer = await generateInvoicePdf(updated, updated.user, pdfOptions).catch(() => null);
       await sendBookingApproved({ to: updated.user.email, booking: updated, payUrl, invoicePdfBuffer: invoicePdfBuffer ?? undefined }).catch((err) => {
         console.error('Failed to send approval email:', err.message);
       });
@@ -691,7 +720,7 @@ export async function listAdminLogs(req, res, next) {
   try {
     const logs = await prisma.adminLog.findMany({
       orderBy: { createdAt: 'desc' },
-      take: 200,
+      take: 10,
       include: {
         admin: { select: { id: true, name: true, email: true } },
         targetUser: { select: { id: true, name: true, email: true } },

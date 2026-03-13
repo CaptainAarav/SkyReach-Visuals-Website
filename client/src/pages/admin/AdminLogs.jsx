@@ -24,13 +24,14 @@ export default function AdminLogs() {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-white mb-4">Audit Logs</h2>
+      <h2 className="text-lg font-semibold text-white mb-1">Audit logs</h2>
+      <p className="text-sm text-cream/50 mb-4">Last 10 entries.</p>
       {error && <p className="text-sm text-red mb-4">{error}</p>}
 
       {logs.length === 0 ? (
         <p className="text-cream/60 py-8">No audit logs yet.</p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 max-h-[70vh] overflow-y-auto">
           {logs.map((log) => (
             <div key={log.id} className="bg-bg rounded-lg p-4 border border-white/10">
               <div className="flex items-start justify-between gap-4">

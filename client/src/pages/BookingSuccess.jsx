@@ -27,17 +27,13 @@ export default function BookingSuccess() {
 
   if (error) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-24 text-center">
-        <h1 className="text-3xl font-bold">Something went wrong</h1>
-        <p className="mt-4 text-navy/60">{error}</p>
-        <p className="mt-2 text-navy/60 text-sm">
-          If you&rsquo;ve been charged, don&rsquo;t worry — please contact us at
-          support@skyreachvisuals.co.uk and we&rsquo;ll sort it out.
+      <div className="max-w-xl mx-auto px-6 py-24 text-center bg-gray-50 min-h-screen flex flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold text-gray-900">Something went wrong</h1>
+        <p className="mt-4 text-gray-600">{error}</p>
+        <p className="mt-2 text-gray-500 text-sm">
+          If you&rsquo;ve been charged, don&rsquo;t worry — contact us at support@skyreachvisuals.co.uk and we&rsquo;ll sort it out.
         </p>
-        <Link
-          to="/dashboard"
-          className="mt-8 inline-block bg-navy text-cream text-sm font-medium px-8 py-3 hover:bg-navy-light transition-colors"
-        >
+        <Link to="/dashboard" className="mt-8 inline-block bg-gray-800 text-white text-sm font-medium px-8 py-3 rounded-lg hover:bg-gray-900">
           Go to dashboard
         </Link>
       </div>
@@ -45,43 +41,38 @@ export default function BookingSuccess() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-6 py-24">
+    <div className="max-w-xl mx-auto px-6 py-24 bg-gray-50 min-h-screen">
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-navy/10 mb-6">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-navy">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-200 rounded-lg mb-6">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-gray-700">
             <path d="M6 16l7 7L26 9" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold">Booking confirmed</h1>
-        <p className="mt-3 text-navy/60">
-          Thanks for booking with SkyReach Visuals. We&rsquo;ll be in touch to
-          confirm the final details of your shoot.
+        <h1 className="text-2xl font-bold text-gray-900">Booking confirmed</h1>
+        <p className="mt-3 text-gray-600">
+          Thanks for booking with SkyReach Visuals. We&rsquo;ll be in touch to confirm the final details of your shoot.
         </p>
       </div>
 
       {booking && (
-        <div className="mt-10 bg-cream-dark p-6 space-y-4">
-          <div className="flex justify-between">
-            <span className="text-sm text-navy/60">Package</span>
-            <span className="text-sm font-medium">{booking.packageName}</span>
+        <div className="mt-10 bg-gray-200 rounded-xl p-6 space-y-4">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Package</span>
+            <span className="font-medium text-gray-900">{booking.packageName}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-navy/60">Date</span>
-            <span className="text-sm font-medium">
-              {new Date(booking.shootDate).toLocaleDateString('en-GB', {
-                day: 'numeric', month: 'long', year: 'numeric',
-              })}
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Date</span>
+            <span className="font-medium text-gray-900">
+              {new Date(booking.shootDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-navy/60">Location</span>
-            <span className="text-sm font-medium">{booking.location}</span>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Location</span>
+            <span className="font-medium text-gray-900">{booking.location || '—'}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-navy/60">Amount paid</span>
-            <span className="text-sm font-medium">
-              £{(booking.packagePrice / 100).toFixed(2)}
-            </span>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Amount paid</span>
+            <span className="font-medium text-gray-900">£{(booking.packagePrice / 100).toFixed(2)}</span>
           </div>
         </div>
       )}
@@ -89,7 +80,7 @@ export default function BookingSuccess() {
       <div className="mt-8 text-center">
         <Link
           to="/dashboard"
-          className="inline-block bg-navy text-cream text-sm font-medium px-8 py-3 hover:bg-navy-light transition-colors"
+          className="inline-block bg-gray-800 text-white text-sm font-medium px-8 py-3 rounded-lg hover:bg-gray-900 transition-colors"
         >
           Go to dashboard
         </Link>

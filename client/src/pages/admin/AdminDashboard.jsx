@@ -63,11 +63,21 @@ export default function AdminDashboard() {
   const loadTraffic = () => {
     setTrafficLoading(true);
     api.get(`/api/admin/traffic?from=${trafficFrom}&to=${trafficTo}`)
-      .then(setTraffic)
+      .then((data) => setTraffic(data))
       .catch(() => setTraffic(null))
       .finally(() => setTrafficLoading(false));
   };
   useEffect(loadTraffic, [trafficFrom, trafficTo]);
+
+  const [resettingTraffic, setResettingTraffic] = useState(false);
+  const handleResetTraffic = () => {
+    if (!window.confirm('Reset all session counts to 0? This cannot be undone.')) return;
+    setResettingTraffic(true);
+    api.delete('/api/admin/traffic')
+      .then(loadTraffic)
+      .catch((err) => setError(err.message))
+      .finally(() => setResettingTraffic(false));
+  };
 
   const handleAddExternalProject = async (e) => {
     e.preventDefault();
@@ -185,6 +195,16 @@ export default function AdminDashboard() {
                 <span className="text-lg font-bold text-white ml-auto">
                   Total: <CountUp value={traffic.total} duration={800} /> sessions
                 </span>
+              )}
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={handleResetTraffic}
+                  disabled={resettingTraffic}
+                  className="text-sm font-medium px-3 py-1.5 rounded-lg bg-red/20 text-red hover:bg-red/30 disabled:opacity-50"
+                >
+                  {resettingTraffic ? 'Resetting…' : 'Reset to 0'}
+                </button>
               )}
             </div>
             {trafficLoading && <p className="text-sm text-cream/50">Loading…</p>}
