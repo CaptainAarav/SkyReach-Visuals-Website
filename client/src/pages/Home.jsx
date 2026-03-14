@@ -70,6 +70,7 @@ export default function Home() {
   const [heroVideoReady, setHeroVideoReady] = useState(false);
   const [reviews, setReviews] = useState(PLACEHOLDER_REVIEWS);
   const [reviewExpandedId, setReviewExpandedId] = useState(null);
+  const [reviewHighlightIndex, setReviewHighlightIndex] = useState(0);
   const testimonialsScrollRef = useRef(null);
 
   useEffect(() => {
@@ -77,6 +78,10 @@ export default function Home() {
       .then((data) => { if (data?.length > 0) setReviews(data); })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setReviewHighlightIndex((i) => (reviews.length > 0 ? Math.min(i, reviews.length - 1) : 0));
+  }, [reviews.length]);
 
   const contactForm = useForm({
     initialValues: { name: user?.name || '', email: user?.email || '', phone: '', message: '' },
@@ -216,7 +221,7 @@ export default function Home() {
             style={{ scrollbarWidth: 'thin' }}
           >
             {reviews.map((r, i) => {
-              const isFeatured = i === 0;
+              const isFeatured = i === reviewHighlightIndex;
               const expanded = reviewExpandedId === r.id;
               const showReadMore = (r.comment?.length || 0) > COMMENT_PREVIEW_LEN && !expanded;
               const displayComment = expanded ? r.comment : (r.comment?.slice(0, COMMENT_PREVIEW_LEN) || '');
@@ -276,7 +281,10 @@ export default function Home() {
             <div className="mt-8 flex items-center justify-center gap-4">
               <button
                 type="button"
-                onClick={() => testimonialsScrollRef.current?.scrollBy({ left: -340, behavior: 'smooth' })}
+                onClick={() => {
+                  setReviewHighlightIndex((i) => (i <= 0 ? reviews.length - 1 : i - 1));
+                  testimonialsScrollRef.current?.scrollBy({ left: -340, behavior: 'smooth' });
+                }}
                 className="w-12 h-12 rounded-xl bg-bg-card border border-white/15 text-cream hover:bg-accent/20 hover:border-accent/50 flex items-center justify-center transition-all"
                 aria-label="Previous testimonials"
               >
@@ -286,7 +294,10 @@ export default function Home() {
               </button>
               <button
                 type="button"
-                onClick={() => testimonialsScrollRef.current?.scrollBy({ left: 340, behavior: 'smooth' })}
+                onClick={() => {
+                  setReviewHighlightIndex((i) => (i >= reviews.length - 1 ? 0 : i + 1));
+                  testimonialsScrollRef.current?.scrollBy({ left: 340, behavior: 'smooth' });
+                }}
                 className="w-12 h-12 rounded-xl bg-bg-card border border-white/15 text-cream hover:bg-accent/20 hover:border-accent/50 flex items-center justify-center transition-all"
                 aria-label="Next testimonials"
               >

@@ -258,16 +258,18 @@ html.light .bg-black\/60 {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-/* Light mode: hero text dark for readability (e.g. on light overlay) */
+/* Light mode: hero text stays white (video background remains dark) */
 html.light .hero-on-dark h1,
+html.light .hero-on-dark .text-white {
+  color: #ffffff !important;
+}
 html.light .hero-on-dark p,
 html.light .hero-on-dark .subtitle,
-html.light .hero-on-dark a,
-html.light .hero-on-dark .text-white {
-  color: #1a1a1a !important;
+html.light .hero-on-dark a {
+  color: rgba(255, 255, 255, 0.9) !important;
 }
-html.light .hero-on-dark .text-white\/90 { color: rgba(26, 26, 26, 0.9) !important; }
-html.light .hero-on-dark .text-white\/85 { color: rgba(26, 26, 26, 0.85) !important; }
+html.light .hero-on-dark .text-white\/90 { color: rgba(255, 255, 255, 0.9) !important; }
+html.light .hero-on-dark .text-white\/85 { color: rgba(255, 255, 255, 0.85) !important; }
 
 /* Light mode: footer stays dark with white text so contact / copyright remain readable */
 html.light footer {
