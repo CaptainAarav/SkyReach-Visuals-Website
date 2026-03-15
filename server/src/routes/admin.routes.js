@@ -19,6 +19,7 @@ import {
   updateOrder,
   deleteOrder,
   permanentDeleteOrder,
+  resetOrderNumberSequence,
   listMessages,
   markMessageRead,
   markMessageArchived,
@@ -69,6 +70,7 @@ router.post('/orders/:id/invoice-preview', getOrderInvoicePreview);
 router.patch('/orders/:id', updateOrder);
 router.delete('/orders/:id', deleteOrder);
 router.delete('/orders/:id/permanent', permanentDeleteOrder);
+router.post('/orders/reset-order-sequence', requireAdmin, resetOrderNumberSequence);
 
 // Messages
 router.get('/messages', listMessages);

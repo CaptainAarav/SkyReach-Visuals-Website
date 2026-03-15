@@ -214,11 +214,63 @@ html.light body {
 /* Light mode: main content (excluding hero) uses dark text so it’s readable */
 html.light main h1,
 html.light main h2,
-html.light main h3 {
+html.light main h3,
+html.light main h4 {
   color: #1a1a1a;
 }
 html.light main .text-white {
   color: #1a1a1a !important;
+}
+/* Force light backgrounds in main (every page) */
+html.light main .bg-bg {
+  background-color: #f6f6f7 !important;
+}
+html.light main .bg-bg-elevated {
+  background-color: #ffffff !important;
+}
+html.light main .bg-bg-card {
+  background-color: #ffffff !important;
+}
+html.light main .text-cream,
+html.light main .text-cream\/90,
+html.light main .text-cream\/80,
+html.light main .text-cream\/70 {
+  color: #1a1a1a !important;
+}
+html.light main .text-cream\/60,
+html.light main .text-cream\/50 {
+  color: rgba(26, 26, 26, 0.7) !important;
+}
+html.light main .text-cream\/40 {
+  color: rgba(26, 26, 26, 0.5) !important;
+}
+html.light main input,
+html.light main textarea,
+html.light main select {
+  background-color: #f6f6f7 !important;
+  color: #1a1a1a !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+html.light main input::placeholder,
+html.light main textarea::placeholder {
+  color: rgba(26, 26, 26, 0.5) !important;
+}
+html.light main select option {
+  background-color: #f6f6f7 !important;
+  color: #1a1a1a !important;
+}
+html.light nav .bg-bg-card,
+html.light nav .bg-bg-elevated {
+  background-color: #ffffff !important;
+}
+html.light nav .text-cream\/80,
+html.light nav .text-cream\/90,
+html.light nav .text-cream\/60,
+html.light nav .text-cream\/50 {
+  color: #1a1a1a !important;
+}
+html.light nav .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Light mode: navbar — translucent frosted white, like dark mode’s bg-black/20 + blur */

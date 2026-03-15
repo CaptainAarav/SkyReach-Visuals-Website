@@ -56,8 +56,8 @@ function ComposeModal({ onClose, onSent, replyTo }) {
           <h2 className="text-lg font-bold text-white">Compose Email</h2>
           <button type="button" onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
         </div>
-        <div className="flex flex-1 min-h-0">
-          <form onSubmit={handleSend} className="flex flex-col w-full md:w-[420px] shrink-0 p-6 space-y-4 overflow-y-auto border-r border-white/10">
+        <div className="flex flex-1 min-h-0 flex-col md:flex-row">
+          <form onSubmit={handleSend} className="flex flex-col w-full md:w-[420px] shrink-0 p-6 space-y-4 overflow-y-auto md:border-r border-white/10">
             {error && <p className="text-sm text-red">{error}</p>}
             <div className="relative">
               <label className="block text-xs text-cream/50 mb-1">To</label>
@@ -112,14 +112,14 @@ function ComposeModal({ onClose, onSent, replyTo }) {
               <button type="submit" disabled={sending} className="bg-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-red-dark disabled:opacity-50">
                 {sending ? 'Sending…' : 'Send'}
               </button>
-              <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">Cancel</button>
+              <button type="button" onClick={onClose} className="text-sm font-medium bg-red text-white px-4 py-2 rounded-xl hover:bg-red-dark">Cancel</button>
             </div>
           </form>
-          <div className="hidden md:flex flex-col flex-1 min-w-0 bg-[#0f0f0f] p-4">
-            <p className="text-xs text-cream/50 mb-2 font-medium">Preview (as recipient will see — new dark design)</p>
+          <div className="flex flex-col flex-1 min-w-0 bg-bg p-4 min-h-[280px]">
+            <p className="text-xs text-cream/50 mb-2 font-medium shrink-0">Preview (as recipient will see)</p>
             <div className="flex-1 min-h-0 overflow-auto rounded-xl">
-              <div className="min-h-full flex justify-center py-6" style={{ backgroundColor: '#0f0f0f' }}>
-                <div className="w-full max-w-[520px] rounded-xl overflow-hidden border border-red/20" style={{ backgroundColor: '#1E2D4A' }}>
+              <div className="min-h-full flex justify-center py-6 bg-bg">
+                <div className="w-full max-w-[520px] rounded-xl overflow-hidden border border-red/20 bg-bg-card">
                   <div className="px-6 pt-6 pb-2">
                     <h2 className="text-cream font-semibold text-xl m-0" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>{displaySubject}</h2>
                   </div>
@@ -140,6 +140,23 @@ function ComposeModal({ onClose, onSent, replyTo }) {
     </div>
   );
 }
+
+/** Infer email source from subject for outline colour: quote, booking, contact, direct */
+function getEmailSource(subject, from) {
+  const s = (subject || '').toLowerCase();
+  const f = (from || '').toLowerCase();
+  if (/\bquote|get a quote|quote request\b/.test(s) || /\bquote\b/.test(f)) return 'quote';
+  if (/\bbooking|order|create booking|pay now|invoice\b/.test(s)) return 'booking';
+  if (/\bcontact|enquir|enquiry|message from|get in touch\b/.test(s)) return 'contact';
+  return 'direct';
+}
+
+const SOURCE_BORDER = {
+  quote: 'border-l-4 border-l-blue-500',
+  booking: 'border-l-4 border-l-emerald-500',
+  contact: 'border-l-4 border-l-amber-500',
+  direct: 'border-l-4 border-l-accent',
+};
 
 function MessageModal({ message, folder, onClose, onReply }) {
   const safeHtml = message?.bodyHtml
@@ -256,7 +273,7 @@ export default function AdminEmail() {
   };
 
   return (
-    <div className="admin-messages-page force-dark rounded-xl border border-white/10 overflow-hidden bg-bg">
+    <div className="admin-messages-page rounded-xl border border-white/10 overflow-hidden bg-bg">
       <div className="p-6">
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <button
@@ -391,12 +408,14 @@ export default function AdminEmail() {
                 <div className="flex-1 overflow-y-auto">
                   {list.map((item) => {
                     const isSelected = selectedMessage?.uid === item.uid;
+                    const source = getEmailSource(item.subject, item.from);
+                    const outlineClass = SOURCE_BORDER[source] || SOURCE_BORDER.direct;
                     return (
                       <button
                         key={`${tab}-${item.uid}`}
                         type="button"
                         onClick={() => openMessage(item)}
-                        className={`w-full text-left px-3 py-2.5 border-b border-white/5 hover:bg-white/5 transition-colors ${isSelected ? 'bg-white/10 border-l-2 border-l-red' : ''}`}
+                        className={`w-full text-left px-3 py-2.5 border-b border-white/5 hover:bg-white/5 transition-colors ${outlineClass} ${isSelected ? 'bg-white/10' : ''}`}
                       >
                         <div className="flex justify-between gap-2 items-start">
                           <span className="text-sm font-medium text-cream truncate flex-1">{tab === 'inbox' ? item.from : item.to}</span>

@@ -46,44 +46,63 @@ function OrderComposeModal({ order, onClose, onSent }) {
     }
   };
 
+  const displaySubject = (subject || '').trim() || '(No subject)';
+  const displayBody = (body || '').trim() || '(Your message will appear here)';
+
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
+      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
           <h2 className="text-lg font-bold text-white">Send email</h2>
           <button onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
         </div>
-        <form onSubmit={handleSend} className="p-6 space-y-4">
-          {err && <p className="text-sm text-red">{err}</p>}
-          <div>
-            <label className="block text-xs text-cream/50 mb-1">To</label>
-            <p className="text-sm text-white">{order.user?.email}</p>
+        <div className="flex flex-1 min-h-0 flex-col md:flex-row">
+          <form onSubmit={handleSend} className="flex flex-col w-full md:w-[380px] shrink-0 p-6 space-y-4 overflow-y-auto md:border-r border-white/10">
+            {err && <p className="text-sm text-red">{err}</p>}
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">To</label>
+              <p className="text-sm text-white">{order.user?.email}</p>
+            </div>
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">Subject</label>
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">Message</label>
+              <textarea
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={5}
+                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none"
+                required
+              />
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" disabled={sending} className="text-sm font-medium bg-accent text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50">Send</button>
+              <button type="button" onClick={onClose} className="text-sm font-medium bg-red text-white px-4 py-2 rounded-lg hover:bg-red-dark">Cancel</button>
+            </div>
+          </form>
+          <div className="flex flex-col flex-1 min-w-0 bg-bg p-4 min-h-[240px] border-t md:border-t-0 md:border-l-0 border-white/10">
+            <p className="text-xs text-cream/50 mb-2 font-medium shrink-0">Preview (as recipient will see)</p>
+            <div className="flex-1 min-h-0 overflow-auto rounded-xl">
+              <div className="min-h-full flex justify-center py-4 bg-bg">
+                <div className="w-full max-w-[520px] rounded-xl overflow-hidden border border-red/20 bg-bg-card p-4">
+                  <h2 className="text-cream font-semibold text-lg mb-2" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>{displaySubject}</h2>
+                  <div className="text-cream/90 text-sm leading-relaxed whitespace-pre-wrap" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>{displayBody}</div>
+                  <div className="mt-4 pt-4 border-t border-white/10 text-cream/80 text-xs">
+                    SkyReach Visuals — Drone Aerial Photography &amp; Inspection · 07877 691861
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs text-cream/50 mb-1">Subject</label>
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-cream/50 mb-1">Message</label>
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              rows={5}
-              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none"
-              required
-            />
-          </div>
-          <div className="flex gap-2">
-            <button type="submit" disabled={sending} className="text-sm font-medium bg-accent text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50">Send</button>
-            <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">Cancel</button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

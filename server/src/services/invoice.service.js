@@ -35,7 +35,8 @@ export function generateInvoiceHtml(booking, user) {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${DARK.bodyBg};padding:40px 20px;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:${DARK.cardBg};border-radius:12px;border:1px solid rgba(196,30,58,0.25);">
-        <tr><td style="padding:24px 40px;border-radius:12px 12px 0 0;"><h2 style="margin:0;color:${DARK.text};font-size:20px;font-weight:600;">Invoice</h2></td></tr>
+        <tr><td style="padding:24px 40px 16px;border-radius:12px 12px 0 0;"><img src="${logoUrl()}" alt="SkyReach Visuals" width="120" height="40" style="display:block;max-width:120px;height:auto;border-radius:4px;filter:brightness(0) invert(1);opacity:0.95;" /></td></tr>
+        <tr><td style="padding:0 40px 24px;"><h2 style="margin:0;color:${DARK.text};font-size:20px;font-weight:600;">Invoice</h2></td></tr>
         <tr><td style="padding:0 40px 8px;"><p style="margin:0;color:${DARK.textFaint};font-size:14px;">${date} &middot; ${orderNo || '—'}</p></td></tr>
         <tr><td style="padding:0 40px 24px;">
           <div style="background-color:rgba(255,255,255,0.08);border-radius:8px;padding:16px 20px;margin:16px 0;text-align:center;"><span style="font-size:22px;font-weight:700;color:${DARK.text};">£${amount}</span></div>

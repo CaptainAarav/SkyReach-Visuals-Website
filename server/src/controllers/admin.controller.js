@@ -438,6 +438,19 @@ export async function permanentDeleteOrder(req, res, next) {
   }
 }
 
+/** POST /orders/reset-order-sequence — restart order number at 1 (admin only). Next new booking will get orderNumber 1. */
+export async function resetOrderNumberSequence(req, res, next) {
+  try {
+    await prisma.$executeRawUnsafe(
+      'ALTER SEQUENCE "Booking_orderNumber_seq" RESTART WITH 1'
+    );
+    await logAdminAction(req.user.id, 'RESET_ORDER_SEQUENCE', null, 'Order number sequence reset to 1');
+    res.json({ success: true, data: { message: 'Order number sequence reset. Next order will be 1.' }, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** GET or POST /orders/:id/invoice-preview — returns filled invoice PDF. GET: query quotedPrice. POST: body { quotedPrice, customerName, customerEmail, serviceName, location, invoiceDate } for editable fields. */
 export async function getOrderInvoicePreview(req, res, next) {
   try {
@@ -521,17 +534,7 @@ export async function updateOrder(req, res, next) {
 
     if (status === 'APPROVED' && booking.status !== 'APPROVED' && updated.user?.email) {
       const payUrl = `${env.clientUrl}/booking/pay/${booking.id}`;
-      const pdfOptions = {};
-      if (invoiceOverrides && typeof invoiceOverrides === 'object') {
-        if (invoiceOverrides.customerName !== undefined) pdfOptions.customerName = String(invoiceOverrides.customerName);
-        if (invoiceOverrides.customerEmail !== undefined) pdfOptions.customerEmail = String(invoiceOverrides.customerEmail);
-        if (invoiceOverrides.serviceName !== undefined) pdfOptions.serviceName = String(invoiceOverrides.serviceName);
-        if (invoiceOverrides.location !== undefined) pdfOptions.location = String(invoiceOverrides.location);
-        if (invoiceOverrides.invoiceDate !== undefined) pdfOptions.invoiceDate = invoiceOverrides.invoiceDate;
-      }
-      pdfOptions.pricePence = updated.packagePrice ?? 0;
-      const invoicePdfBuffer = await generateInvoicePdf(updated, updated.user, pdfOptions).catch(() => null);
-      await sendBookingApproved({ to: updated.user.email, booking: updated, payUrl, invoicePdfBuffer: invoicePdfBuffer ?? undefined }).catch((err) => {
+      await sendBookingApproved({ to: updated.user.email, booking: updated, payUrl }).catch((err) => {
         console.error('Failed to send approval email:', err.message);
       });
     }
@@ -718,15 +721,22 @@ export async function updateReviewShowOnMainPage(req, res, next) {
 // ── Admin Logs ──────────────────────────────────────────────────────
 export async function listAdminLogs(req, res, next) {
   try {
-    const logs = await prisma.adminLog.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-      include: {
-        admin: { select: { id: true, name: true, email: true } },
-        targetUser: { select: { id: true, name: true, email: true } },
-      },
-    });
-    res.json({ success: true, data: logs, error: null });
+    const [logs, pageViews] = await Promise.all([
+      prisma.adminLog.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        include: {
+          admin: { select: { id: true, name: true, email: true } },
+          targetUser: { select: { id: true, name: true, email: true } },
+        },
+      }),
+      prisma.pageView.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        select: { id: true, path: true, createdAt: true },
+      }),
+    ]);
+    res.json({ success: true, data: { auditLogs: logs, pageViews }, error: null });
   } catch (err) {
     next(err);
   }

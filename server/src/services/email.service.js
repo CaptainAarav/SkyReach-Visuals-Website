@@ -70,10 +70,19 @@ const L = {
   font: "'Inter',Arial,sans-serif",
 };
 
+/** White-themed logo row at top of card (all emails). */
+function darkLogoHeader() {
+  return `<tr>
+  <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px 16px;text-align:left;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+    <img src="${logoUrl()}" alt="SkyReach Visuals" width="120" height="40" style="display:block;max-width:120px;height:auto;border-radius:${EMAIL_LOGO_RADIUS};filter:brightness(0) invert(1);opacity:0.95;" />
+  </td>
+</tr>`;
+}
+
 function emailHeader(title) {
   if (!title) return '';
   return `<tr>
-  <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:left;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
+  <td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;text-align:left;">
     <h1 style="margin:0;color:${EMAIL_DARK.text};font-size:20px;font-weight:600;font-family:'Inter',Arial,sans-serif;">${title}</h1>
   </td>
 </tr>`;
@@ -192,6 +201,7 @@ export async function sendBookingConfirmation({ to, booking }) {
   const orderNo = formatOrderNumber(booking.orderNumber);
   const amount = `£${(booking.packagePrice / 100).toFixed(2)}`;
   const inner = `
+  ${darkLogoHeader()}
   ${emailHeader('Booking confirmed')}
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;"><p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:15px;line-height:1.6;">Thanks for booking with us. Here are your details:</p></td></tr>
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px;">${darkHighlight(`Order ${orderNo} &middot; ${amount}`)}</td></tr>
@@ -252,6 +262,7 @@ export async function sendPaymentRequestAccepted({ to, payUrl, customerName }) {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          ${darkLogoHeader()}
           ${emailHeader('Payment link ready')}
           <tr>
             <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
@@ -298,6 +309,7 @@ export async function sendPaymentRequestDeclined({ to, customerName }) {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          ${darkLogoHeader()}
           ${emailHeader('Payment request update')}
           <tr>
             <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
@@ -343,6 +355,7 @@ export async function sendPaymentRequestAdjusted({ to, customerName, adminNotes,
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          ${darkLogoHeader()}
           ${emailHeader('Payment request update')}
           <tr>
             <td style="background-color:${EMAIL_DARK.cardBg};padding:40px;text-align:left;">
@@ -384,6 +397,7 @@ export async function sendContactNotification({ name, email, phone, location, se
   const serviceTypeLine = serviceType ? `<tr><td style="padding:6px 0;color:${EMAIL_DARK.textFaint};font-size:13px;">Service type</td><td style="padding:6px 0;color:${EMAIL_DARK.text};font-size:14px;">${serviceType}</td></tr>` : '';
   const extraDetailsLine = extraDetails ? `<tr><td colspan="2" style="padding:12px 0 6px;color:${EMAIL_DARK.text};font-size:14px;line-height:1.6;white-space:pre-wrap;">${extraDetails}</td></tr>` : '';
   const inner = `
+  ${darkLogoHeader()}
   ${emailHeader('New enquiry')}
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;">
     <table width="100%" cellpadding="0" cellspacing="0" style="font-family:'Inter',Arial,sans-serif;font-size:14px;">
@@ -420,6 +434,7 @@ export async function sendVerificationEmail({ to, name, verifyUrl }) {
   }
 
   const inner = `
+  ${darkLogoHeader()}
   ${emailHeader('Verify your email')}
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;"><p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:15px;line-height:1.6;">Hi ${name}, thanks for signing up. Click the button below to verify your email address.</p></td></tr>
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;">${darkCtaButton(verifyUrl, 'Verify my email')}</td></tr>
@@ -444,7 +459,7 @@ export async function sendVerificationEmail({ to, name, verifyUrl }) {
   }
 }
 
-export async function sendBookingApproved({ to, booking, payUrl, invoicePdfBuffer }) {
+export async function sendBookingApproved({ to, booking, payUrl }) {
   const transport = getTransporter();
   if (!transport) {
     console.log('SMTP not configured — skipping booking approved email');
@@ -462,6 +477,7 @@ export async function sendBookingApproved({ to, booking, payUrl, invoicePdfBuffe
   const amount = `£${(booking.packagePrice / 100).toFixed(2)}`;
 
   const inner = `
+  ${darkLogoHeader()}
   ${emailHeader('Booking approved')}
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;"><p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:15px;line-height:1.6;">Great news! Your booking request has been approved. Complete your payment below.</p></td></tr>
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px;">${darkHighlight(`Amount to pay: ${amount}`)}</td></tr>
@@ -475,22 +491,18 @@ export async function sendBookingApproved({ to, booking, payUrl, invoicePdfBuffe
     </table>
   </td></tr>
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;">${darkCtaButton(payUrl, 'Pay now')}</td></tr>
-  <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;"><p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">Click the button above to pay securely via Stripe. Your invoice is attached. Questions? Reply to this email or call 07877 691861.</p></td></tr>
+  <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;"><p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">Click the button above to pay securely via Stripe. Questions? Reply to this email or call 07877 691861.</p></td></tr>
   ${darkSignature('SkyReach Visuals')}`;
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${darkWrapper(inner)}</html>`;
 
-  const mailOptions = {
+  await transport.sendMail({
     from: `"SkyReach Visuals" <${env.emailFrom}>`,
     to,
     subject: `Booking Approved — ${booking.packageName} | SkyReach Visuals`,
     headers: mailHeaders(),
     html,
-  };
-  if (invoicePdfBuffer && Buffer.isBuffer(invoicePdfBuffer)) {
-    mailOptions.attachments = [{ filename: 'invoice.pdf', content: invoicePdfBuffer }];
-  }
-  await transport.sendMail(mailOptions);
+  });
 }
 
 export async function sendBookingDeclined({ to, booking }) {
@@ -502,6 +514,7 @@ export async function sendBookingDeclined({ to, booking }) {
   }
 
   const inner = `
+  ${darkLogoHeader()}
   ${emailHeader('Booking update')}
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;"><p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:15px;line-height:1.6;">We're sorry, but we're unable to approve your request for <strong style="color:${EMAIL_DARK.text};">${booking.packageName}</strong> at this time.</p></td></tr>
   ${booking.adminNotes ? `<tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 16px;"><p style="margin:0;color:${EMAIL_DARK.text};font-size:14px;line-height:1.6;"><strong>Note:</strong> ${booking.adminNotes}</p></td></tr>` : ''}
@@ -536,6 +549,7 @@ function adminSignatureText(senderName) {
 function adminMessageHtml(body, subject, senderName) {
   const escaped = body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
   const inner = `
+  ${darkLogoHeader()}
   ${emailHeader(subject)}
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;"><div style="color:${EMAIL_DARK.text};font-size:15px;line-height:1.6;white-space:pre-wrap;">${escaped}</div></td></tr>
   ${darkSignature(senderName)}`;
@@ -607,6 +621,7 @@ export async function sendAdminLoginEmail({ to, name, verifyUrl }) {
   }
 
   const inner = `
+  ${darkLogoHeader()}
   ${emailHeader('Confirm your admin login')}
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;"><p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:15px;line-height:1.6;">Hi ${name}, someone (hopefully you) is trying to sign in to your admin account. Click below to confirm.</p></td></tr>
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;">${darkCtaButton(verifyUrl, 'Confirm sign-in')}</td></tr>
@@ -639,6 +654,7 @@ export async function sendReviewRequestEmail({ to, name, booking, reviewUrl }) {
   }
 
   const inner = `
+  ${darkLogoHeader()}
   ${emailHeader('How was your experience?')}
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 24px;"><p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:15px;line-height:1.6;">Hi ${name}, your <strong style="color:${EMAIL_DARK.text};">${booking.packageName}</strong> order is complete. We hope you're happy with the results.</p></td></tr>
   <tr><td style="background-color:${EMAIL_DARK.cardBg};padding:0 40px 16px;"><p style="margin:0;color:${EMAIL_DARK.textMuted};font-size:14px;line-height:1.6;">We'd love a quick review — your feedback helps us improve and helps other customers decide.</p></td></tr>

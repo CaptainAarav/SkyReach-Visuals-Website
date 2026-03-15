@@ -6,6 +6,8 @@ import { api } from '../api/client.js';
 import AnimateInView from '../components/AnimateInView.jsx';
 
 const HERO_VIDEO = '/media/hero-bg.mp4';
+/** Optional: set to '/media/hero-bg.webm' if you add a WebM encode (often smaller = faster load) */
+const HERO_VIDEO_WEBM = null;
 
 const SERVICES = [
   { title: 'Roof Inspection', description: 'Aerial roof check using drone. Identify damage, leaks, or missing tiles. Includes photos and short video.' },
@@ -72,6 +74,8 @@ export default function Home() {
   const [reviewExpandedId, setReviewExpandedId] = useState(null);
   const [reviewHighlightIndex, setReviewHighlightIndex] = useState(0);
   const testimonialsScrollRef = useRef(null);
+  const heroVideoRef = useRef(null);
+  const [heroVideoSrc, setHeroVideoSrc] = useState(null);
 
   useEffect(() => {
     api.get('/api/reviews/public')
@@ -108,6 +112,30 @@ export default function Home() {
     }
   }, [location.pathname, location.hash]);
 
+  // Load hero video only when section is in view (or immediately if at top) to speed up initial load
+  useEffect(() => {
+    const section = document.querySelector('.hero-on-dark');
+    if (!section) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !heroVideoSrc) setHeroVideoSrc(HERO_VIDEO);
+      },
+      { rootMargin: '50px', threshold: 0 }
+    );
+    io.observe(section);
+    return () => io.disconnect();
+  }, [heroVideoSrc]);
+
+  useEffect(() => {
+    if (heroVideoSrc && heroVideoRef.current) heroVideoRef.current.load();
+  }, [heroVideoSrc]);
+
+  // If video is slow to load, show hero text after a short delay so the page doesn't feel stuck
+  useEffect(() => {
+    const t = setTimeout(() => setHeroVideoReady(true), 1800);
+    return () => clearTimeout(t);
+  }, []);
+
   const filteredGallery = galleryCategory === 'All'
     ? galleryItems
     : galleryItems.filter((item) => item.category === galleryCategory);
@@ -117,18 +145,25 @@ export default function Home() {
       {/* Hero — video fills whole screen from top, no gap above; keep text light on video in both themes */}
       <section className="hero-on-dark relative min-h-screen flex items-center justify-center overflow-hidden bg-black rounded-b-3xl -mt-20">
         <video
-          src={HERO_VIDEO}
+          ref={heroVideoRef}
           poster="/media/hero-poster.jpg"
           className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-700 transform-gpu ${heroVideoReady ? 'opacity-100' : 'opacity-0'}`}
           muted
           playsInline
           loop
           autoPlay
-          preload="auto"
-          fetchpriority="high"
+          preload="metadata"
+          fetchPriority="high"
           aria-hidden
           onCanPlay={() => setHeroVideoReady(true)}
-        />
+        >
+          {heroVideoSrc && (
+            <>
+              {HERO_VIDEO_WEBM && <source src={HERO_VIDEO_WEBM} type="video/webm" />}
+              <source src={HERO_VIDEO} type="video/mp4" />
+            </>
+          )}
+        </video>
         <div className="absolute inset-0 bg-black/30 pointer-events-none" aria-hidden />
         <div className={`relative z-10 max-w-5xl mx-auto px-6 py-24 text-center flex flex-col items-center justify-center ${heroVideoReady ? 'animate-fade-in' : 'opacity-0'}`}>
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold leading-tight text-white" style={{ letterSpacing: '0.2em' }}>
@@ -162,7 +197,7 @@ export default function Home() {
               SkyReach Visuals is a Bournemouth-based drone photography service providing high-quality aerial photos and video for businesses, property owners and construction projects. Using professional DJI drone technology, we capture unique perspectives that help showcase properties, inspect hard-to-reach areas and create engaging visual content.
             </p>
             <p className="mt-4 text-cream/80 leading-relaxed">
-              We hold a current CAA Operational Authorisation and carry full public liability insurance. Every shoot is planned, risk-assessed, and delivered to a broadcast-ready standard.
+              We hold a current CAA Operational Authorisation. Every shoot is planned, risk-assessed, and delivered to a broadcast-ready standard.
             </p>
           </div>
         </div>
@@ -234,14 +269,14 @@ export default function Home() {
                   key={r.id}
                   className={`shrink-0 w-[300px] md:w-[320px] snap-center rounded-2xl flex flex-col p-6 min-h-[280px] border transition-all duration-200 ${
                     isFeatured
-                      ? 'bg-navy border-accent/40 shadow-lg shadow-accent/15'
-                      : 'bg-bg-card border-white/10 hover:border-white/20'
+                      ? 'bg-bg-card border-2 border-navy shadow-lg'
+                      : 'bg-bg-card border border-white/10 hover:border-white/20'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold shrink-0 ${
-                        isFeatured ? 'bg-accent/30 text-cream' : 'bg-white/10 text-cream'
+                      className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold shrink-0 border-2 ${
+                        isFeatured ? 'border-navy bg-transparent text-cream' : 'bg-white/10 border-transparent text-cream'
                       }`}
                     >
                       {initial}
