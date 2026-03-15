@@ -66,14 +66,18 @@ export async function getStats(req, res, next) {
     const computedRevenue = (revenueResult._sum.packagePrice || 0) + (externalRevenueResult._sum.amount || 0);
     const revenue = siteSettings?.revenueOverridePence != null ? siteSettings.revenueOverridePence : computedRevenue;
     const displayTotalBookings = siteSettings?.totalBookingsOverride != null ? siteSettings.totalBookingsOverride : totalBookings;
+    const displayTotalQuotes = siteSettings?.totalQuotesOverride != null ? siteSettings.totalQuotesOverride : totalQuotes;
+    const displayTotalAccepted = siteSettings?.totalAcceptedOverride != null ? siteSettings.totalAcceptedOverride : totalAccepted;
+    const displayTotalDeclined = siteSettings?.totalDeclinedOverride != null ? siteSettings.totalDeclinedOverride : totalDeclined;
 
     res.json({
       success: true,
       data: {
         total, admins, customerSupport, active, suspended, banned,
-        totalQuotes,
+        totalQuotes: displayTotalQuotes,
         totalBookings: displayTotalBookings,
-        totalAccepted, totalDeclined,
+        totalAccepted: displayTotalAccepted,
+        totalDeclined: displayTotalDeclined,
         revenue,
       },
       error: null,
@@ -127,19 +131,25 @@ export async function resetTraffic(req, res, next) {
   }
 }
 
-/** PATCH /api/admin/settings — update dashboard display overrides (admin only). Body: { revenueOverridePence?, totalBookingsOverride? } (null to clear). */
+/** PATCH /api/admin/settings — update dashboard display overrides (admin only). */
 export async function updateSiteSettings(req, res, next) {
   try {
-    const { revenueOverridePence, totalBookingsOverride } = req.body || {};
+    const body = req.body || {};
     const data = {};
-    if (revenueOverridePence !== undefined) {
-      data.revenueOverridePence = revenueOverridePence == null || revenueOverridePence === '' ? null : Math.round(Number(revenueOverridePence));
-      if (data.revenueOverridePence !== null && (Number.isNaN(data.revenueOverridePence) || data.revenueOverridePence < 0)) data.revenueOverridePence = null;
+    const intOverride = (key) => {
+      const v = body[key];
+      if (v === undefined) return;
+      const n = v == null || v === '' ? null : Math.round(Number(v));
+      data[key] = n !== null && !Number.isNaN(n) && n >= 0 ? n : null;
+    };
+    if (body.revenueOverridePence !== undefined) {
+      const p = body.revenueOverridePence == null || body.revenueOverridePence === '' ? null : Math.round(Number(body.revenueOverridePence));
+      data.revenueOverridePence = p !== null && !Number.isNaN(p) && p >= 0 ? p : null;
     }
-    if (totalBookingsOverride !== undefined) {
-      const v = totalBookingsOverride == null || totalBookingsOverride === '' ? null : Math.round(Number(totalBookingsOverride));
-      data.totalBookingsOverride = v !== null && !Number.isNaN(v) && v >= 0 ? v : null;
-    }
+    intOverride('totalBookingsOverride');
+    intOverride('totalQuotesOverride');
+    intOverride('totalAcceptedOverride');
+    intOverride('totalDeclinedOverride');
     await prisma.siteSettings.upsert({
       where: { id: 'site' },
       create: { id: 'site', ...data },

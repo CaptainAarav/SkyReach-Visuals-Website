@@ -119,9 +119,8 @@ export default function AdminDashboard() {
     if (Number.isNaN(n) || n < 0) return;
     setSavingBookings(true);
     try {
-      await api.patch('/api/admin/settings', { totalBookingsOverride: n });
+      await saveOverride('totalBookingsOverride', n);
       setEditingBookings(false);
-      loadStats();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -129,19 +128,60 @@ export default function AdminDashboard() {
     }
   };
 
-  const [resettingStats, setResettingStats] = useState(false);
-  const handleResetRevenueAndBookings = async () => {
-    if (!window.confirm('Set revenue to £220 and reset order numbers to start from 1? This will update displayed revenue and the next booking will be #1.')) return;
-    setResettingStats(true);
-    setError(null);
+  const saveOverride = async (key, value) => {
     try {
-      await api.patch('/api/admin/settings', { revenueOverridePence: 22000, totalBookingsOverride: 0 });
-      await api.post('/api/admin/orders/reset-order-sequence');
+      await api.patch('/api/admin/settings', { [key]: value });
       loadStats();
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const [editingQuotes, setEditingQuotes] = useState(false);
+  const [quotesInput, setQuotesInput] = useState('');
+  const [savingQuotes, setSavingQuotes] = useState(false);
+  const startEditQuotes = () => { setQuotesInput(String(stats?.totalQuotes ?? 0)); setEditingQuotes(true); };
+  const saveQuotes = async () => {
+    const n = parseInt(quotesInput, 10);
+    if (Number.isNaN(n) || n < 0) return;
+    setSavingQuotes(true);
+    try {
+      await saveOverride('totalQuotesOverride', n);
+      setEditingQuotes(false);
     } finally {
-      setResettingStats(false);
+      setSavingQuotes(false);
+    }
+  };
+
+  const [editingAccepted, setEditingAccepted] = useState(false);
+  const [acceptedInput, setAcceptedInput] = useState('');
+  const [savingAccepted, setSavingAccepted] = useState(false);
+  const startEditAccepted = () => { setAcceptedInput(String(stats?.totalAccepted ?? 0)); setEditingAccepted(true); };
+  const saveAccepted = async () => {
+    const n = parseInt(acceptedInput, 10);
+    if (Number.isNaN(n) || n < 0) return;
+    setSavingAccepted(true);
+    try {
+      await saveOverride('totalAcceptedOverride', n);
+      setEditingAccepted(false);
+    } finally {
+      setSavingAccepted(false);
+    }
+  };
+
+  const [editingDeclined, setEditingDeclined] = useState(false);
+  const [declinedInput, setDeclinedInput] = useState('');
+  const [savingDeclined, setSavingDeclined] = useState(false);
+  const startEditDeclined = () => { setDeclinedInput(String(stats?.totalDeclined ?? 0)); setEditingDeclined(true); };
+  const saveDeclined = async () => {
+    const n = parseInt(declinedInput, 10);
+    if (Number.isNaN(n) || n < 0) return;
+    setSavingDeclined(true);
+    try {
+      await saveOverride('totalDeclinedOverride', n);
+      setEditingDeclined(false);
+    } finally {
+      setSavingDeclined(false);
     }
   };
 
@@ -239,7 +279,21 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link to="/admin/messages"><StatCard label="Total Quotes" value={stats.totalQuotes} color="text-blue-400" /></Link>
+            <StatCard
+              label="Total Quotes"
+              value={stats.totalQuotes}
+              color="text-blue-400"
+              href="/admin/messages"
+              isAdmin={isAdmin}
+              editing={editingQuotes}
+              editInput={quotesInput}
+              onEditInputChange={setQuotesInput}
+              onStartEdit={startEditQuotes}
+              onSave={saveQuotes}
+              onCancel={() => setEditingQuotes(false)}
+              saving={savingQuotes}
+              PencilIcon={PencilIcon}
+            />
             <StatCard
               label="Total Bookings"
               value={stats.totalBookings}
@@ -255,21 +309,37 @@ export default function AdminDashboard() {
               saving={savingBookings}
               PencilIcon={PencilIcon}
             />
-            <Link to="/admin/orders?status=accepted"><StatCard label="Total Accepted" value={stats.totalAccepted} color="text-emerald-400" /></Link>
-            <Link to="/admin/orders?status=declined"><StatCard label="Total Declined" value={stats.totalDeclined} color="text-red-400" /></Link>
+            <StatCard
+              label="Total Accepted"
+              value={stats.totalAccepted}
+              color="text-emerald-400"
+              href="/admin/orders?status=accepted"
+              isAdmin={isAdmin}
+              editing={editingAccepted}
+              editInput={acceptedInput}
+              onEditInputChange={setAcceptedInput}
+              onStartEdit={startEditAccepted}
+              onSave={saveAccepted}
+              onCancel={() => setEditingAccepted(false)}
+              saving={savingAccepted}
+              PencilIcon={PencilIcon}
+            />
+            <StatCard
+              label="Total Declined"
+              value={stats.totalDeclined}
+              color="text-red-400"
+              href="/admin/orders?status=declined"
+              isAdmin={isAdmin}
+              editing={editingDeclined}
+              editInput={declinedInput}
+              onEditInputChange={setDeclinedInput}
+              onStartEdit={startEditDeclined}
+              onSave={saveDeclined}
+              onCancel={() => setEditingDeclined(false)}
+              saving={savingDeclined}
+              PencilIcon={PencilIcon}
+            />
           </div>
-          {isAdmin && (
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={handleResetRevenueAndBookings}
-                disabled={resettingStats}
-                className="text-sm font-medium px-4 py-2 rounded-xl bg-amber-600/20 text-amber-400 border border-amber-500/30 hover:bg-amber-600/30 disabled:opacity-50"
-              >
-                {resettingStats ? 'Resetting…' : 'Reset revenue to £220 & reset booking numbers'}
-              </button>
-            </div>
-          )}
 
           <div className="bg-bg-card border border-white/10 rounded-2xl p-8 mt-8">
             <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">Website traffic (sessions)</p>

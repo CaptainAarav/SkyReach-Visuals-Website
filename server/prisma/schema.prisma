@@ -216,8 +216,11 @@ model PageView {
 }
 
 model SiteSettings {
-  id                    String   @id @default("site")
-  revenueOverridePence  Int?     // when set, dashboard shows this instead of computed revenue
-  totalBookingsOverride  Int?     // when set, dashboard shows this instead of computed count
+  id                     String   @id @default("site")
+  revenueOverridePence   Int?
+  totalBookingsOverride  Int?
+  totalQuotesOverride    Int?
+  totalAcceptedOverride  Int?
+  totalDeclinedOverride  Int?
   updatedAt              DateTime @updatedAt
 }
