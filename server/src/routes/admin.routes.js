@@ -4,6 +4,7 @@ import {
   getStats,
   getTraffic,
   resetTraffic,
+  updateSiteSettings,
   createExternalProject,
   listAccounts,
   getAccount,
@@ -44,6 +45,7 @@ router.use(requireAuth, requireStaff);
 router.get('/stats', getStats);
 router.get('/traffic', getTraffic);
 router.delete('/traffic', requireAdmin, resetTraffic);
+router.patch('/settings', requireAdmin, updateSiteSettings);
 router.post('/external-projects', requireAdmin, createExternalProject);
 
 // Accounts

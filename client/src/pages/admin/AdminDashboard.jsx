@@ -5,6 +5,12 @@ import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import CountUp from '../../components/CountUp.jsx';
 
+const PencilIcon = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+  </svg>
+);
+
 const PERIODS = [
   { value: 'overall', label: 'Overall' },
   { value: 'yearly', label: 'This Year' },
@@ -79,6 +85,66 @@ export default function AdminDashboard() {
       .finally(() => setResettingTraffic(false));
   };
 
+  const [editingRevenue, setEditingRevenue] = useState(false);
+  const [revenueInput, setRevenueInput] = useState('');
+  const [savingRevenue, setSavingRevenue] = useState(false);
+  const startEditRevenue = () => {
+    setRevenueInput((stats?.revenue ?? 0) / 100 + '');
+    setEditingRevenue(true);
+  };
+  const saveRevenue = async () => {
+    const pounds = parseFloat(revenueInput);
+    if (Number.isNaN(pounds) || pounds < 0) return;
+    setSavingRevenue(true);
+    try {
+      await api.patch('/api/admin/settings', { revenueOverridePence: Math.round(pounds * 100) });
+      setEditingRevenue(false);
+      loadStats();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingRevenue(false);
+    }
+  };
+
+  const [editingBookings, setEditingBookings] = useState(false);
+  const [bookingsInput, setBookingsInput] = useState('');
+  const [savingBookings, setSavingBookings] = useState(false);
+  const startEditBookings = () => {
+    setBookingsInput(String(stats?.totalBookings ?? 0));
+    setEditingBookings(true);
+  };
+  const saveBookings = async () => {
+    const n = parseInt(bookingsInput, 10);
+    if (Number.isNaN(n) || n < 0) return;
+    setSavingBookings(true);
+    try {
+      await api.patch('/api/admin/settings', { totalBookingsOverride: n });
+      setEditingBookings(false);
+      loadStats();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingBookings(false);
+    }
+  };
+
+  const [resettingStats, setResettingStats] = useState(false);
+  const handleResetRevenueAndBookings = async () => {
+    if (!window.confirm('Set revenue to £220 and reset order numbers to start from 1? This will update displayed revenue and the next booking will be #1.')) return;
+    setResettingStats(true);
+    setError(null);
+    try {
+      await api.patch('/api/admin/settings', { revenueOverridePence: 22000, totalBookingsOverride: 0 });
+      await api.post('/api/admin/orders/reset-order-sequence');
+      loadStats();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setResettingStats(false);
+    }
+  };
+
   const handleAddExternalProject = async (e) => {
     e.preventDefault();
     const amount = parseFloat(externalAmount);
@@ -137,12 +203,36 @@ export default function AdminDashboard() {
       {stats && (
         <>
           <div className="bg-bg-card border border-white/10 rounded-2xl p-8 mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">
-              Revenue ({PERIODS.find((p) => p.value === period)?.label})
-            </p>
-            <p className="text-4xl md:text-5xl font-bold text-white">
-              <CountUp value={stats.revenue / 100} decimals={2} prefix="£" duration={1200} />
-            </p>
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-cream/50">
+                Revenue ({PERIODS.find((p) => p.value === period)?.label})
+              </p>
+              {isAdmin && !editingRevenue && (
+                <button type="button" onClick={startEditRevenue} className="p-1 text-cream/50 hover:text-white rounded" aria-label="Edit revenue">
+                  <PencilIcon className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            {editingRevenue ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-2xl text-cream/80">£</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={revenueInput}
+                  onChange={(e) => setRevenueInput(e.target.value)}
+                  className="bg-bg border border-white/20 rounded-lg py-2 px-3 text-2xl font-bold text-white w-32"
+                  autoFocus
+                />
+                <button type="button" onClick={saveRevenue} disabled={savingRevenue} className="text-sm font-medium bg-accent text-white px-3 py-1.5 rounded-lg hover:opacity-90 disabled:opacity-50">Save</button>
+                <button type="button" onClick={() => setEditingRevenue(false)} className="text-sm text-cream/70 hover:text-white">Cancel</button>
+              </div>
+            ) : (
+              <p className="text-4xl md:text-5xl font-bold text-white">
+                <CountUp value={stats.revenue / 100} decimals={2} prefix="£" duration={1200} />
+              </p>
+            )}
             <p className="mt-2 text-sm text-cream/50">
               From confirmed and completed bookings and external projects
             </p>
@@ -150,10 +240,36 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link to="/admin/messages"><StatCard label="Total Quotes" value={stats.totalQuotes} color="text-blue-400" /></Link>
-            <Link to="/admin/orders"><StatCard label="Total Bookings" value={stats.totalBookings} color="text-amber-400" /></Link>
+            <StatCard
+              label="Total Bookings"
+              value={stats.totalBookings}
+              color="text-amber-400"
+              href="/admin/orders"
+              isAdmin={isAdmin}
+              editing={editingBookings}
+              editInput={bookingsInput}
+              onEditInputChange={setBookingsInput}
+              onStartEdit={startEditBookings}
+              onSave={saveBookings}
+              onCancel={() => setEditingBookings(false)}
+              saving={savingBookings}
+              PencilIcon={PencilIcon}
+            />
             <Link to="/admin/orders?status=accepted"><StatCard label="Total Accepted" value={stats.totalAccepted} color="text-emerald-400" /></Link>
             <Link to="/admin/orders?status=declined"><StatCard label="Total Declined" value={stats.totalDeclined} color="text-red-400" /></Link>
           </div>
+          {isAdmin && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={handleResetRevenueAndBookings}
+                disabled={resettingStats}
+                className="text-sm font-medium px-4 py-2 rounded-xl bg-amber-600/20 text-amber-400 border border-amber-500/30 hover:bg-amber-600/30 disabled:opacity-50"
+              >
+                {resettingStats ? 'Resetting…' : 'Reset revenue to £220 & reset booking numbers'}
+              </button>
+            </div>
+          )}
 
           <div className="bg-bg-card border border-white/10 rounded-2xl p-8 mt-8">
             <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">Website traffic (sessions)</p>
@@ -268,15 +384,53 @@ export default function AdminDashboard() {
   );
 }
 
-function StatCard({ label, value, color }) {
-  return (
-    <div className="bg-bg-card border border-white/10 rounded-2xl p-6">
-      <p className="text-xs font-semibold uppercase tracking-widest text-cream/50 mb-2">{label}</p>
-      <p className={`text-3xl font-bold ${color}`}>
-        <CountUp value={value} duration={1000} />
-      </p>
+function StatCard({
+  label,
+  value,
+  color,
+  href,
+  isAdmin,
+  editing,
+  editInput,
+  onEditInputChange,
+  onStartEdit,
+  onSave,
+  onCancel,
+  saving,
+  PencilIcon,
+}) {
+  const content = (
+    <div className="bg-bg-card border border-white/10 rounded-2xl p-6 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-2">
+        <p className="text-xs font-semibold uppercase tracking-widest text-cream/50">{label}</p>
+        {isAdmin && href && !editing && onStartEdit && (
+          <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }} className="p-1 text-cream/50 hover:text-white rounded" aria-label={`Edit ${label}`}>
+            <PencilIcon className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+      {editing ? (
+        <div className="flex flex-wrap items-center gap-2 flex-1">
+          <input
+            type="number"
+            min="0"
+            value={editInput}
+            onChange={(e) => onEditInputChange(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-bg border border-white/20 rounded-lg py-1.5 px-2 text-xl font-bold text-white w-24"
+          />
+          <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSave(); }} disabled={saving} className="text-xs font-medium bg-accent text-white px-2 py-1 rounded-lg hover:opacity-90 disabled:opacity-50">Save</button>
+          <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCancel(); }} className="text-xs text-cream/70 hover:text-white">Cancel</button>
+        </div>
+      ) : (
+        <p className={`text-3xl font-bold ${color}`}>
+          <CountUp value={value} duration={1000} />
+        </p>
+      )}
     </div>
   );
+  if (href && !editing) return <Link to={href} className="block">{content}</Link>;
+  return content;
 }
 
 function niceMax(n) {

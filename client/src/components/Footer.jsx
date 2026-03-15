@@ -10,7 +10,7 @@ export default function Footer() {
             <img
               src={getLogoUrl()}
               alt="SkyReach Visuals"
-              className="h-20 w-auto mb-4 rounded-xl"
+              className="h-20 w-auto mb-4 rounded-lg"
               loading="lazy"
             />
             <p className="text-white/70 text-sm leading-relaxed max-w-xs">
@@ -78,7 +78,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-white/40">
-            &copy; {new Date().getFullYear()} SkyReach Visuals. All rights reserved. &middot; v1.8
+            &copy; {new Date().getFullYear()} SkyReach Visuals. All rights reserved. &middot; v1.11
           </p>
           <p className="text-xs text-white/40">
             CAA certified drone operators

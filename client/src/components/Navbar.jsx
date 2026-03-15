@@ -39,7 +39,7 @@ export default function Navbar() {
       <div className="w-full pl-4 pr-4 md:pr-6 min-h-[4rem] py-2 flex items-center justify-between md:justify-start md:gap-2">
         <Link
           to="/"
-          className="flex items-center shrink-0 rounded-xl overflow-hidden"
+          className="flex items-center shrink-0 rounded-lg overflow-hidden"
           aria-label="Go to home"
           onClick={(e) => {
             if (isHome) {

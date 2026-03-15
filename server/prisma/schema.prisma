@@ -214,3 +214,10 @@ model PageView {
 
   @@index([createdAt])
 }
+
+model SiteSettings {
+  id                    String   @id @default("site")
+  revenueOverridePence  Int?     // when set, dashboard shows this instead of computed revenue
+  totalBookingsOverride  Int?     // when set, dashboard shows this instead of computed count
+  updatedAt              DateTime @updatedAt
+}

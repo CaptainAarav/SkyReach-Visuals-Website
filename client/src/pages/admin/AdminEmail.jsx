@@ -208,6 +208,7 @@ export default function AdminEmail() {
   const [replyTo, setReplyTo] = useState(null);
   const [people, setPeople] = useState([]);
   const [peopleFilter, setPeopleFilter] = useState(''); // '' | 'quote' | 'booking' | 'direct'
+  const [emailSearchQuery, setEmailSearchQuery] = useState('');
 
   const loadList = useCallback(async () => {
     setLoading(true);
@@ -397,8 +398,15 @@ export default function AdminEmail() {
           <div className="flex flex-col md:flex-row gap-0 rounded-xl border border-white/10 overflow-hidden bg-bg-card min-h-[420px]">
             {/* Left: message list — Gmail/Outlook style */}
             <div className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-r border-white/10 flex flex-col max-h-[50vh] md:max-h-none md:min-h-[420px]">
-              <div className="px-3 py-2 border-b border-white/10 flex items-center gap-2 shrink-0">
-                <span className="text-cream/40 text-sm">Search mail</span>
+              <div className="px-3 py-2 border-b border-white/10 flex flex-col gap-2 shrink-0">
+                <label className="text-cream/40 text-sm">Search mail</label>
+                <input
+                  type="text"
+                  value={emailSearchQuery}
+                  onChange={(e) => setEmailSearchQuery(e.target.value)}
+                  placeholder="Search by sender, recipient, or subject..."
+                  className="w-full bg-bg border border-white/20 rounded-lg py-1.5 px-2 text-sm text-cream placeholder:text-cream/40"
+                />
               </div>
               {loading ? (
                 <div className="flex-1 flex items-center justify-center p-4"><LoadingSpinner /></div>
@@ -406,7 +414,16 @@ export default function AdminEmail() {
                 <div className="flex-1 flex items-center justify-center p-4 text-cream/50 text-sm">{tab === 'inbox' ? 'No emails in inbox.' : 'No sent emails.'}</div>
               ) : (
                 <div className="flex-1 overflow-y-auto">
-                  {list.map((item) => {
+                  {list
+                    .filter((item) => {
+                      if (!emailSearchQuery.trim()) return true;
+                      const q = emailSearchQuery.trim().toLowerCase();
+                      const from = (item.from || '').toLowerCase();
+                      const to = (item.to || '').toLowerCase();
+                      const subject = (item.subject || '').toLowerCase();
+                      return from.includes(q) || to.includes(q) || subject.includes(q);
+                    })
+                    .map((item) => {
                     const isSelected = selectedMessage?.uid === item.uid;
                     const source = getEmailSource(item.subject, item.from);
                     const outlineClass = SOURCE_BORDER[source] || SOURCE_BORDER.direct;

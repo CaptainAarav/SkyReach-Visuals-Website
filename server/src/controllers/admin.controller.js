@@ -40,6 +40,7 @@ export async function getStats(req, res, next) {
       totalQuotes, totalBookings, totalAccepted, totalDeclined,
       revenueResult,
       externalRevenueResult,
+      siteSettings,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: 'ADMIN' } }),
@@ -59,15 +60,20 @@ export async function getStats(req, res, next) {
         _sum: { amount: true },
         where: externalDateFilter,
       }),
+      prisma.siteSettings.findUnique({ where: { id: 'site' } }),
     ]);
 
-    const revenue = (revenueResult._sum.packagePrice || 0) + (externalRevenueResult._sum.amount || 0);
+    const computedRevenue = (revenueResult._sum.packagePrice || 0) + (externalRevenueResult._sum.amount || 0);
+    const revenue = siteSettings?.revenueOverridePence != null ? siteSettings.revenueOverridePence : computedRevenue;
+    const displayTotalBookings = siteSettings?.totalBookingsOverride != null ? siteSettings.totalBookingsOverride : totalBookings;
 
     res.json({
       success: true,
       data: {
         total, admins, customerSupport, active, suspended, banned,
-        totalQuotes, totalBookings, totalAccepted, totalDeclined,
+        totalQuotes,
+        totalBookings: displayTotalBookings,
+        totalAccepted, totalDeclined,
         revenue,
       },
       error: null,
@@ -116,6 +122,31 @@ export async function resetTraffic(req, res, next) {
     await prisma.pageView.deleteMany({});
     await logAdminAction(req.user.id, 'RESET_TRAFFIC', null, 'All page views (sessions) reset to 0');
     res.json({ success: true, data: { message: 'Traffic reset.' }, error: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** PATCH /api/admin/settings — update dashboard display overrides (admin only). Body: { revenueOverridePence?, totalBookingsOverride? } (null to clear). */
+export async function updateSiteSettings(req, res, next) {
+  try {
+    const { revenueOverridePence, totalBookingsOverride } = req.body || {};
+    const data = {};
+    if (revenueOverridePence !== undefined) {
+      data.revenueOverridePence = revenueOverridePence == null || revenueOverridePence === '' ? null : Math.round(Number(revenueOverridePence));
+      if (data.revenueOverridePence !== null && (Number.isNaN(data.revenueOverridePence) || data.revenueOverridePence < 0)) data.revenueOverridePence = null;
+    }
+    if (totalBookingsOverride !== undefined) {
+      const v = totalBookingsOverride == null || totalBookingsOverride === '' ? null : Math.round(Number(totalBookingsOverride));
+      data.totalBookingsOverride = v !== null && !Number.isNaN(v) && v >= 0 ? v : null;
+    }
+    await prisma.siteSettings.upsert({
+      where: { id: 'site' },
+      create: { id: 'site', ...data },
+      update: data,
+    });
+    await logAdminAction(req.user.id, 'UPDATE_SITE_SETTINGS', null, Object.keys(data).join(', '));
+    res.json({ success: true, data: { message: 'Settings updated.' }, error: null });
   } catch (err) {
     next(err);
   }
