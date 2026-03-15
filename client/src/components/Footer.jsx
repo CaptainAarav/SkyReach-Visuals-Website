@@ -1,3 +1,5 @@
+import { getLogoUrl } from '../utils/logoUrl.js';
+
 export default function Footer() {
   return (
     <footer className="bg-black text-white rounded-t-3xl">
@@ -6,7 +8,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <img
-              src="/skyreach_visuals_text_logo.png"
+              src={getLogoUrl()}
               alt="SkyReach Visuals"
               className="h-20 w-auto mb-4 rounded-xl"
               loading="lazy"

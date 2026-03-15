@@ -252,8 +252,7 @@ export default function Home() {
         <div className="mt-12 relative">
           <div
             ref={testimonialsScrollRef}
-            className="flex gap-6 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scroll-smooth"
-            style={{ scrollbarWidth: 'thin' }}
+            className="scrollbar-hide flex gap-6 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scroll-smooth"
           >
             {reviews.map((r, i) => {
               const isFeatured = i === reviewHighlightIndex;

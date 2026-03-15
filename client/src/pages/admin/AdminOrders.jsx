@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import { formatOrderNumber } from '../../utils/format.js';
+import { getLogoUrl } from '../../utils/logoUrl.js';
 
 const statusOptions = ['PENDING', 'APPROVED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'DECLINED'];
 const statusColors = {
@@ -48,6 +49,9 @@ function OrderComposeModal({ order, onClose, onSent }) {
 
   const displaySubject = (subject || '').trim() || '(No subject)';
   const displayBody = (body || '').trim() || '(Your message will appear here)';
+  const logoUrl = getLogoUrl();
+  const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const previewHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"/><style>body{margin:0;padding:40px 20px;background:#F5F5F7;font-family:'Inter',Arial,sans-serif;color:#111827}.card{max-width:520px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1px solid #e5e7eb;overflow:hidden}.card-inner{padding:24px}.card h1{margin:0 0 8px;font-size:20px;font-weight:600;color:#111827}.card .body{font-size:15px;line-height:1.6;color:#4b5563;white-space:pre-wrap;margin:16px 0}.card .footer{padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280}img{display:block;max-width:100%;height:auto;border-radius:4px}</style></head><body><div class="card"><div class="card-inner"><img src="${escapeHtml(logoUrl)}" alt="SkyReach Visuals" width="120" height="40"/><h1>${escapeHtml(displaySubject)}</h1><div class="body">${escapeHtml(displayBody)}</div><div class="footer">SkyReach Visuals — Drone Aerial Photography &amp; Inspection · 07877 691861</div></div></div></body></html>`;
 
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
@@ -88,18 +92,10 @@ function OrderComposeModal({ order, onClose, onSent }) {
               <button type="button" onClick={onClose} className="text-sm font-medium bg-red text-white px-4 py-2 rounded-lg hover:bg-red-dark">Cancel</button>
             </div>
           </form>
-          <div className="flex flex-col flex-1 min-w-0 bg-bg p-4 min-h-[240px] border-t md:border-t-0 md:border-l-0 border-white/10">
-            <p className="text-xs text-cream/50 mb-2 font-medium shrink-0">Preview (as recipient will see)</p>
-            <div className="flex-1 min-h-0 overflow-auto rounded-xl">
-              <div className="min-h-full flex justify-center py-4 bg-bg">
-                <div className="w-full max-w-[520px] rounded-xl overflow-hidden border border-red/20 bg-bg-card p-4">
-                  <h2 className="text-cream font-semibold text-lg mb-2" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>{displaySubject}</h2>
-                  <div className="text-cream/90 text-sm leading-relaxed whitespace-pre-wrap" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>{displayBody}</div>
-                  <div className="mt-4 pt-4 border-t border-white/10 text-cream/80 text-xs">
-                    SkyReach Visuals — Drone Aerial Photography &amp; Inspection · 07877 691861
-                  </div>
-                </div>
-              </div>
+          <div className="flex flex-col flex-1 min-w-0 p-4 min-h-[240px] border-t md:border-t-0 md:border-l-0 border-gray-200" style={{ backgroundColor: '#F5F5F7' }}>
+            <p className="text-xs text-gray-500 mb-2 font-medium shrink-0">Preview (as recipient will see — always light)</p>
+            <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-gray-200" style={{ backgroundColor: '#F5F5F7' }}>
+              <iframe title="Email preview" srcDoc={previewHtml} className="w-full min-h-[280px] border-0 rounded-xl" sandbox="allow-same-origin" />
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from '../hooks/useForm.js';
 import { api } from '../api/client.js';
 import { SERVICES } from '../data/packages.js';
+import { getLogoUrl } from '../utils/logoUrl.js';
 
 const POSTCODE_AUTOCOMPLETE_URL = 'https://api.postcodes.io/postcodes';
 const POSTCODE_DEBOUNCE_MS = 300;
@@ -293,7 +294,7 @@ export default function BookNow() {
         </div>
         <div className="hidden lg:flex flex-col items-center justify-center sticky top-24">
           <img
-            src="/skyreach_visuals_text_logo.png"
+            src={getLogoUrl()}
             alt="SkyReach Visuals"
             className="w-full max-w-xl object-contain rounded-xl"
             loading="lazy"
