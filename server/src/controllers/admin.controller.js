@@ -590,6 +590,7 @@ async function deliverDirectInvoice(booking, body, adminUserId) {
     location: String(location ?? '').trim() || undefined,
     invoiceDate: invoiceDate || undefined,
     shootDate: shootDate || undefined,
+    paymentMethod,
   };
 
   const mergedBooking = {
