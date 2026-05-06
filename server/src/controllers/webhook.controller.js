@@ -39,6 +39,7 @@ export async function handleStripeWebhook(req, res) {
             to: booking.user.email,
             name: booking.user.name,
             booking: { ...updated, user: booking.user },
+            amountPaidPence: session.amount_total,
           });
           await sendInvoiceEmail({
             booking: updated,

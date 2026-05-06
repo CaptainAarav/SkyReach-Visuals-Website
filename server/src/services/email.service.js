@@ -72,6 +72,23 @@ function logoUrl() {
 const EMAIL_RADIUS = '12px';
 const EMAIL_LOGO_RADIUS = '4px';
 
+/** GBP from integer pence (never HTML — safe for template strings before wrapping). */
+function formatGbpPence(pence) {
+  const n = Number(pence);
+  if (!Number.isFinite(n)) return '£0.00';
+  return `£${(Math.round(n) / 100).toFixed(2)}`;
+}
+
+/**
+ * Wordmark is ~1.6:1 — fixed height/width attrs distort it. Use width + height:auto only.
+ * @param {{ maxWidth?: number, inverted?: boolean, display?: 'block'|'inline-block' }} opts
+ */
+function emailLogoImg(opts = {}) {
+  const { maxWidth = 200, inverted = false, display = 'block' } = opts;
+  const filter = inverted ? `filter:brightness(0) invert(1);opacity:0.95;` : '';
+  return `<img src="${logoUrl()}" alt="SkyReach Visuals" width="${maxWidth}" style="display:${display};max-width:${maxWidth}px;width:${maxWidth}px;height:auto;border-radius:${EMAIL_LOGO_RADIUS};${filter}" />`;
+}
+
 const EMAIL_DARK = {
   bodyBg: '#1a1a2e',
   cardBg: '#1E2D4A',
@@ -107,7 +124,7 @@ const L = {
 function darkLogoHeader() {
   return `<tr>
   <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px 16px;text-align:left;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;">
-    <img src="${logoUrl()}" alt="SkyReach Visuals" width="120" height="40" style="display:block;max-width:120px;height:auto;border-radius:${EMAIL_LOGO_RADIUS};filter:brightness(0) invert(1);opacity:0.95;" />
+    ${emailLogoImg({ maxWidth: 200, inverted: true })}
   </td>
 </tr>`;
 }
@@ -147,7 +164,7 @@ function darkSignature(senderName) {
   return `<tr>
   <td style="background-color:${EMAIL_DARK.cardBg};padding:24px 40px;text-align:left;border-radius:0 0 ${EMAIL_RADIUS} ${EMAIL_RADIUS};border-top:1px solid ${EMAIL_DARK.border};">
     <p style="margin:0 0 8px;color:${EMAIL_DARK.text};font-size:13px;font-family:'Inter',Arial,sans-serif;"><strong>SkyReach Visuals</strong><br/>${senderName} — Drone Aerial Photography &amp; Inspection &middot; 07877 691861 &middot; ${fromAddr}</p>
-    <p style="margin:12px 0 0;"><img src="${logoUrl()}" alt="SkyReach Visuals" width="96" height="32" style="display:inline-block;border-radius:${EMAIL_LOGO_RADIUS};filter:brightness(0) invert(1);opacity:0.9;max-width:96px;" /></p>
+    <p style="margin:12px 0 0;">${emailLogoImg({ maxWidth: 160, inverted: true, display: 'inline-block' })}</p>
   </td>
 </tr>`;
 }
@@ -184,7 +201,7 @@ function lightWrapper(innerRows) {
 function lightLogoHeader() {
   return `<tr>
   <td style="padding:24px 40px 16px;text-align:left;border-radius:${EMAIL_RADIUS} ${EMAIL_RADIUS} 0 0;background-color:${L.cardBg};">
-    <img src="${logoUrl()}" alt="SkyReach Visuals" width="120" height="40" style="display:block;max-width:120px;height:auto;border-radius:${EMAIL_LOGO_RADIUS};" />
+    ${emailLogoImg({ maxWidth: 200 })}
   </td>
 </tr>`;
 }
@@ -213,13 +230,41 @@ function lightHighlight(htmlContent) {
   </div>`;
 }
 
+/** Receipt-style summary for payment confirmation (amount due vs paid). */
+function lightPaymentReceiptSection({ orderNoLabel, packageName, amountDuePence, amountPaidPence }) {
+  const esc = htmlEsc;
+  const dueN = Math.round(Number(amountDuePence)) || 0;
+  const paidN = Math.round(Number(amountPaidPence)) || 0;
+  const dueStr = formatGbpPence(dueN);
+  const paidStr = formatGbpPence(paidN);
+  let statusRow = '';
+  if (paidN === dueN) {
+    statusRow = `<tr><td style="padding:10px 16px;color:${L.textFaint};vertical-align:top;">Status</td><td style="padding:10px 16px;color:${L.accent};font-weight:600;">Paid in full</td></tr>`;
+  } else if (paidN < dueN) {
+    statusRow = `<tr><td style="padding:10px 16px;color:${L.textFaint};vertical-align:top;">Balance</td><td style="padding:10px 16px;color:${L.text};font-weight:600;">${esc(formatGbpPence(dueN - paidN))} outstanding</td></tr>`;
+  } else {
+    statusRow = `<tr><td style="padding:10px 16px;color:${L.textFaint};vertical-align:top;">Note</td><td style="padding:10px 16px;color:${L.textMuted};font-size:13px;line-height:1.5;">Amount received is higher than the quoted total (e.g. tip or adjustment).</td></tr>`;
+  }
+
+  return `<tr><td style="padding:0 40px 8px;background-color:${L.cardBg};">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border:1px solid ${L.border};border-radius:8px;font-family:${L.font};font-size:14px;">
+    <tr><td colspan="2" style="padding:14px 16px;background-color:#fafafa;border-bottom:1px solid ${L.border};font-weight:600;color:${L.text};">Payment receipt</td></tr>
+    <tr><td style="padding:10px 16px;color:${L.textFaint};width:42%;">Order</td><td style="padding:10px 16px;color:${L.text};">${esc(orderNoLabel)}</td></tr>
+    <tr><td style="padding:10px 16px;color:${L.textFaint};">Service</td><td style="padding:10px 16px;color:${L.text};">${esc(packageName)}</td></tr>
+    <tr><td style="padding:10px 16px;color:${L.textFaint};">Amount due</td><td style="padding:10px 16px;color:${L.text};font-weight:600;">${esc(dueStr)}</td></tr>
+    <tr><td style="padding:10px 16px;color:${L.textFaint};">Amount paid</td><td style="padding:10px 16px;color:${L.text};font-weight:600;">${esc(paidStr)}</td></tr>
+    ${statusRow}
+  </table>
+  </td></tr>`;
+}
+
 /** Footer/signature for light theme (dark text, normal logo). */
 function lightSignature(senderName) {
   const fromAddr = env.emailFrom || 'support@skyreachvisuals.co.uk';
   return `<tr>
   <td style="padding:24px 40px;text-align:left;border-radius:0 0 ${EMAIL_RADIUS} ${EMAIL_RADIUS};border-top:1px solid ${L.border};background-color:${L.cardBg};">
     <p style="margin:0 0 8px;color:${L.text};font-size:13px;font-family:${L.font};"><strong>SkyReach Visuals</strong><br/>${senderName} — Drone Aerial Photography &amp; Inspection &middot; 07877 691861 &middot; ${fromAddr}</p>
-    <p style="margin:12px 0 0;"><img src="${logoUrl()}" alt="SkyReach Visuals" width="96" height="32" style="display:inline-block;border-radius:${EMAIL_LOGO_RADIUS};max-width:96px;" /></p>
+    <p style="margin:12px 0 0;">${emailLogoImg({ maxWidth: 160, display: 'inline-block' })}</p>
   </td>
 </tr>`;
 }
@@ -600,8 +645,9 @@ export async function sendDirectInvoiceEmail({
 
 /**
  * Customer: payment recorded (order completed). Sent when status becomes COMPLETED (admin or Stripe).
+ * For Stripe checkouts, pass `amountPaidPence: session.amount_total` (pence) so the receipt matches the charge.
  */
-export async function sendPaymentReceivedThankYou({ to, name, booking }) {
+export async function sendPaymentReceivedThankYou({ to, name, booking, amountPaidPence }) {
   const transport = getTransporter();
   if (!transport) {
     console.log('SMTP not configured — skipping payment thank-you email');
@@ -609,22 +655,34 @@ export async function sendPaymentReceivedThankYou({ to, name, booking }) {
   }
   const displayName = htmlEsc(name || 'there');
   const orderNo = formatOrderNumber(booking.orderNumber);
-  const orderBit = orderNo ? ` (order ${htmlEsc(orderNo)})` : '';
+  const orderNoLabel = orderNo || '—';
   const pkg = htmlEsc(booking.packageName || 'your booking');
+  const duePence = Math.round(Number(booking.packagePrice)) || 0;
+  const paidPence =
+    amountPaidPence !== undefined && amountPaidPence !== null && String(amountPaidPence).length > 0
+      ? Math.round(Number(amountPaidPence))
+      : duePence;
 
   const inner = `
   ${lightLogoHeader()}
-  ${lightEmailHeader('Payment received')}
-  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;">Hi ${displayName},</p>
-  <p style="margin:16px 0 0;color:${L.textMuted};font-size:15px;line-height:1.6;">We've received your payment for <strong style="color:${L.text};">${pkg}</strong>${orderBit}. Thank you for working with SkyReach Visuals — we appreciate your business.</p></td></tr>
+  ${lightEmailHeader('Payment receipt')}
+  <tr><td style="padding:0 40px 16px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;">Hi ${displayName},</p>
+  <p style="margin:16px 0 0;color:${L.textMuted};font-size:15px;line-height:1.6;">Thank you for your payment for <strong style="color:${L.text};">${pkg}</strong>. We've received it and appreciate your business.</p></td></tr>
+  ${lightPaymentReceiptSection({
+    orderNoLabel,
+    packageName: booking.packageName || '—',
+    amountDuePence: duePence,
+    amountPaidPence: paidPence,
+  })}
   <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:14px;line-height:1.6;">We'll be in touch about next steps. If you have any questions, reply to this email or call us on 07877 691861.</p></td></tr>
   ${lightSignature('SkyReach Visuals')}`;
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
+  const subjectOrder = orderNo ? ` — Order ${orderNo}` : '';
   const mailOpts = {
     from: `"SkyReach Visuals" <${env.emailFrom}>`,
     to,
-    subject: `Payment received — thank you | SkyReach Visuals`,
+    subject: `Payment receipt${subjectOrder} | SkyReach Visuals`,
     headers: mailHeaders(),
     html,
   };
