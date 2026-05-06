@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import prisma from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword } from '../services/auth.service.js';
-import { sendBookingApproved, sendBookingDeclined, sendAdminMessage, sendReviewRequestEmail, sendDirectInvoiceEmail } from '../services/email.service.js';
+import { sendBookingApproved, sendBookingDeclined, sendAdminMessage, sendReviewRequestEmail, sendDirectInvoiceEmail, sendPaymentReceivedThankYou } from '../services/email.service.js';
 import { getInboxList, getSentList, getMessage } from '../services/imap.service.js';
 import { generateInvoicePdf } from '../services/pdf-invoice.service.js';
 import { createCheckoutSession } from '../services/stripe.service.js';
@@ -836,6 +836,13 @@ export async function updateOrder(req, res, next) {
     }
 
     if (status === 'COMPLETED' && booking.status !== 'COMPLETED' && updated.user?.email) {
+      await sendPaymentReceivedThankYou({
+        to: updated.user.email,
+        name: updated.user.name,
+        booking: updated,
+      }).catch((err) => {
+        console.error('Payment thank-you email failed:', err?.message);
+      });
       const reviewUrl = `${env.clientUrl}/dashboard/bookings/${booking.id}`;
       await sendReviewRequestEmail({
         to: updated.user.email,

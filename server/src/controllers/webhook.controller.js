@@ -1,7 +1,7 @@
 import stripe from '../config/stripe.js';
 import { env } from '../config/env.js';
 import prisma from '../config/db.js';
-import { sendBookingConfirmation, sendInvoiceEmail, sendReviewRequestEmail } from '../services/email.service.js';
+import { sendPaymentReceivedThankYou, sendInvoiceEmail, sendReviewRequestEmail } from '../services/email.service.js';
 
 export async function handleStripeWebhook(req, res) {
   if (!stripe) {
@@ -35,8 +35,9 @@ export async function handleStripeWebhook(req, res) {
             data: { status: 'COMPLETED', paidAt: new Date() },
           });
 
-          await sendBookingConfirmation({
+          await sendPaymentReceivedThankYou({
             to: booking.user.email,
+            name: booking.user.name,
             booking: { ...updated, user: booking.user },
           });
           await sendInvoiceEmail({

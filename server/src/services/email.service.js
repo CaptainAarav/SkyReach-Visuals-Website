@@ -1,3 +1,4 @@
+import { createRequire } from 'module';
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
 import { AppError } from '../utils/AppError.js';
@@ -5,7 +6,38 @@ import { formatOrderNumber } from '../utils/format.js';
 import { generateInvoiceHtml } from './invoice.service.js';
 import { appendToSent } from './imap.service.js';
 
+const require = createRequire(import.meta.url);
+const MailComposer = require('nodemailer/lib/mail-composer');
+
 let transporter = null;
+
+function htmlEsc(t) {
+  return String(t)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function buildMailRaw(mailOptions) {
+  return new Promise((resolve, reject) => {
+    const composer = new MailComposer(mailOptions);
+    composer.compile().build((err, message) => {
+      if (err) reject(err);
+      else resolve(message);
+    });
+  });
+}
+
+/** Append a copy to IMAP Sent (same mailbox as admin) so outbound mail appears in Sent. */
+async function appendSentCopy(mailOptions) {
+  try {
+    const raw = await buildMailRaw(mailOptions);
+    await appendToSent(raw);
+  } catch (err) {
+    console.error('IMAP append to Sent failed (message was still sent):', err.message);
+  }
+}
 
 function getTransporter() {
   if (!transporter && env.smtp.host && env.smtp.user && env.smtp.pass) {
@@ -488,12 +520,7 @@ export async function sendDirectInvoiceEmail({
     throw new AppError('SMTP not configured', 503);
   }
 
-  const esc = (t) =>
-    String(t)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  const esc = htmlEsc;
 
   const shootDate = booking.shootDate
     ? new Date(booking.shootDate).toLocaleDateString('en-GB', {
@@ -568,6 +595,42 @@ export async function sendDirectInvoiceEmail({
   }
 
   await transport.sendMail(mailOpts);
+  await appendSentCopy(mailOpts);
+}
+
+/**
+ * Customer: payment recorded (order completed). Sent when status becomes COMPLETED (admin or Stripe).
+ */
+export async function sendPaymentReceivedThankYou({ to, name, booking }) {
+  const transport = getTransporter();
+  if (!transport) {
+    console.log('SMTP not configured — skipping payment thank-you email');
+    return;
+  }
+  const displayName = htmlEsc(name || 'there');
+  const orderNo = formatOrderNumber(booking.orderNumber);
+  const orderBit = orderNo ? ` (order ${htmlEsc(orderNo)})` : '';
+  const pkg = htmlEsc(booking.packageName || 'your booking');
+
+  const inner = `
+  ${lightLogoHeader()}
+  ${lightEmailHeader('Payment received')}
+  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;">Hi ${displayName},</p>
+  <p style="margin:16px 0 0;color:${L.textMuted};font-size:15px;line-height:1.6;">We've received your payment for <strong style="color:${L.text};">${pkg}</strong>${orderBit}. Thank you for working with SkyReach Visuals — we appreciate your business.</p></td></tr>
+  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:14px;line-height:1.6;">We'll be in touch about next steps. If you have any questions, reply to this email or call us on 07877 691861.</p></td></tr>
+  ${lightSignature('SkyReach Visuals')}`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(inner)}</html>`;
+  const mailOpts = {
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
+    to,
+    subject: `Payment received — thank you | SkyReach Visuals`,
+    headers: mailHeaders(),
+    html,
+  };
+
+  await transport.sendMail(mailOpts);
+  await appendSentCopy(mailOpts);
 }
 
 export async function sendBookingDeclined({ to, booking }) {
