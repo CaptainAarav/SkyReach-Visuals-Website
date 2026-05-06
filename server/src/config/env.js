@@ -52,6 +52,13 @@ export const env = {
     pass: process.env.IMAP_PASS || process.env.SMTP_PASS,
     secure: true,
   },
+  /** Bank transfer details for invoice emails (optional; required when sending bank_transfer direct invoices). */
+  bank: {
+    accountName: (process.env.BANK_ACCOUNT_NAME || '').trim(),
+    sortCode: (process.env.BANK_SORT_CODE || '').trim(),
+    accountNumber: (process.env.BANK_ACCOUNT_NUMBER || '').trim(),
+    referenceHint: (process.env.BANK_REFERENCE_HINT || '').trim(),
+  },
 };
 
 if (process.env.NODE_ENV !== 'test') {

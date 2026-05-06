@@ -2,10 +2,12 @@ import crypto from 'crypto';
 import prisma from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword } from '../services/auth.service.js';
-import { sendBookingApproved, sendBookingDeclined, sendAdminMessage, sendReviewRequestEmail } from '../services/email.service.js';
+import { sendBookingApproved, sendBookingDeclined, sendAdminMessage, sendReviewRequestEmail, sendDirectInvoiceEmail } from '../services/email.service.js';
 import { getInboxList, getSentList, getMessage } from '../services/imap.service.js';
 import { generateInvoicePdf } from '../services/pdf-invoice.service.js';
+import { createCheckoutSession } from '../services/stripe.service.js';
 import { env } from '../config/env.js';
+import { validatePrimaryEmail, normalizeAndValidateCcList } from '../utils/emailValidate.js';
 
 // ── Admin Audit Log helper ──────────────────────────────────────────
 export async function logAdminAction(adminId, action, targetUserId, details) {
@@ -518,15 +520,135 @@ export async function getOrderInvoicePreview(req, res, next) {
       if (from.serviceName !== undefined) options.serviceName = String(from.serviceName);
       if (from.location !== undefined) options.location = String(from.location);
       if (from.invoiceDate !== undefined && from.invoiceDate !== '') options.invoiceDate = from.invoiceDate;
+      if (from.shootDate !== undefined && from.shootDate !== '') options.shootDate = from.shootDate;
     }
 
     const pdfBuffer = await generateInvoicePdf(booking, booking.user, options);
-    if (!pdfBuffer) {
-      throw new AppError('Invoice template not available', 503);
-    }
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename="invoice-' + (booking.orderNumber ?? id) + '.pdf"');
     res.send(pdfBuffer);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** POST /orders/:id/send-direct-invoice — email invoice PDF + Stripe link or bank details. */
+export async function sendDirectOrderInvoice(req, res, next) {
+  try {
+    const { id } = req.params;
+    const {
+      customerName,
+      customerEmail,
+      serviceName,
+      location,
+      shootDate,
+      invoiceDate,
+      quotedPrice,
+      paymentMethod,
+      ccEmails,
+    } = req.body;
+
+    validatePrimaryEmail(customerEmail);
+    let ccList = normalizeAndValidateCcList(ccEmails);
+    const toLower = String(customerEmail).trim().toLowerCase();
+    ccList = ccList.filter((e) => e.toLowerCase() !== toLower);
+
+    if (quotedPrice === undefined || quotedPrice === null || quotedPrice === '') {
+      throw new AppError('Price is required', 400);
+    }
+    const priceNum = parseFloat(String(quotedPrice));
+    if (Number.isNaN(priceNum) || priceNum <= 0) {
+      throw new AppError('Please enter a valid price', 400);
+    }
+    const pricePence = Math.round(priceNum * 100);
+
+    if (paymentMethod !== 'stripe' && paymentMethod !== 'bank_transfer') {
+      throw new AppError('paymentMethod must be stripe or bank_transfer', 400);
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
+    if (!booking || booking.deletedAt) throw new AppError('Order not found', 404);
+    if (booking.status !== 'APPROVED') {
+      throw new AppError('Order must be approved before sending a direct invoice', 400);
+    }
+
+    if (paymentMethod === 'bank_transfer') {
+      const b = env.bank;
+      if (!b.accountName || !b.sortCode || !b.accountNumber) {
+        throw new AppError(
+          'Bank transfer details are not configured. Set BANK_ACCOUNT_NAME, BANK_SORT_CODE, and BANK_ACCOUNT_NUMBER.',
+          400
+        );
+      }
+    }
+
+    const pdfOptions = {
+      pricePence,
+      customerName: String(customerName ?? '').trim() || undefined,
+      customerEmail: String(customerEmail ?? '').trim() || undefined,
+      serviceName: String(serviceName ?? '').trim() || undefined,
+      location: String(location ?? '').trim() || undefined,
+      invoiceDate: invoiceDate || undefined,
+      shootDate: shootDate || undefined,
+    };
+
+    const mergedBooking = {
+      ...booking,
+      packagePrice: pricePence,
+      packageName: pdfOptions.serviceName ?? booking.packageName,
+      location: pdfOptions.location ?? booking.location,
+      shootDate: shootDate ? new Date(shootDate) : booking.shootDate,
+    };
+
+    const mergedUser = {
+      name: pdfOptions.customerName ?? booking.user?.name,
+      email: pdfOptions.customerEmail ?? booking.user?.email,
+    };
+
+    const pdfBuffer = await generateInvoicePdf(mergedBooking, mergedUser, pdfOptions);
+
+    let checkoutUrl = null;
+    if (paymentMethod === 'stripe') {
+      try {
+        const session = await createCheckoutSession({
+          packageName: mergedBooking.packageName,
+          priceInPence: pricePence,
+          bookingId: booking.id,
+          userEmail: String(customerEmail).trim(),
+        });
+        checkoutUrl = session.url;
+        await prisma.booking.update({
+          where: { id: booking.id },
+          data: { stripeSessionId: session.id },
+        });
+      } catch (err) {
+        if (err?.message === 'Stripe is not configured') {
+          throw new AppError('Stripe is not configured', 503);
+        }
+        throw err;
+      }
+    }
+
+    await sendDirectInvoiceEmail({
+      to: String(customerEmail).trim(),
+      cc: ccList,
+      booking: mergedBooking,
+      paymentMethod,
+      checkoutUrl,
+      pdfBuffer,
+    });
+
+    await logAdminAction(
+      req.user.id,
+      'SEND_DIRECT_INVOICE',
+      booking.userId,
+      `Direct invoice (${paymentMethod}) to ${customerEmail}${ccList.length ? `; CC: ${ccList.join(', ')}` : ''}, order ${id}`
+    );
+
+    res.json({ success: true, data: { sent: true }, error: null });
   } catch (err) {
     next(err);
   }
@@ -668,14 +790,19 @@ export async function deleteMessage(req, res, next) {
 // ── Admin Messaging ──────────────────────────────────────────────────
 export async function sendMessageToClient(req, res, next) {
   try {
-    const { recipientEmail, subject, body } = req.body;
+    const { recipientEmail, subject, body, cc } = req.body;
 
     if (!recipientEmail || !subject || !body) {
       throw new AppError('Recipient email, subject, and body are required');
     }
 
+    validatePrimaryEmail(recipientEmail);
+    const toAddr = recipientEmail.trim();
+    let ccList = normalizeAndValidateCcList(cc);
+    ccList = ccList.filter((e) => e.toLowerCase() !== toAddr.toLowerCase());
+
     const recipient = await prisma.user.findUnique({
-      where: { email: recipientEmail },
+      where: { email: toAddr },
       select: { id: true },
     });
 
@@ -683,7 +810,7 @@ export async function sendMessageToClient(req, res, next) {
       data: {
         senderId: req.user.id,
         recipientId: recipient?.id || null,
-        recipientEmail,
+        recipientEmail: toAddr,
         subject,
         body,
       },
@@ -695,13 +822,19 @@ export async function sendMessageToClient(req, res, next) {
     });
 
     await sendAdminMessage({
-      to: recipientEmail,
+      to: toAddr,
       subject,
       body,
       senderName: senderUser?.name || 'Admin',
+      cc: ccList,
     });
 
-    await logAdminAction(req.user.id, 'SEND_MESSAGE', recipient?.id || null, `Sent message to ${recipientEmail}: ${subject}`);
+    await logAdminAction(
+      req.user.id,
+      'SEND_MESSAGE',
+      recipient?.id || null,
+      `Sent message to ${toAddr}${ccList.length ? ` (CC: ${ccList.join(', ')})` : ''}: ${subject}`
+    );
 
     res.status(201).json({ success: true, data: message, error: null });
   } catch (err) {

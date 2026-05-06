@@ -1,78 +1,103 @@
-import { PDFDocument, StandardFonts } from 'pdf-lib';
-import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import PDFDocument from 'pdfkit';
 import { formatOrderNumber } from '../utils/format.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-/** Path to the invoice template PDF (must exist under server/templates/) */
-const TEMPLATE_PATH = join(__dirname, '..', '..', 'templates', 'invoice.pdf');
-
 /**
- * Positions and font size for overlay text on the invoice PDF (in points, from bottom-left).
- * Adjust these to match your template layout. A4 is 595 x 842 points.
+ * @param {InstanceType<typeof PDFDocument>} doc
+ * @returns {Promise<Buffer>}
  */
-const LAYOUT = {
-  orderNumber: { x: 420, y: 790, size: 11 },
-  date: { x: 420, y: 772, size: 10 },
-  customerName: { x: 80, y: 720, size: 11 },
-  customerEmail: { x: 80, y: 702, size: 10 },
-  service: { x: 80, y: 660, size: 11 },
-  amount: { x: 420, y: 660, size: 12 },
-  location: { x: 80, y: 642, size: 10 },
-};
+function collectPdfBuffer(doc) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    doc.on('data', (c) => chunks.push(c));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+  });
+}
 
 /**
- * Generate a filled invoice PDF for a booking. Returns buffer or null if template missing.
+ * Generate a filled invoice PDF (A4, PDFKit). Returns buffer.
  * @param {Object} booking - Booking record (orderNumber, packageName, packagePrice, shootDate, location, etc.)
  * @param {Object} user - User record (name, email)
- * @param {{ pricePence?: number, customerName?: string, customerEmail?: string, serviceName?: string, location?: string, invoiceDate?: string }} [options] - Overrides for PDF fields
- * @returns {Promise<Buffer|null>}
+ * @param {{ pricePence?: number, customerName?: string, customerEmail?: string, serviceName?: string, location?: string, invoiceDate?: string, shootDate?: string }} [options] - Overrides for PDF fields
+ * @returns {Promise<Buffer>}
  */
 export async function generateInvoicePdf(booking, user, options = {}) {
-  let templateBytes;
-  try {
-    templateBytes = readFileSync(TEMPLATE_PATH);
-  } catch (err) {
-    console.warn('Invoice template not found at', TEMPLATE_PATH, err.message);
-    return null;
+  const doc = new PDFDocument({ size: 'A4', margin: 48 });
+  const done = collectPdfBuffer(doc);
+
+  const orderNo = formatOrderNumber(booking.orderNumber) || '—';
+  const invoiceDateStr =
+    options.invoiceDate != null && options.invoiceDate !== ''
+      ? new Date(options.invoiceDate).toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  let shootDateStr = '—';
+  const shootSource =
+    options.shootDate != null && options.shootDate !== '' ? options.shootDate : booking.shootDate;
+  if (shootSource) {
+    shootDateStr = new Date(shootSource).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
   }
 
-  const doc = await PDFDocument.load(templateBytes);
-  const pages = doc.getPages();
-  const page = pages[0];
-  if (!page) return null;
-
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const { height } = page.getSize();
-
-  const orderNo = formatOrderNumber(booking.orderNumber);
-  const dateStr = options.invoiceDate != null && options.invoiceDate !== ''
-    ? (new Date(options.invoiceDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) || new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))
-    : new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const pricePence = options.pricePence != null ? options.pricePence : (booking.packagePrice ?? 0);
   const amountStr = `£${(pricePence / 100).toFixed(2)}`;
+  const customerName = String(options.customerName ?? user?.name ?? '—').slice(0, 120);
+  const customerEmail = String(options.customerEmail ?? user?.email ?? '—').slice(0, 120);
+  const serviceName = String(options.serviceName ?? booking.packageName ?? '—').slice(0, 120);
+  const location = String(options.location ?? booking.location ?? '—').slice(0, 120);
 
-  const draw = (text, { x, y, size }) => {
-    if (text == null || text === '') return;
-    const safe = String(text).slice(0, 120);
-    page.drawText(safe, {
-      x,
-      y: height - y,
-      size: size || 10,
-      font,
-    });
+  const accent = '#C41E3A';
+  const text = '#111827';
+  const muted = '#6b7280';
+  const boxBg = '#FBE9E7';
+
+  let y = 48;
+
+  doc.fillColor(accent).fontSize(20).font('Helvetica-Bold').text('SkyReach Visuals', 48, y);
+  y += 28;
+  doc.fillColor(text).fontSize(18).font('Helvetica-Bold').text('Invoice', 48, y);
+  y += 28;
+
+  doc.fontSize(10).font('Helvetica').fillColor(muted);
+  doc.text(`${invoiceDateStr}   ·   Order ${orderNo}`, 48, y);
+  y += 22;
+
+  doc.roundedRect(48, y, 499, 52, 6).fill(boxBg);
+  doc.fillColor(text).font('Helvetica-Bold').fontSize(18);
+  doc.text(amountStr, 48, y + 14, { width: 499, align: 'center' });
+  y += 68;
+
+  const row = (label, value, yy) => {
+    doc.font('Helvetica').fontSize(10).fillColor(muted).text(label, 48, yy, { width: 120 });
+    doc.font('Helvetica').fillColor(text).text(value, 180, yy, { width: 360 });
   };
 
-  draw(orderNo, LAYOUT.orderNumber);
-  draw(dateStr, LAYOUT.date);
-  draw(options.customerName ?? user?.name ?? '', LAYOUT.customerName);
-  draw(options.customerEmail ?? user?.email ?? '', LAYOUT.customerEmail);
-  draw(options.serviceName ?? booking.packageName ?? '', LAYOUT.service);
-  draw(amountStr, LAYOUT.amount);
-  draw(options.location ?? booking.location ?? '', LAYOUT.location);
+  row('Customer', customerName, y);
+  y += 18;
+  row('Email', customerEmail, y);
+  y += 18;
+  row('Service', serviceName, y);
+  y += 18;
+  row('Shoot date', shootDateStr, y);
+  y += 18;
+  row('Location', location, y);
+  y += 36;
 
-  const pdfBytes = await doc.save();
-  return Buffer.from(pdfBytes);
+  doc.fontSize(9).fillColor(muted).font('Helvetica');
+  doc.text(
+    'SkyReach Visuals · Bournemouth, Dorset, UK · 07877 691861',
+    48,
+    y,
+    { width: 499, align: 'center' }
+  );
+
+  doc.end();
+  return done;
 }

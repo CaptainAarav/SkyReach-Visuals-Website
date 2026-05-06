@@ -25,7 +25,7 @@
     "jsonwebtoken": "^9.0.2",
     "mailparser": "^3.7.2",
     "nodemailer": "^6.9.16",
-    "pdf-lib": "^1.17.1",
+    "pdfkit": "^0.17.1",
     "stripe": "^17.5.0"
   },
   "devDependencies": {

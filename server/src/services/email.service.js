@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
+import { AppError } from '../utils/AppError.js';
 import { formatOrderNumber } from '../utils/format.js';
 import { generateInvoiceHtml } from './invoice.service.js';
 import { appendToSent } from './imap.service.js';
@@ -474,6 +475,102 @@ export async function sendBookingApproved({ to, booking, payUrl }) {
   });
 }
 
+export async function sendDirectInvoiceEmail({
+  to,
+  cc = [],
+  booking,
+  paymentMethod,
+  checkoutUrl,
+  pdfBuffer,
+}) {
+  const transport = getTransporter();
+  if (!transport) {
+    throw new AppError('SMTP not configured', 503);
+  }
+
+  const esc = (t) =>
+    String(t)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const shootDate = booking.shootDate
+    ? new Date(booking.shootDate).toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : '—';
+  const orderNo = formatOrderNumber(booking.orderNumber);
+  const amount = `£${(booking.packagePrice / 100).toFixed(2)}`;
+
+  const detailTable = `<tr><td style="padding:0 40px 8px;background-color:${L.cardBg};">
+    <table width="100%" cellpadding="0" cellspacing="0" style="font-family:${L.font};font-size:14px;">
+      <tr><td style="padding:6px 0;color:${L.textFaint};">Service</td><td style="padding:6px 0;color:${L.text};">${esc(booking.packageName)}</td></tr>
+      <tr><td style="padding:6px 0;color:${L.textFaint};">Date</td><td style="padding:6px 0;color:${L.text};">${esc(shootDate)}</td></tr>
+      ${booking.shootTime ? `<tr><td style="padding:6px 0;color:${L.textFaint};">Time</td><td style="padding:6px 0;color:${L.text};">${esc(booking.shootTime)}</td></tr>` : ''}
+      ${booking.location ? `<tr><td style="padding:6px 0;color:${L.textFaint};">Location</td><td style="padding:6px 0;color:${L.text};">${esc(booking.location)}</td></tr>` : ''}
+    </table>
+  </td></tr>`;
+
+  const attachmentNote = `<tr><td style="padding:0 40px 8px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:14px;line-height:1.6;">Your invoice is attached as a PDF for your records.</p></td></tr>`;
+
+  let paymentRows = '';
+  if (paymentMethod === 'stripe') {
+    paymentRows = `
+  ${lightLogoHeader()}
+  ${lightEmailHeader('Invoice & payment')}
+  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;">Here is your invoice. Complete payment securely using the button below.</p></td></tr>
+  <tr><td style="padding:0 40px;background-color:${L.cardBg};">${lightAmountBox(`Amount to pay: ${esc(amount)}`)}</td></tr>
+  <tr><td style="padding:0 40px 16px;text-align:center;background-color:${L.cardBg};"><p style="margin:0;color:${L.textFaint};font-size:13px;">Order ${esc(orderNo)}</p></td></tr>
+  ${detailTable}
+  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};">${lightCtaButton(checkoutUrl, 'Pay now')}</td></tr>
+  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:14px;line-height:1.6;">Click the button above to pay securely via Stripe. Questions? Reply to this email or call 07877 691861.</p></td></tr>
+  ${attachmentNote}
+  ${lightSignature('SkyReach Visuals')}`;
+  } else {
+    const b = env.bank;
+    paymentRows = `
+  ${lightLogoHeader()}
+  ${lightEmailHeader('Invoice & payment details')}
+  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;">Here is your invoice. Please send the requested amount using the bank details below.</p></td></tr>
+  <tr><td style="padding:0 40px;background-color:${L.cardBg};">${lightAmountBox(`Amount to pay: ${esc(amount)}`)}</td></tr>
+  <tr><td style="padding:0 40px 16px;text-align:center;background-color:${L.cardBg};"><p style="margin:0;color:${L.textFaint};font-size:13px;">Order ${esc(orderNo)}</p></td></tr>
+  ${detailTable}
+  <tr><td style="padding:0 40px 16px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:15px;line-height:1.6;">Please send the requested amount to the following bank details:</p></td></tr>
+  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};">
+    <table width="100%" cellpadding="0" cellspacing="0" style="font-family:${L.font};font-size:14px;">
+      <tr><td style="padding:6px 0;color:${L.textFaint};width:120px;">Account name</td><td style="padding:6px 0;color:${L.text};">${esc(b.accountName)}</td></tr>
+      <tr><td style="padding:6px 0;color:${L.textFaint};">Sort code</td><td style="padding:6px 0;color:${L.text};">${esc(b.sortCode)}</td></tr>
+      <tr><td style="padding:6px 0;color:${L.textFaint};">Account number</td><td style="padding:6px 0;color:${L.text};">${esc(b.accountNumber)}</td></tr>
+      ${b.referenceHint ? `<tr><td style="padding:6px 0;color:${L.textFaint};">Reference</td><td style="padding:6px 0;color:${L.text};">${esc(b.referenceHint)}</td></tr>` : ''}
+    </table>
+  </td></tr>
+  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:14px;line-height:1.6;">Once paid, reply to this email so we can confirm receipt. Questions? Call 07877 691861.</p></td></tr>
+  ${attachmentNote}
+  ${lightSignature('SkyReach Visuals')}`;
+  }
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head>${lightWrapper(paymentRows)}</html>`;
+  const filename = `invoice-${(orderNo || booking.id || 'order').replace(/[^a-zA-Z0-9-_]/g, '')}.pdf`;
+
+  const mailOpts = {
+    from: `"SkyReach Visuals" <${env.emailFrom}>`,
+    to,
+    subject: `Your invoice — Order ${orderNo} | SkyReach Visuals`,
+    headers: mailHeaders(),
+    html,
+    attachments: [{ filename, content: pdfBuffer, contentType: 'application/pdf' }],
+  };
+  if (cc.length > 0) {
+    mailOpts.cc = cc;
+  }
+
+  await transport.sendMail(mailOpts);
+}
+
 export async function sendBookingDeclined({ to, booking }) {
   const transport = getTransporter();
   if (!transport) {
@@ -526,7 +623,7 @@ function adminMessageHtml(body, subject, senderName) {
 }
 
 /** Build raw RFC822 message (multipart/alternative) for sending and appending to Sent. */
-function buildAdminMessageRaw(to, subject, body, senderName) {
+function buildAdminMessageRaw(to, subject, body, senderName, ccList = []) {
   const fromAddr = env.emailFrom || 'support@skyreachvisuals.co.uk';
   const fromHeader = `"SkyReach Visuals" <${fromAddr}>`;
   const dateHeader = new Date().toUTCString().replace(/GMT/, '+0000');
@@ -534,9 +631,16 @@ function buildAdminMessageRaw(to, subject, body, senderName) {
   const plainBody = body + adminSignatureText(senderName);
   const htmlBody = adminMessageHtml(body, subject, senderName);
 
+  const ccNorm = Array.isArray(ccList) ? ccList.filter(Boolean) : [];
+  const ccLine =
+    ccNorm.length > 0
+      ? `Cc: ${ccNorm.map((e) => `<${e.trim()}>`).join(', ')}`
+      : null;
+
   const lines = [
     `From: ${fromHeader}`,
     `To: <${to}>`,
+    ccLine,
     `Subject: ${subject}`,
     `Date: ${dateHeader}`,
     'MIME-Version: 1.0',
@@ -553,11 +657,11 @@ function buildAdminMessageRaw(to, subject, body, senderName) {
     '',
     htmlBody,
     `--${boundary}--`,
-  ];
+  ].filter((line) => line !== null && line !== '');
   return lines.join('\r\n');
 }
 
-export async function sendAdminMessage({ to, subject, body, senderName }) {
+export async function sendAdminMessage({ to, subject, body, senderName, cc }) {
   const transport = getTransporter();
   if (!transport) {
     console.log('SMTP not configured — skipping admin message email');
@@ -566,10 +670,12 @@ export async function sendAdminMessage({ to, subject, body, senderName }) {
   }
 
   const fullSubject = subject.includes('| SkyReach') ? subject : `${subject} | SkyReach Visuals`;
-  const raw = buildAdminMessageRaw(to, fullSubject, body, senderName);
+  const ccList = normalizeAdminCc(cc);
+  const raw = buildAdminMessageRaw(to, fullSubject, body, senderName, ccList);
 
+  const envelopeTo = [to, ...ccList];
   await transport.sendMail({
-    envelope: { from: env.emailFrom, to: [to] },
+    envelope: { from: env.emailFrom, to: envelopeTo },
     raw,
   });
 
@@ -578,6 +684,12 @@ export async function sendAdminMessage({ to, subject, body, senderName }) {
   } catch (err) {
     console.error('Append to Sent failed:', err.message);
   }
+}
+
+function normalizeAdminCc(cc) {
+  if (cc == null || cc === '') return [];
+  const arr = Array.isArray(cc) ? cc : String(cc).split(/[,;\n\r]+/);
+  return arr.map((s) => s.trim()).filter(Boolean);
 }
 
 export async function sendAdminLoginEmail({ to, name, verifyUrl }) {

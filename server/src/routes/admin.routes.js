@@ -18,6 +18,7 @@ import {
   listOrders,
   getOrderInvoicePreview,
   updateOrder,
+  sendDirectOrderInvoice,
   deleteOrder,
   permanentDeleteOrder,
   resetOrderNumberSequence,
@@ -69,6 +70,7 @@ router.patch('/payment-requests/:id', updatePaymentRequest);
 router.get('/orders', listOrders);
 router.get('/orders/:id/invoice-preview', getOrderInvoicePreview);
 router.post('/orders/:id/invoice-preview', getOrderInvoicePreview);
+router.post('/orders/:id/send-direct-invoice', sendDirectOrderInvoice);
 router.patch('/orders/:id', updateOrder);
 router.delete('/orders/:id', deleteOrder);
 router.delete('/orders/:id/permanent', permanentDeleteOrder);

@@ -24,6 +24,7 @@ const sourceLabels = {
 function OrderComposeModal({ order, onClose, onSent }) {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
+  const [cc, setCc] = useState('');
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState(null);
 
@@ -35,6 +36,7 @@ function OrderComposeModal({ order, onClose, onSent }) {
     try {
       await api.post('/api/admin/messages/send', {
         recipientEmail: order.user?.email,
+        cc: cc.trim() || undefined,
         subject: subject.trim(),
         body: body.trim(),
       });
@@ -54,7 +56,7 @@ function OrderComposeModal({ order, onClose, onSent }) {
   const previewHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"/><style>body{margin:0;padding:40px 20px;background:#F5F5F7;font-family:'Inter',Arial,sans-serif;color:#111827}.card{max-width:520px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1px solid #e5e7eb;overflow:hidden}.card-inner{padding:24px}.card h1{margin:0 0 8px;font-size:20px;font-weight:600;color:#111827}.card .body{font-size:15px;line-height:1.6;color:#4b5563;white-space:pre-wrap;margin:16px 0}.card .footer{padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280}img{display:block;max-width:100%;height:auto;border-radius:4px}</style></head><body><div class="card"><div class="card-inner"><img src="${escapeHtml(logoUrl)}" alt="SkyReach Visuals" width="120" height="40"/><h1>${escapeHtml(displaySubject)}</h1><div class="body">${escapeHtml(displayBody)}</div><div class="footer">SkyReach Visuals — Drone Aerial Photography &amp; Inspection · 07877 691861</div></div></div></body></html>`;
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
           <h2 className="text-lg font-bold text-white">Send email</h2>
@@ -66,6 +68,16 @@ function OrderComposeModal({ order, onClose, onSent }) {
             <div>
               <label className="block text-xs text-cream/50 mb-1">To</label>
               <p className="text-sm text-white">{order.user?.email}</p>
+            </div>
+            <div>
+              <label className="block text-xs text-cream/50 mb-1">CC <span className="text-cream/40">(optional)</span></label>
+              <input
+                type="text"
+                value={cc}
+                onChange={(e) => setCc(e.target.value)}
+                placeholder="Comma-separated emails"
+                className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream placeholder:text-cream/40"
+              />
             </div>
             <div>
               <label className="block text-xs text-cream/50 mb-1">Subject</label>
@@ -104,6 +116,210 @@ function OrderComposeModal({ order, onClose, onSent }) {
   );
 }
 
+function DirectInvoiceModal({ order, onClose }) {
+  const [quotedPrice, setQuotedPrice] = useState(
+    order.packagePrice ? (order.packagePrice / 100).toFixed(2) : ''
+  );
+  const [customerName, setCustomerName] = useState(order.user?.name || '');
+  const [customerEmail, setCustomerEmail] = useState(order.user?.email || '');
+  const [ccEmails, setCcEmails] = useState('');
+  const [serviceName, setServiceName] = useState(order.packageName || '');
+  const [location, setLocation] = useState(order.location || '');
+  const [shootDate, setShootDate] = useState(() =>
+    order.shootDate ? new Date(order.shootDate).toISOString().slice(0, 10) : ''
+  );
+  const [invoiceDate, setInvoiceDate] = useState(() => {
+    const d = order.shootDate ? new Date(order.shootDate) : new Date();
+    return d.toISOString().slice(0, 10);
+  });
+  const [paymentMethod, setPaymentMethod] = useState('stripe');
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState(null);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
+  const handlePreviewInvoice = async () => {
+    const priceNum = parseFloat(quotedPrice);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setError('Enter a valid price first to preview the invoice.');
+      return;
+    }
+    setError(null);
+    setLoadingPreview(true);
+    try {
+      const body = {
+        quotedPrice: quotedPrice.trim(),
+        customerName: customerName.trim(),
+        customerEmail: customerEmail.trim(),
+        serviceName: serviceName.trim(),
+        location: location.trim(),
+        invoiceDate: invoiceDate || undefined,
+        shootDate: shootDate || undefined,
+      };
+      const res = await fetch(`/api/admin/orders/${order.id}/invoice-preview`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('Preview failed.');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setPreviewPdfUrl(url);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewPdfUrl) {
+      URL.revokeObjectURL(previewPdfUrl);
+      setPreviewPdfUrl(null);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    const priceNum = parseFloat(quotedPrice);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setError('Please enter a valid price');
+      return;
+    }
+    if (!customerEmail.trim()) {
+      setError('Recipient email is required');
+      return;
+    }
+    setSending(true);
+    try {
+      await api.post(`/api/admin/orders/${order.id}/send-direct-invoice`, {
+        customerName: customerName.trim(),
+        customerEmail: customerEmail.trim(),
+        ccEmails: ccEmails.trim() || undefined,
+        serviceName: serviceName.trim(),
+        location: location.trim(),
+        shootDate: shootDate || undefined,
+        invoiceDate: invoiceDate || undefined,
+        quotedPrice: quotedPrice.trim(),
+        paymentMethod,
+      });
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+      <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <h2 className="text-lg font-bold text-white">Send direct invoice</h2>
+          <button type="button" onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && <p className="text-sm text-red">{error}</p>}
+          <p className="text-xs text-cream/50">
+            Order must be approved. The recipient receives your branding, invoice PDF, and either a Stripe pay link or bank details — not both.
+          </p>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Customer name</label>
+            <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" required />
+          </div>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Email</label>
+            <input type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" required />
+          </div>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">CC <span className="text-cream/40">(optional)</span></label>
+            <textarea value={ccEmails} onChange={(e) => setCcEmails(e.target.value)} placeholder="Comma-separated emails" rows={2} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream resize-none placeholder:text-cream/40" />
+          </div>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Service</label>
+            <input type="text" value={serviceName} onChange={(e) => setServiceName(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" required />
+          </div>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Shoot date</label>
+            <input type="date" value={shootDate} onChange={(e) => setShootDate(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+          </div>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Location</label>
+            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+          </div>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Invoice date</label>
+            <input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+          </div>
+          <div>
+            <label className="block text-xs text-cream/50 mb-1">Amount (&pound;)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={quotedPrice}
+              onChange={(e) => setQuotedPrice(e.target.value)}
+              className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
+              required
+            />
+          </div>
+          <div>
+            <p className="block text-xs text-cream/50 mb-2">Payment</p>
+            <div className="flex rounded-lg overflow-hidden border border-white/20">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('stripe')}
+                className={`flex-1 py-2.5 text-sm font-medium transition-colors ${paymentMethod === 'stripe' ? 'bg-accent text-white' : 'bg-bg text-cream/70 hover:text-white'}`}
+              >
+                Stripe Pay
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('bank_transfer')}
+                className={`flex-1 py-2.5 text-sm font-medium transition-colors ${paymentMethod === 'bank_transfer' ? 'bg-accent text-white' : 'bg-bg text-cream/70 hover:text-white'}`}
+              >
+                Bank transfer
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handlePreviewInvoice}
+              disabled={loadingPreview || !quotedPrice || parseFloat(quotedPrice) <= 0}
+              className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20 disabled:opacity-50"
+            >
+              {loadingPreview ? 'Loading...' : 'Preview invoice'}
+            </button>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={sending} className="bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
+              {sending ? 'Sending…' : 'Send invoice email'}
+            </button>
+            <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {previewPdfUrl && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4" onClick={closePreview}>
+          <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
+              <h3 className="text-lg font-bold text-white">Invoice preview</h3>
+              <button type="button" onClick={closePreview} className="text-cream/60 hover:text-white text-xl">&times;</button>
+            </div>
+            <iframe src={previewPdfUrl} title="Invoice preview" className="w-full flex-1 min-h-[70vh] rounded-b-2xl bg-white" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ApproveModal({ order, onClose, onSave }) {
   const [quotedPrice, setQuotedPrice] = useState(
     order.packagePrice ? (order.packagePrice / 100).toFixed(2) : ''
@@ -119,6 +335,10 @@ function ApproveModal({ order, onClose, onSave }) {
   const [invoiceServiceName, setInvoiceServiceName] = useState(order.packageName || '');
   const [invoiceLocation, setInvoiceLocation] = useState(order.location || '');
   const [invoiceDate, setInvoiceDate] = useState(() => {
+    const d = order.shootDate ? new Date(order.shootDate) : new Date();
+    return d.toISOString().slice(0, 10);
+  });
+  const [invoiceShootDate, setInvoiceShootDate] = useState(() => {
     const d = order.shootDate ? new Date(order.shootDate) : new Date();
     return d.toISOString().slice(0, 10);
   });
@@ -139,6 +359,7 @@ function ApproveModal({ order, onClose, onSave }) {
         serviceName: invoiceServiceName.trim(),
         location: invoiceLocation.trim(),
         invoiceDate: invoiceDate || undefined,
+        shootDate: invoiceShootDate || undefined,
       };
       const res = await fetch(`/api/admin/orders/${order.id}/invoice-preview`, {
         method: 'POST',
@@ -146,7 +367,7 @@ function ApproveModal({ order, onClose, onSave }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error(res.status === 503 ? 'Invoice template not available.' : 'Preview failed.');
+      if (!res.ok) throw new Error('Preview failed.');
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       setPreviewPdfUrl(url);
@@ -183,6 +404,7 @@ function ApproveModal({ order, onClose, onSave }) {
         serviceName: invoiceServiceName.trim() || undefined,
         location: invoiceLocation.trim() || undefined,
         invoiceDate: invoiceDate || undefined,
+        shootDate: invoiceShootDate || undefined,
       };
       const updated = await api.patch(`/api/admin/orders/${order.id}`, body);
       onSave(updated);
@@ -251,6 +473,10 @@ function ApproveModal({ order, onClose, onSave }) {
                 <div>
                   <label className="block text-xs text-cream/50 mb-1">Location</label>
                   <input type="text" value={invoiceLocation} onChange={(e) => setInvoiceLocation(e.target.value)} className="w-full bg-bg-card border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
+                </div>
+                <div>
+                  <label className="block text-xs text-cream/50 mb-1">Shoot date</label>
+                  <input type="date" value={invoiceShootDate} onChange={(e) => setInvoiceShootDate(e.target.value)} className="w-full bg-bg-card border border-white/20 rounded-lg py-2 px-3 text-sm text-cream" />
                 </div>
                 <div>
                   <label className="block text-xs text-cream/50 mb-1">Invoice date</label>
@@ -427,6 +653,7 @@ export default function AdminOrders() {
 
   const [viewOrder, setViewOrder] = useState(null);
   const [composeOrder, setComposeOrder] = useState(null);
+  const [directInvoiceOrder, setDirectInvoiceOrder] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -557,6 +784,7 @@ export default function AdminOrders() {
           onEdit={() => { setEditingOrder(viewOrder); setViewOrder(null); }}
           onAccept={() => { setApprovingOrder(viewOrder); setViewOrder(null); }}
           onSendEmail={() => setComposeOrder(viewOrder)}
+          onDirectInvoice={() => setDirectInvoiceOrder(viewOrder)}
           onDecline={async () => { await declineOrder(viewOrder.id); setViewOrder(null); }}
           onDelete={async () => {
             try {
@@ -586,6 +814,13 @@ export default function AdminOrders() {
         />
       )}
 
+      {directInvoiceOrder && (
+        <DirectInvoiceModal
+          order={directInvoiceOrder}
+          onClose={() => setDirectInvoiceOrder(null)}
+        />
+      )}
+
       {editingOrder && (
         <EditOrderModal
           order={editingOrder}
@@ -597,7 +832,7 @@ export default function AdminOrders() {
   );
 }
 
-function ViewOrderModal({ order, onClose, onEdit, onAccept, onSendEmail, onDecline, onDelete, onPermanentDelete, isDeleted }) {
+function ViewOrderModal({ order, onClose, onEdit, onAccept, onSendEmail, onDirectInvoice, onDecline, onDelete, onPermanentDelete, isDeleted }) {
   const isQuoteOrQuickPay = order.source === 'QUOTE' || order.source === 'QUICK_PAY';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
@@ -670,6 +905,9 @@ function ViewOrderModal({ order, onClose, onEdit, onAccept, onSendEmail, onDecli
                 )}
                 {onSendEmail && (
                   <button type="button" onClick={onSendEmail} className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20">Send email</button>
+                )}
+                {order.status === 'APPROVED' && onDirectInvoice && (
+                  <button type="button" onClick={onDirectInvoice} className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20">Send direct invoice</button>
                 )}
                 <button type="button" onClick={onEdit} className="text-sm font-medium bg-white/10 text-cream px-4 py-2 rounded-lg hover:bg-white/20">Edit Booking</button>
                 {onDelete && (

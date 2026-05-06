@@ -1,0 +1,1 @@
+# Placeholder so `templates/` stays in git (Dockerfile copies this path). Invoice PDF is generated with PDFKit.
