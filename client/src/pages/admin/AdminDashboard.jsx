@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock.js';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import CountUp from '../../components/CountUp.jsx';
@@ -212,6 +213,8 @@ export default function AdminDashboard() {
 
   const isAdmin = user?.role === 'ADMIN';
 
+  useBodyScrollLock(showExternalModal);
+
   if (loading && !stats) return <LoadingSpinner />;
 
   return (
@@ -415,12 +418,9 @@ export default function AdminDashboard() {
 
       {showExternalModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
-          onClick={() => {
-            if (externalSubmitting) return;
-            setShowExternalModal(false);
-            setExternalCustomerTab('revenue');
-          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 overscroll-contain"
+          aria-modal="true"
+          role="presentation"
         >
           <div
             className={`bg-bg-card border border-white/10 rounded-2xl p-8 w-full shadow-xl max-h-[90vh] overflow-y-auto ${externalCustomerTab === 'invoice' ? 'max-w-xl' : 'max-w-md'}`}

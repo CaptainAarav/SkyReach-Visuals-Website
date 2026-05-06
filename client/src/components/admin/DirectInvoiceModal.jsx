@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../../api/client.js';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock.js';
 
 /**
  * @param {{ order?: object | null, onClose: () => void, variant?: 'order' | 'external', onSent?: () => void, embedded?: boolean }} props
@@ -9,6 +10,8 @@ import { api } from '../../api/client.js';
  */
 export function DirectInvoiceModal({ order, onClose, variant = 'order', onSent, embedded = false }) {
   const isExternal = variant === 'external';
+
+  useBodyScrollLock(!embedded);
 
   const [quotedPrice, setQuotedPrice] = useState(() =>
     isExternal ? '' : order?.packagePrice ? (order.packagePrice / 100).toFixed(2) : ''
@@ -259,7 +262,7 @@ export function DirectInvoiceModal({ order, onClose, variant = 'order', onSent, 
 
   const previewLayer =
       previewPdfUrl && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4" onClick={closePreview}>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 overscroll-contain" role="presentation">
           <div
             className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
@@ -285,7 +288,7 @@ export function DirectInvoiceModal({ order, onClose, variant = 'order', onSent, 
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 overscroll-contain" aria-modal="true" role="presentation">
       <div
         className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}

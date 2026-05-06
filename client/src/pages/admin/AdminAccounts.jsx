@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../../api/client.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 
 const roleBadge = {
@@ -25,6 +26,7 @@ function StatCard({ label, value }) {
 }
 
 function AccountDetailModal({ account, onClose, onUpdate, currentUser }) {
+  useBodyScrollLock(true);
   const [tab, setTab] = useState('profile');
   const [editRole, setEditRole] = useState(account.role);
   const [editStatus, setEditStatus] = useState(account.status);
@@ -136,7 +138,7 @@ function AccountDetailModal({ account, onClose, onUpdate, currentUser }) {
   const fmtDate = (d) => d ? new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overscroll-contain" aria-modal="true" role="presentation">
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <h2 className="text-xl font-bold text-white">{account.name}</h2>

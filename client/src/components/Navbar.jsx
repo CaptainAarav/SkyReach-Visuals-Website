@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock.js';
 
 const sectionLinks = [
   { hash: '#services', label: 'Services' },
@@ -23,6 +24,8 @@ export default function Navbar() {
   const dropdownRef = useRef(null);
   const isHome = location.pathname === '/';
   const isStaff = user?.role === 'ADMIN' || user?.role === 'CUSTOMER_SUPPORT';
+
+  useBodyScrollLock(menuOpen);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -177,8 +180,7 @@ export default function Navbar() {
       {menuOpen && (
         <>
           <div
-            className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-            onClick={() => setMenuOpen(false)}
+            className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 overscroll-contain"
             aria-hidden
           />
           <div className="md:hidden fixed left-4 right-4 top-[4.5rem] z-50 max-h-[calc(100vh-5.5rem)] overflow-y-auto rounded-2xl border border-white/10 bg-bg-card shadow-2xl">

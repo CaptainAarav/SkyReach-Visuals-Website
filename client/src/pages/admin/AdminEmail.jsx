@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock.js';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import { getLogoUrl } from '../../utils/logoUrl.js';
 
 function ComposeModal({ onClose, onSent, replyTo }) {
+  useBodyScrollLock(true);
   const { user } = useAuth();
   const [recipientEmail, setRecipientEmail] = useState(replyTo?.to || replyTo?.from || '');
   const [cc, setCc] = useState('');
@@ -65,7 +67,7 @@ function ComposeModal({ onClose, onSent, replyTo }) {
   const previewHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"/><style>body{margin:0;padding:40px 20px;background:#F5F5F7;font-family:'Inter',Arial,sans-serif;color:#111827}.card{max-width:520px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1px solid #e5e7eb;overflow:hidden}.card-inner{padding:24px}.card h1{margin:0 0 8px;font-size:20px;font-weight:600;color:#111827}.card .body{font-size:15px;line-height:1.6;color:#4b5563;white-space:pre-wrap;margin:16px 0}.card .footer{padding-top:16px;border-top:1px solid #e5e7eb;font-size:13px;color:#6b7280}.card .footer strong{color:#111827}img{display:block;max-width:100%;height:auto;border-radius:4px}</style></head><body><div class="card"><div class="card-inner"><img src="${escapeHtml(logoUrl)}" alt="SkyReach Visuals" width="120" height="40"/><h1>${escapeHtml(displaySubject)}</h1><div class="body">${escapeHtml(displayBody)}</div><div class="footer"><strong>SkyReach Visuals</strong><br/>${escapeHtml(senderName)} — Drone Aerial Photography &amp; Inspection · 07877 691861 · support@skyreachvisuals.co.uk</div><img src="${escapeHtml(logoUrl)}" alt="SkyReach Visuals" width="96" height="32" style="margin-top:12px"/></div></div></body></html>`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overscroll-contain" aria-modal="true" role="presentation">
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
           <h2 className="text-lg font-bold text-white">Compose Email</h2>
@@ -175,11 +177,12 @@ const SOURCE_BORDER = {
 };
 
 function MessageModal({ message, folder, onClose, onReply }) {
+  useBodyScrollLock(true);
   const safeHtml = message?.bodyHtml
     ? { __html: message.bodyHtml }
     : null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overscroll-contain" aria-modal="true" role="presentation">
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
           <h2 className="text-lg font-bold text-white truncate pr-4">{message?.subject}</h2>

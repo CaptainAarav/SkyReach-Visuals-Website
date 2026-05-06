@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock.js';
 import { formatOrderNumber } from '../../utils/format.js';
 
 export default function AdminPaymentRequests() {
@@ -14,6 +15,8 @@ export default function AdminPaymentRequests() {
   const [adjustNotes, setAdjustNotes] = useState('');
   const [adjustAmount, setAdjustAmount] = useState('');
   const [saving, setSaving] = useState(false);
+
+  useBodyScrollLock(!!actionReq);
 
   useEffect(() => {
     setLoading(true);
@@ -161,7 +164,7 @@ export default function AdminPaymentRequests() {
       )}
 
       {actionReq?.status === 'accept' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setActionReq(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overscroll-contain" aria-modal="true" role="presentation">
           <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-white mb-4">Accept — link to booking</h3>
             <p className="text-sm text-cream/70 mb-2">Select an approved unpaid booking to send the payment link to {actionReq.customerEmail}:</p>
@@ -191,7 +194,7 @@ export default function AdminPaymentRequests() {
       )}
 
       {actionReq?.status === 'adjust' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setActionReq(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overscroll-contain" aria-modal="true" role="presentation">
           <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-white mb-4">Adjust payment request</h3>
             <label className="block text-sm text-cream/70 mb-1">Notes (optional)</label>
