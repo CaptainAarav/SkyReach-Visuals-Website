@@ -120,8 +120,31 @@ function OrderComposeModal({ order, onClose, onSent }) {
   );
 }
 
+function approveModalCopy(order) {
+  const src = order.source;
+  const isQuoteLike = src === 'QUOTE' || src === 'QUICK_PAY';
+  const isExternal = src === 'EXTERNAL';
+  return {
+    isQuoteLike,
+    isExternal,
+    title: isQuoteLike ? 'Send invoice' : isExternal ? 'Approve external order' : 'Approve booking',
+    submitLabel: isQuoteLike
+      ? 'Set amount & send invoice'
+      : isExternal
+        ? 'Approve order'
+        : 'Approve & send payment link',
+    savingLabel: isExternal ? 'Saving...' : 'Sending...',
+    priceHint: isQuoteLike
+      ? 'When you approve, the customer receives an email with a payment link for this amount.'
+      : isExternal
+        ? 'The invoice was already sent from the dashboard. Approving saves any updates here and marks the order approved — no payment-link email is sent.'
+        : 'The customer will be charged this amount. An email with a payment link will be sent.',
+  };
+}
+
 function ApproveModal({ order, onClose, onSave }) {
   useBodyScrollLock(true);
+  const copy = approveModalCopy(order);
   const [quotedPrice, setQuotedPrice] = useState(
     order.packagePrice ? (order.packagePrice / 100).toFixed(2) : ''
   );
@@ -221,7 +244,7 @@ function ApproveModal({ order, onClose, onSave }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overscroll-contain" aria-modal="true" role="presentation">
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <h2 className="text-lg font-bold text-white">{(order.source === 'QUOTE' || order.source === 'QUICK_PAY') ? 'Send invoice' : 'Approve Booking'}</h2>
+          <h2 className="text-lg font-bold text-white">{copy.title}</h2>
           <button onClick={onClose} className="text-cream/60 hover:text-white text-xl">&times;</button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -245,9 +268,7 @@ function ApproveModal({ order, onClose, onSave }) {
               className="w-full bg-bg border border-white/20 rounded-lg py-2 px-3 text-sm text-cream"
               required
             />
-            <p className="text-xs text-cream/40 mt-1">
-              The customer will be charged this amount. An email with a payment link and invoice PDF will be sent.
-            </p>
+            <p className="text-xs text-cream/40 mt-1">{copy.priceHint}</p>
           </div>
           <div>
             <button
@@ -308,7 +329,7 @@ function ApproveModal({ order, onClose, onSave }) {
           </div>
           <div className="flex gap-2 pt-2">
             <button type="submit" disabled={saving} className="bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
-              {saving ? 'Sending...' : ((order.source === 'QUOTE' || order.source === 'QUICK_PAY') ? 'Set amount & send invoice' : 'Approve & Send Payment Link')}
+              {saving ? copy.savingLabel : copy.submitLabel}
             </button>
             <button type="button" onClick={onClose} className="text-sm text-cream/60 hover:text-white px-4 py-2">
               Cancel
@@ -637,6 +658,8 @@ export default function AdminOrders() {
 function ViewOrderModal({ order, onClose, onEdit, onAccept, onSendEmail, onDirectInvoice, onDecline, onDelete, onPermanentDelete, isDeleted }) {
   useBodyScrollLock(true);
   const isQuoteOrQuickPay = order.source === 'QUOTE' || order.source === 'QUICK_PAY';
+  const isExternalCustomer = order.source === 'EXTERNAL';
+  const pendingAcceptLabel = isQuoteOrQuickPay ? 'Send invoice' : isExternalCustomer ? 'Approve order' : 'Accept';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overscroll-contain" aria-modal="true" role="presentation">
       <div className="bg-bg-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -701,7 +724,7 @@ function ViewOrderModal({ order, onClose, onEdit, onAccept, onSendEmail, onDirec
                 {order.status === 'PENDING' && (
                   <>
                     <button type="button" onClick={onAccept} className="text-sm font-medium bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">
-                      {isQuoteOrQuickPay ? 'Send invoice' : 'Accept'}
+                      {pendingAcceptLabel}
                     </button>
                     <button type="button" onClick={onDecline} className="text-sm font-medium bg-red/80 text-white px-4 py-2 rounded-lg hover:bg-red">Decline</button>
                   </>

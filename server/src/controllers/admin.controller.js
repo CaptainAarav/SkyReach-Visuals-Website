@@ -817,7 +817,12 @@ export async function updateOrder(req, res, next) {
       await logAdminAction(req.user.id, 'UPDATE_ORDER', null, `Order ${id}: ${changes.join('; ')}`);
     }
 
-    if (status === 'APPROVED' && booking.status !== 'APPROVED' && updated.user?.email) {
+    if (
+      status === 'APPROVED' &&
+      booking.status !== 'APPROVED' &&
+      updated.user?.email &&
+      booking.source !== 'EXTERNAL'
+    ) {
       const payUrl = `${env.clientUrl}/booking/pay/${booking.id}`;
       await sendBookingApproved({ to: updated.user.email, booking: updated, payUrl }).catch((err) => {
         console.error('Failed to send approval email:', err.message);

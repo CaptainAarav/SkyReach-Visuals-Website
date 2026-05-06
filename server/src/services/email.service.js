@@ -548,7 +548,6 @@ export async function sendDirectInvoiceEmail({
       ${b.referenceHint ? `<tr><td style="padding:6px 0;color:${L.textFaint};">Reference</td><td style="padding:6px 0;color:${L.text};">${esc(b.referenceHint)}</td></tr>` : ''}
     </table>
   </td></tr>
-  <tr><td style="padding:0 40px 24px;background-color:${L.cardBg};"><p style="margin:0;color:${L.textMuted};font-size:14px;line-height:1.6;">Once paid, reply to this email so we can confirm receipt. Questions? Call 07877 691861.</p></td></tr>
   ${attachmentNote}
   ${lightSignature('SkyReach Visuals')}`;
   }
