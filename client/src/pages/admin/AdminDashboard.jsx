@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
+import CountUp from '../../components/CountUp.jsx';
 import { DirectInvoiceModal } from '../../components/admin/DirectInvoiceModal.jsx';
 
 const PencilIcon = ({ className = 'w-4 h-4' }) => (
@@ -35,7 +36,7 @@ export default function AdminDashboard() {
     d.setDate(d.getDate() - 29);
     return d.toISOString().slice(0, 10);
   });
-  const [trafficTo, setTrafficTo] = useState(today);
+  const [trafficTo, setTrafficTo] = useState(() => today());
   const [traffic, setTraffic] = useState(null);
   const [trafficLoading, setTrafficLoading] = useState(false);
 
@@ -401,7 +402,7 @@ export default function AdminDashboard() {
             {trafficLoading && <p className="text-sm text-cream/50">Loading…</p>}
             {!trafficLoading && traffic && (
               <div className="mt-4">
-                {traffic.daily.length === 0 ? (
+                {!Array.isArray(traffic.daily) || traffic.daily.length === 0 ? (
                   <p className="text-sm text-cream/50">No traffic in this period.</p>
                 ) : (
                   <TrafficLineChart daily={traffic.daily} />
@@ -582,6 +583,12 @@ function niceMax(n) {
 }
 
 function TrafficLineChart({ daily }) {
+  const rows = Array.isArray(daily)
+    ? daily.map((d) => ({
+        date: typeof d.date === 'string' ? d.date : String(d.date ?? ''),
+        views: Number(d.views) || 0,
+      }))
+    : [];
   const width = 640;
   const height = 240;
   const paddingLeft = 36;
@@ -591,12 +598,12 @@ function TrafficLineChart({ daily }) {
   const chartW = width - paddingLeft - paddingRight;
   const chartH = height - paddingTop - paddingBottom;
 
-  const maxViews = Math.max(...daily.map((d) => d.views), 1);
+  const maxViews = Math.max(...rows.map((d) => d.views), 1);
   const yMax = niceMax(maxViews);
-  const n = daily.length;
+  const n = rows.length;
   const stepX = n > 1 ? chartW / (n - 1) : chartW;
 
-  const points = daily.map((d, i) => {
+  const points = rows.map((d, i) => {
     const x = paddingLeft + i * stepX;
     const y = paddingTop + chartH - (d.views / yMax) * chartH;
     return `${x},${y}`;
@@ -622,20 +629,21 @@ function TrafficLineChart({ daily }) {
         );
       })}
       {/* X-axis labels (bottom) */}
-      {daily.map((d, i) => {
+      {rows.map((d, i) => {
         if (i % xTickStep !== 0 && i !== n - 1) return null;
         const x = paddingLeft + i * stepX;
+        const short = d.date.length >= 5 ? d.date.slice(5) : d.date;
         return (
-          <text key={`${d.date}-${i}`} x={x} y={height - 6} textAnchor="middle" className="fill-cream/50 text-[10px]">{d.date.slice(5)}</text>
+          <text key={`${d.date}-${i}`} x={x} y={height - 6} textAnchor="middle" className="fill-cream/50 text-[10px]">{short}</text>
         );
       })}
       {/* Line */}
       <path d={linePath} fill="none" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       {/* Points */}
-      {daily.map((d, i) => {
+      {rows.map((d, i) => {
         const x = paddingLeft + i * stepX;
         const y = paddingTop + chartH - (d.views / yMax) * chartH;
-        return <circle key={d.date} cx={x} cy={y} r="3" className="fill-accent" />;
+        return <circle key={`${d.date}-${i}`} cx={x} cy={y} r="3" className="fill-accent" />;
       })}
     </svg>
   );
