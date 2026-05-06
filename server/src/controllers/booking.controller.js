@@ -1,24 +1,10 @@
-import crypto from 'crypto';
 import prisma from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
 import { getServiceBySlug } from '../data/packages.js';
 import { createCheckoutSession, retrieveSession } from '../services/stripe.service.js';
 import { sendBookingConfirmation } from '../services/email.service.js';
 import { generateInvoiceHtml } from '../services/invoice.service.js';
-import { hashPassword } from '../services/auth.service.js';
-
-async function findOrCreateUser(email, name) {
-  const key = email.trim().toLowerCase();
-  let user = await prisma.user.findUnique({ where: { email: key } });
-  if (!user) {
-    const tempPassword = crypto.randomBytes(24).toString('base64url');
-    const passwordHash = await hashPassword(tempPassword);
-    user = await prisma.user.create({
-      data: { email: key, name: (name || key).trim(), passwordHash, emailVerified: true },
-    });
-  }
-  return user;
-}
+import { findOrCreateUser } from '../services/findOrCreateUser.js';
 
 export async function createQuoteRequest(req, res, next) {
   try {

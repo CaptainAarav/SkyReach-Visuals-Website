@@ -17,8 +17,10 @@ import {
   listTransactions,
   listOrders,
   getOrderInvoicePreview,
+  postDraftInvoicePreview,
   updateOrder,
   sendDirectOrderInvoice,
+  createExternalCustomerDirectInvoice,
   deleteOrder,
   permanentDeleteOrder,
   resetOrderNumberSequence,
@@ -48,6 +50,8 @@ router.get('/traffic', getTraffic);
 router.delete('/traffic', requireAdmin, resetTraffic);
 router.patch('/settings', requireAdmin, updateSiteSettings);
 router.post('/external-projects', requireAdmin, createExternalProject);
+router.post('/invoice-preview-draft', requireAdmin, postDraftInvoicePreview);
+router.post('/external-customer-direct-invoice', requireAdmin, createExternalCustomerDirectInvoice);
 
 // Accounts
 router.get('/accounts', listAccounts);

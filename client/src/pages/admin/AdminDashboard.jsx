@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { api } from '../../api/client.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
-import CountUp from '../../components/CountUp.jsx';
+import { DirectInvoiceModal } from '../../components/admin/DirectInvoiceModal.jsx';
 
 const PencilIcon = ({ className = 'w-4 h-4' }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const [period, setPeriod] = useState('overall');
   const [showExternalModal, setShowExternalModal] = useState(false);
+  const [externalCustomerTab, setExternalCustomerTab] = useState('revenue');
   const [externalAmount, setExternalAmount] = useState('');
   const [externalLabel, setExternalLabel] = useState('');
   const [externalSubmitting, setExternalSubmitting] = useState(false);
@@ -197,6 +198,7 @@ export default function AdminDashboard() {
     try {
       await api.post('/api/admin/external-projects', { amount, label: externalLabel.trim() || undefined });
       setShowExternalModal(false);
+      setExternalCustomerTab('revenue');
       setExternalAmount('');
       setExternalLabel('');
       loadStats();
@@ -232,10 +234,13 @@ export default function AdminDashboard() {
         {isAdmin && (
           <button
             type="button"
-            onClick={() => setShowExternalModal(true)}
+            onClick={() => {
+              setExternalCustomerTab('revenue');
+              setShowExternalModal(true);
+            }}
             className="text-sm font-medium px-4 py-2 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/30 transition-colors"
           >
-            Add external project
+            External customer
           </button>
         )}
       </div>
@@ -408,9 +413,60 @@ export default function AdminDashboard() {
       )}
 
       {showExternalModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => !externalSubmitting && setShowExternalModal(false)}>
-          <div className="bg-bg-card border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-white mb-4">Add external project</h3>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+          onClick={() => {
+            if (externalSubmitting) return;
+            setShowExternalModal(false);
+            setExternalCustomerTab('revenue');
+          }}
+        >
+          <div
+            className={`bg-bg-card border border-white/10 rounded-2xl p-8 w-full shadow-xl max-h-[90vh] overflow-y-auto ${externalCustomerTab === 'invoice' ? 'max-w-xl' : 'max-w-md'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <h3 className="text-xl font-bold text-white">External customer</h3>
+              <button
+                type="button"
+                className="text-cream/60 hover:text-white text-xl shrink-0"
+                onClick={() => {
+                  setShowExternalModal(false);
+                  setExternalCustomerTab('revenue');
+                }}
+                disabled={externalSubmitting}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2 mb-6">
+              <button
+                type="button"
+                onClick={() => setExternalCustomerTab('revenue')}
+                className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${
+                  externalCustomerTab === 'revenue'
+                    ? 'bg-accent text-white'
+                    : 'bg-bg border border-white/15 text-cream/80 hover:text-white'
+                }`}
+              >
+                Record external revenue
+              </button>
+              <button
+                type="button"
+                onClick={() => setExternalCustomerTab('invoice')}
+                className={`text-sm font-medium px-4 py-2 rounded-xl transition-colors ${
+                  externalCustomerTab === 'invoice'
+                    ? 'bg-accent text-white'
+                    : 'bg-bg border border-white/15 text-cream/80 hover:text-white'
+                }`}
+              >
+                Send direct invoice
+              </button>
+            </div>
+
+            {externalCustomerTab === 'revenue' && (
+            <>
             <p className="text-sm text-cream/60 mb-4">Record revenue from a project outside the website. It will be included in dashboard revenue.</p>
             <form onSubmit={handleAddExternalProject} className="space-y-4">
               <div>
@@ -439,7 +495,7 @@ export default function AdminDashboard() {
               </div>
               {externalError && <p className="text-sm text-red">{externalError}</p>}
               <div className="flex gap-2 justify-end">
-                <button type="button" onClick={() => setShowExternalModal(false)} disabled={externalSubmitting} className="px-4 py-2 text-sm text-cream/80 hover:text-white">
+                <button type="button" onClick={() => { setShowExternalModal(false); setExternalCustomerTab('revenue'); }} disabled={externalSubmitting} className="px-4 py-2 text-sm text-cream/80 hover:text-white">
                   Cancel
                 </button>
                 <button type="submit" disabled={externalSubmitting} className="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50">
@@ -447,6 +503,20 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+            </>
+            )}
+
+            {externalCustomerTab === 'invoice' && (
+              <DirectInvoiceModal
+                variant="external"
+                embedded
+                onClose={() => {
+                  setShowExternalModal(false);
+                  setExternalCustomerTab('revenue');
+                }}
+                onSent={() => loadStats()}
+              />
+            )}
           </div>
         </div>
       )}
